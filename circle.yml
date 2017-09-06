@@ -1,0 +1,13 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    - docker build --rm=false -t brainsuitebids .
+    - mkdir -p ${HOME}/test/data && wget -c -O ${HOME}/test/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" &&  tar xf ${HOME}/test/ds114_test1.tar -C ${HOME}/test/data
+   # - if [[ ! -d ~/test/data/ds114_test2 ]]; then wget -c -O ${HOME}/test/ds114_test2.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/test/data; fi
+
+test:
+  override:
+    docker run -ti --rm -v /Users/yeunkim/test/data/ds114_test1/:/input -v /Users/yeunkim/test/output:/output brainsuitebids /input /output participant --participant_label 01
