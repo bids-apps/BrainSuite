@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+Author: Jason Wong
+Edit: Yeun Kim
+"""
 from __future__ import unicode_literals, print_function
 
 from nipype import config #Set configuration before importing nipype pipeline
