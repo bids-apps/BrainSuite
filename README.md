@@ -62,3 +62,6 @@ All sessions will be processed. The output files will be located in the output f
 ## Support
 Questions about usage can be submitted to http://forums.brainsuite.org/. 
 Issues or suggestions can be directly submitted as an issue to this Github Repository.
+
+## FYI
+* BDP requires at least 6GB of memory. You may have to increase memory when you run the container. 
