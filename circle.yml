@@ -10,4 +10,4 @@ dependencies:
 
 test:
   override:
-    docker run -ti --rm -v /Users/yeunkim/test/data/ds114_test1/:/input -v /Users/yeunkim/test/output:/output brainsuitebids /input /output participant --participant_label 01 02
+    - docker run -ti --rm -v /Users/yeunkim/test/data/ds114_test1/:/input -v /Users/yeunkim/test/output:/output brainsuitebids /input /output participant --participant_label 01 02
