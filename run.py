@@ -1,7 +1,8 @@
 #!/opt/conda/bin/python
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
+from __future__ import unicode_literals, print_function
+from builtins import str
 import argparse
 import os
 import shutil
@@ -76,9 +77,7 @@ if args.analysis_level == "participant":
 
             sessions = layout.get(target='session', return_type='id',
                                   subject=subject_label,
-                                  type='T1w',
-                                  extensions=["nii.gz","nii"]
-                                  )
+                                  type='T1w', extensions=["nii.gz","nii"])
 
             if len(sessions) > 0:
                 for ses in range(0, len(sessions)):
@@ -93,52 +92,28 @@ if args.analysis_level == "participant":
                                                            extensions=["nii.gz", "nii"])]
                     if (len(dwis) > 0):
                         for i, t1 in enumerate(t1ws):
-                            abspath = os.path.abspath(t1)
-                            bvals = [f for f in layout._get_nearest_helper(abspath,
-                                                                           'bval',
-                                                                           type='dwi')]
-                            bvecs = [f for f in layout._get_nearest_helper(abspath,
-                                                                           'bvec',
-                                                                           type='dwi')]
-                            dwipath = os.path.abspath(os.path.dirname(dwis[i]))
-                            copyfile(bvals[0], os.path.join(dwipath, 'tmp.bval'))
-                            copyfile(bvecs[0], os.path.join(dwipath,'tmp.bvec'))
-
+                            bval = layout.get_bval(dwis[i])
+                            bvec = layout.get_bvec(dwis[i])
                             subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
-                            runWorkflow(subjectID, t1, args.output_dir, args.bids_dir, BDP=dwis[i].split('.')[0], SVREG=True)
-                            os.remove(os.path.join(dwipath, 'tmp.bval'))
-                            os.remove(os.path.join(dwipath, 'tmp.bvec'))
-
+                            runWorkflow(subjectID, t1, args.output_dir, args.bids_dir, BDP=dwis[i].split('.')[0],
+                                        BVAL=str(bval), BVEC=str(bvec), SVREG=True)
                     else:
                         for t1 in t1ws:
                             runWorkflow('sub-%s'%subject_label, t1, args.output_dir, args.bids_dir, SVREG=True)
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='T1w',
-                                                       extensions=["nii.gz", "nii"])]
+                                                       type='T1w', extensions=["nii.gz", "nii"])]
                 assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
 
                 dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='dwi',
-                                                       extensions=["nii.gz", "nii"])]
+                                                       type='dwi', extensions=["nii.gz", "nii"])]
                 if (len(dwis) > 0):
                     for i, t1 in enumerate(t1ws):
-                        abspath = os.path.abspath(t1)
-                        bvals = [f for f in layout._get_nearest_helper(abspath,
-                                                                       'bval',
-                                                                       type='dwi')]
-                        bvecs = [f for f in layout._get_nearest_helper(abspath,
-                                                                       'bvec',
-                                                                       type='dwi')]
-                        dwipath = os.path.abspath(os.path.dirname(dwis[i]))
-                        copyfile(bvals[0], os.path.join(dwipath, 'tmp.bval'))
-                        copyfile(bvecs[0], os.path.join(dwipath, 'tmp.bvec'))
+                        bval = layout.get_bval(dwis[i])
+                        bvec = layout.get_bvec(dwis[i])
                         runWorkflow('sub-%s' % subject_label, t1, args.output_dir, args.bids_dir,
-                                    BDP=dwis[i].split('.')[0], SVREG=True)
-                        os.remove(os.path.join(dwipath, 'tmp.bval'))
-                        os.remove(os.path.join(dwipath, 'tmp.bvec'))
-
+                                    BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True)
                 else:
                     for t1 in t1ws:
                         runWorkflow('sub-%s' % subject_label, t1, args.output_dir, args.bids_dir, SVREG=True)
