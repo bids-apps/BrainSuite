@@ -65,3 +65,5 @@ Issues or suggestions can be directly submitted as an issue to this Github Repos
 
 ## FYI
 * BDP requires at least 6GB of memory. You may have to increase memory when you run the container. 
+* SVReg currently uses our BrainSuiteAtlas for the labels
+* BDP estimates tensors, FRT ODF, and FRACT ODF
