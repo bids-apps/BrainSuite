@@ -30,16 +30,10 @@ test:
         timeout: 21600
     - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02 :
         timeout: 21600
-    # group level test for single session dataset
-    - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group :
-        timeout: 21600
     # participant level tests for a longitudinal dataset
     - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 :
         timeout: 21600
     - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02 :
-        timeout: 21600
-    # group level test for a longitudinal dataset
-    - docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group :
         timeout: 21600
 
 deployment:
