@@ -15,7 +15,7 @@ dependencies:
     - if [[ ! -d ~/data/ds114_test1 ]]; then wget -c -O ${HOME}/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data; fi
     - if [[ ! -d ~/data/ds114_test2 ]]; then wget -c -O ${HOME}/ds114_test2.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/data; fi
     - if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
-    - git describe --tags > version
+    - git describe --tags --always > version
     - docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} . :
         timeout: 21600
     - mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
