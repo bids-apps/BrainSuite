@@ -102,17 +102,20 @@ if args.analysis_level == "participant":
                     dwis = [f.filename for f in layout.get(subject=subject_label,
                                                            type='dwi', session=sessions[ses],
                                                            extensions=["nii.gz", "nii"])]
+                    subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
+                    outputdir = str(args.output_dir + os.sep + subjectID)
+                    if not os.path.exists(outputdir):
+                        os.mkdir(outputdir)
                     if (len(dwis) > 0):
                         numOfPairs = min(len(t1ws), len(dwis))
                         for i in range(0, numOfPairs):
                             bval = layout.get_bval(dwis[i])
                             bvec = layout.get_bvec(dwis[i])
-                            subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
-                            runWorkflow(subjectID, t1ws[i], args.output_dir, args.bids_dir, BDP=dwis[i].split('.')[0],
+                            runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, BDP=dwis[i].split('.')[0],
                                         BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread, ATLAS=str(atlas))
                     else:
                         for t1 in t1ws:
-                            runWorkflow('sub-%s'%subject_label, t1, args.output_dir, args.bids_dir, SVREG=True,
+                            runWorkflow(subjectID, t1, outputdir, args.bids_dir, SVREG=True,
                                         SingleThread=thread, ATLAS=str(atlas))
             else:
 
@@ -122,16 +125,19 @@ if args.analysis_level == "participant":
 
                 dwis = [f.filename for f in layout.get(subject=subject_label,
                                                        type='dwi', extensions=["nii.gz", "nii"])]
+                outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label)
+                if not os.path.exists(outputdir):
+                    os.mkdir(outputdir)
                 if (len(dwis) > 0):
                     numOfPairs = min(len(t1ws), len(dwis))
                     for i in range(0, numOfPairs):
                         bval = layout.get_bval(dwis[i])
                         bvec = layout.get_bvec(dwis[i])
-                        runWorkflow('sub-%s' % subject_label, t1ws[i], args.output_dir, args.bids_dir,
+                        runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
                                     BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
                                     SingleThread=thread, ATLAS=str(atlas))
                 else:
                     for t1 in t1ws:
-                        runWorkflow('sub-%s' % subject_label, t1, args.output_dir, args.bids_dir, SVREG=True,
+                        runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, SVREG=True,
                                     SingleThread=thread, ATLAS=(atlas))
 
