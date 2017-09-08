@@ -51,6 +51,10 @@ parser.add_argument('--participant_label', help='The label of the participant th
                    'provided all subjects should be analyzed. Multiple '
                    'participants can be specified with a space separated list.',
                    nargs="+")
+parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
+                                    'Default atlas: BCI-DNI. Options: BSA, BCI.',
+                    choices=['BSA', 'BCI'], default='BCI', required=False)
+parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite17a Pipelines BIDS App version {}'.format(__version__))
 
@@ -71,6 +75,15 @@ if args.participant_label:
 else:
     subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
     subjects_to_analyze = [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
+
+if args.singleThread:
+    thread= str('ON')
+else:
+    thread= str('OFF')
+
+atlases = { 'BCI' : '/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
+            'BSA' : '/BrainSuite17a/svreg/BrainSuiteAtlas1/mri'}
+atlas = atlases[str(args.atlas)]
 
 if args.analysis_level == "participant":
     for subject_label in subjects_to_analyze:
@@ -96,10 +109,11 @@ if args.analysis_level == "participant":
                             bvec = layout.get_bvec(dwis[i])
                             subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
                             runWorkflow(subjectID, t1ws[i], args.output_dir, args.bids_dir, BDP=dwis[i].split('.')[0],
-                                        BVAL=str(bval), BVEC=str(bvec), SVREG=True)
+                                        BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread, ATLAS=str(atlas))
                     else:
                         for t1 in t1ws:
-                            runWorkflow('sub-%s'%subject_label, t1, args.output_dir, args.bids_dir, SVREG=True)
+                            runWorkflow('sub-%s'%subject_label, t1, args.output_dir, args.bids_dir, SVREG=True,
+                                        SingleThread=thread, ATLAS=str(atlas))
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -114,8 +128,10 @@ if args.analysis_level == "participant":
                         bval = layout.get_bval(dwis[i])
                         bvec = layout.get_bvec(dwis[i])
                         runWorkflow('sub-%s' % subject_label, t1ws[i], args.output_dir, args.bids_dir,
-                                    BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True)
+                                    BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
+                                    SingleThread=thread, ATLAS=str(atlas))
                 else:
                     for t1 in t1ws:
-                        runWorkflow('sub-%s' % subject_label, t1, args.output_dir, args.bids_dir, SVREG=True)
+                        runWorkflow('sub-%s' % subject_label, t1, args.output_dir, args.bids_dir, SVREG=True,
+                                    SingleThread=thread, ATLAS=(atlas))
 

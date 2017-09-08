@@ -129,7 +129,12 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
         # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
         svregObj.inputs.subjectFilePrefix = svregInputBase
-        # svregObj.inputs.useSingleThreading = True
+        svregObj.inputs.atlasFilePrefix = '/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+        if 'ATLAS' in keyword_parameters:
+            svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
+        if 'SingleThread' in keyword_parameters:
+            if 'ON' in keyword_parameters['SingleThread']:
+                svregObj.inputs.useSingleThreading = True
 
         brainsuite_workflow.connect(ds, 'out_file', svregObj, 'dataSinkDelay')
 
