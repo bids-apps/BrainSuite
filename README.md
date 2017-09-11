@@ -18,7 +18,8 @@ If there are unequal number of T1w data and DWI data, the App will process the T
 ```
 usage: run.py [-h]
               [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
-              [-v]
+              [--stages {CSE,SVREG,BDP} [{CSE,SVREG,BDP} ...]]
+              [--atlas {BSA,BCI}] [--singleThread] [-v]
               bids_dir output_dir {participant}
 
 BrainSuite17a BIDS-App (T1w, dMRI)
@@ -43,7 +44,13 @@ optional arguments:
                         parameter is not provided all subjects should be
                         analyzed. Multiple participants can be specified with
                         a space separated list.
+  --stages {CSE,SVREG,BDP} [{CSE,SVREG,BDP} ...]
+                        Processing stage to be run. Space delimited list.
+  --atlas {BSA,BCI}     Atlas that is to be used for labeling in SVReg.
+                        Default atlas: BCI-DNI. Options: BSA, BCI.
+  --singleThread        Turns on single-thread mode for SVReg.
   -v, --version         show program's version number and exit
+
 ```
 To run it in participant level mode:
 ```bash
@@ -53,11 +60,11 @@ docker run -ti --rm \
   brainsuitebids \
   /data /output participant --participant_label 01
 ```
-Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02).
+Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages. 
 
-User can removed ``` --participant_label <ids-list> ``` argument to get all subjects processed. 
+User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
 
-All sessions will be processed. The output files will be located in the output folder.
+All sessions will be processed. The output files will be located in the output folder specified.
 
 ## Support
 Questions about usage can be submitted to http://forums.brainsuite.org/. 
@@ -65,5 +72,5 @@ Issues or suggestions can be directly submitted as an issue to this Github Repos
 
 ## FYI
 * BDP requires at least 6GB of memory. You may have to increase memory when you run the container. 
-* SVReg currently uses our BrainSuiteAtlas for the labels
-* BDP estimates tensors, FRT ODF, and FRACT ODF
+* Turn on single thread mode (``` --singleThread ```) if your machine cannot support MATLAB's parpool.
+* BDP estimates tensors, FRT ODF, and FRACT ODF.
