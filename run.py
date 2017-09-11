@@ -51,6 +51,8 @@ parser.add_argument('--participant_label', help='The label of the participant th
                    'provided all subjects should be analyzed. Multiple '
                    'participants can be specified with a space separated list.',
                    nargs="+")
+parser.add_argument('--stages', help='Processing stage to be run. Space delimited list.', nargs="+",
+                    choices=['CSE', 'SVREG', 'BDP'], default='ALL')
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
                                     'Default atlas: BCI-DNI. Options: BSA, BCI.',
                     choices=['BSA', 'BCI'], default='BCI', required=False)
@@ -85,6 +87,18 @@ atlases = { 'BCI' : '/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
             'BSA' : '/BrainSuite17a/svreg/BrainSuiteAtlas1/mri'}
 atlas = atlases[str(args.atlas)]
 
+# check stages argument info
+if all(stage in args.stages for stage in  ['CSE', 'SVREG', 'BDP']):
+    stages = 'ALL'
+elif 'CSE' in args.stages and 'BDP' in args.stages:
+    stages = 'BDP'
+elif 'CSE' in args.stages and 'SVREG' in args.stages:
+    stages = 'SVREG'
+else:
+    stages = args.stages
+
+print('\nWill run: {0}'.format(args.stages))
+
 if args.analysis_level == "participant":
     for subject_label in subjects_to_analyze:
 
@@ -111,12 +125,30 @@ if args.analysis_level == "participant":
                         for i in range(0, numOfPairs):
                             bval = layout.get_bval(dwis[i])
                             bvec = layout.get_bvec(dwis[i])
-                            runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, BDP=dwis[i].split('.')[0],
-                                        BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread, ATLAS=str(atlas))
+                            if 'ALL' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, BDP=dwis[i].split('.')[0],
+                                            BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread, ATLAS=str(atlas))
+                            if 'CSE' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir)
+                            if 'BDP' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, BDP=dwis[i].split('.')[0],
+                                            BVAL=str(bval), BVEC=str(bvec))
+                            if 'SVREG' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, SVREG=True, SingleThread=thread,
+                                            ATLAS=str(atlas))
                     else:
                         for t1 in t1ws:
-                            runWorkflow(subjectID, t1, outputdir, args.bids_dir, SVREG=True,
-                                        SingleThread=thread, ATLAS=str(atlas))
+                            if 'ALL' in stages:
+                                runWorkflow(subjectID, t1, outputdir, args.bids_dir, SVREG=True,
+                                            SingleThread=thread, ATLAS=str(atlas))
+                            if 'CSE' in stages:
+                                runWorkflow(subjectID, t1, outputdir, args.bids_dir)
+                            if 'SVREG' in stages:
+                                runWorkflow(subjectID, t1, outputdir, args.bids_dir, SVREG=True,
+                                            SingleThread=thread, ATLAS=str(atlas))
+                            if 'BDP' in stages:
+                                print('\nNo DWI data found. Running CSE only.')
+                                runWorkflow(subjectID, t1, outputdir, args.bids_dir)
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -133,11 +165,31 @@ if args.analysis_level == "participant":
                     for i in range(0, numOfPairs):
                         bval = layout.get_bval(dwis[i])
                         bvec = layout.get_bvec(dwis[i])
-                        runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
-                                    BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
-                                    SingleThread=thread, ATLAS=str(atlas))
+                        if 'ALL' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
+                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
+                                        SingleThread=thread, ATLAS=str(atlas))
+                        if 'CSE' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir)
+                        if 'BDP' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
+                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec))
+                        if 'SVREG' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
+                                        SVREG=True, SingleThread=thread, ATLAS=str(atlas))
                 else:
                     for t1 in t1ws:
-                        runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, SVREG=True,
-                                    SingleThread=thread, ATLAS=(atlas))
+                        if 'ALL' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, SVREG=True,
+                                        SingleThread=thread, ATLAS=(atlas))
+                        if 'CSE' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir)
+                        if 'SVREG' in stages:
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, SVREG=True,
+                                        SingleThread=thread, ATLAS=(atlas))
+                        if 'BDP' in stages:
+                            print('\nNo DWI data found. Running CSE only.')
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir)
+
+
 

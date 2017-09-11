@@ -114,7 +114,6 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
         bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
         dwiabspath = os.path.abspath(os.path.dirname(INPUT_DWI_BASE + '.nii.gz'))
-        # bdpObj.inputs.BVecBValPair = [dwiabspath+'/tmp.bvec', dwiabspath+'/tmp.bval']
         bdpObj.inputs.BVecBValPair = [keyword_parameters['BVEC'], keyword_parameters['BVAL']]
 
         bdpObj.inputs.estimateTensors = True
