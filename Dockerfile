@@ -57,6 +57,8 @@ RUN npm install -g bids-validator@0.19.2
 
 ENV PATH=/BrainSuite17a/bin/:/BrainSuite17a/svreg/bin/:/BrainSuite17a/bdp/:${PATH}
 
+COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
+
 ADD . /qc-system
 
 RUN chmod +x ./qc-system/run.py

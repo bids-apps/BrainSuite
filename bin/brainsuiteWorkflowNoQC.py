@@ -29,7 +29,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     WORKFLOW_NAME = SUBJECT_ID + "_cse"
 
     brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
-    brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
+    # brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
+    brainsuite_workflow.base_dir = "/tmp"
 
     bseObj = pe.Node(interface=bs.Bse(), name='BSE')
     bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
@@ -52,22 +53,26 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     cerebroObj.inputs.inputAtlasLabelFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_LABEL_SUFFIX)
 
     # ====Parameters====
-    bseObj.inputs.diffusionIterations = 5
-    bseObj.inputs.diffusionConstant = 30  # -d
-    bseObj.inputs.edgeDetectionConstant = 0.78  # -s
+    bseObj.inputs.diffusionIterations = 3
+    bseObj.inputs.diffusionConstant = 25  # -d
+    bseObj.inputs.edgeDetectionConstant = 0.64  # -s
+    bseObj.inputs.autoParameters = True
 
-    cerebroObj.inputs.useCentroids = True
-    pialmeshObj.inputs.tissueThreshold = 0.3
+    # cerebroObj.inputs.useCentroids = False
+    pialmeshObj.inputs.tissueThreshold = 1.05
+    tcaObj.inputs.minCorrectionSize = 2500
+    tcaObj.inputs.foregroundDelta = 20
 
     brainsuite_workflow.connect(bseObj, 'outputMRIVolume', bfcObj, 'inputMRIFile')
     brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', pvcObj, 'inputMRIFile')
     brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', cortexObj, 'inputTissueFractionFile')
 
     brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', cerebroObj, 'inputMRIFile')
+    brainsuite_workflow.connect(bseObj, 'outputMaskFile', cerebroObj, 'inputBrainMaskFile')
     brainsuite_workflow.connect(cerebroObj, 'outputLabelVolumeFile', cortexObj, 'inputHemisphereLabelFile')
 
     brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', scrubmaskObj, 'inputMaskFile')
-    brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', tcaObj, 'inputMaskFile')
+    brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', tcaObj, 'inputMaskFile')
     brainsuite_workflow.connect(tcaObj, 'outputMaskFile', dewispObj, 'inputMaskFile')
     brainsuite_workflow.connect(dewispObj, 'outputMaskFile', dfsObj, 'inputVolumeFile')
     brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', pialmeshObj, 'inputSurfaceFile')
