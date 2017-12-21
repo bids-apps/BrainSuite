@@ -14,6 +14,8 @@ import subprocess
 from bids.grabbids import BIDSLayout
 from shutil import copyfile
 from bin.brainsuiteWorkflowNoQC import runWorkflow
+from bin.readSpec import *
+from bin.runBssr import *
 
 def run(command, env={}, cwd=None):
     merged_env = os.environ
@@ -32,7 +34,7 @@ def run(command, env={}, cwd=None):
         raise Exception("Non zero return code: %d"%process.returncode)
 
 
-__version__ = open('/qc-system/version').read()
+__version__ = open('/BrainSuite/version').read()
 
 parser = argparse.ArgumentParser(description='BrainSuite17a BIDS-App (T1w, dMRI)')
 parser.add_argument('bids_dir', help='The directory with the input dataset '
@@ -56,6 +58,10 @@ parser.add_argument('--stages', help='Processing stage to be run. Space delimite
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
                                     'Default atlas: BCI-DNI. Options: BSA, BCI.',
                     choices=['BSA', 'BCI'], default='BCI', required=False)
+parser.add_argument('--modelspec', help='Optional. Only for group analysis level.'
+                                      'Path to JSON file that contains statistical model'
+                                        'specifications. ',
+                    required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite17a Pipelines BIDS App version {}'.format(__version__))
@@ -83,23 +89,23 @@ if args.singleThread:
 else:
     thread= str('OFF')
 
-atlases = { 'BCI' : '/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
-            'BSA' : '/BrainSuite17a/svreg/BrainSuiteAtlas1/mri'}
+atlases = { 'BCI' : '/opt/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
+            'BSA' : '/opt/BrainSuite17a/svreg/BrainSuiteAtlas1/mri'}
 atlas = atlases[str(args.atlas)]
 
-# check stages argument info
-if all(stage in args.stages for stage in  ['CSE', 'SVREG', 'BDP']):
-    stages = 'ALL'
-elif 'CSE' in args.stages and 'BDP' in args.stages:
-    stages = 'BDP'
-elif 'CSE' in args.stages and 'SVREG' in args.stages:
-    stages = 'SVREG'
-else:
-    stages = args.stages
-
-print('\nWill run: {0}'.format(args.stages))
 
 if args.analysis_level == "participant":
+    # check stages argument info
+    if all(stage in args.stages for stage in ['CSE', 'SVREG', 'BDP']):
+        stages = 'ALL'
+    elif 'CSE' in args.stages and 'BDP' in args.stages:
+        stages = 'BDP'
+    elif 'CSE' in args.stages and 'SVREG' in args.stages:
+        stages = 'SVREG'
+    else:
+        stages = args.stages
+
+    print('\nWill run: {0}'.format(args.stages))
     for subject_label in subjects_to_analyze:
 
             sessions = layout.get(target='session', return_type='id',
@@ -190,6 +196,12 @@ if args.analysis_level == "participant":
                         if 'BDP' in stages:
                             print('\nNo DWI data found. Running CSE only.')
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir)
+
+if args.analysis_level == "group":
+    specs = bssrSpec(args.modelspec, args.output_dir)
+    bss_data = load_bss_data(specs)
+    bss_model = run_model(specs, bss_data)
+    save_bss(bss_data, bss_model, specs.resultdir)
 
 
 

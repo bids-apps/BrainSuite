@@ -38,12 +38,13 @@ RUN git clone https://github.com/nipy/nipype && \
 # BrainSuite
 RUN wget -q users.bmap.ucla.edu/~yeunkim/private/BrainSuite17a.linux.tgz && \
     tar -xf BrainSuite17a.linux.tgz && \
-    cd BrainSuite17a/bin && \
-    chmod -R ugo+r /BrainSuite17a && \
+    mv /BrainSuite17a /opt && \
+    cd /opt/BrainSuite17a/bin && \
+    chmod -R ugo+r /opt/BrainSuite17a && \
     cd / && \
     rm BrainSuite17a.linux.tgz
 
-RUN chmod -R ugo+r /BrainSuite17a
+RUN chmod -R ugo+r /opt/BrainSuite17a
 
 
 ## Install the validator
@@ -55,13 +56,30 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN npm install -g bids-validator@0.19.2
 
-ENV PATH=/BrainSuite17a/bin/:/BrainSuite17a/svreg/bin/:/BrainSuite17a/bdp/:${PATH}
+ENV PATH=/opt/BrainSuite17a/bin/:/opt/BrainSuite17a/svreg/bin/:/opt/BrainSuite17a/bdp/:${PATH}
 
 COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
 
-ADD . /qc-system
+ADD . /BrainSuite
 
-RUN chmod +x ./qc-system/run.py
+RUN apt-get update && apt-get install -y --no-install-recommends gfortran
+#RUN apt-get install -y r-cran-rcpp
+#RUN conda install -y -c r r-base
 
-ENTRYPOINT ["./qc-system/run.py"]
+RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \
+    dpkg --configure -a && apt-get install -y -f
+RUN sudo echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
+    gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
+    apt-get update && apt-get install -y r-base
+
+RUN bash /BrainSuite/R/installR.sh
+#RUN wget https://pypi.python.org/packages/75/a4/182f9dc82934768680b663968115cc3e7e4a1be24478cbb2e1ed44e22b60/rpy2-2.4.0.tar.gz && \
+#    tar -xvf rpy2-2.4.0.tar.gz && \
+#    cd rpy2-2.4.0 && python setup.py install
+
+RUN conda install -y -c r rpy2
+RUN conda install libgcc
+RUN chmod +x /BrainSuite/run.py
+
+ENTRYPOINT ["/BrainSuite/run.py"]
 

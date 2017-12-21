@@ -15,12 +15,14 @@ import nipype.interfaces.brainsuite as bs
 import nipype.interfaces.io as io
 import os
 from bids.grabbids import BIDSLayout
+from shutil import copyfile
+import os
 
 
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
 ATLAS_LABEL_SUFFIX = 'brainsuite.icbm452.v15a.label.img'
 
-BRAINSUITE_ATLAS_DIRECTORY = "/BrainSuite17a/atlas/"
+BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite17a/atlas/"
 
 
 def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECTORY, **keyword_parameters):
@@ -31,6 +33,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
     # brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
     brainsuite_workflow.base_dir = "/tmp"
+    t1 = INPUT_MRI_FILE.split("/")[-1].replace("_T1w", '')
+    copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
 
     bseObj = pe.Node(interface=bs.Bse(), name='BSE')
     bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
@@ -47,7 +51,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     # =====Inputs=====
 
     # Provided input file
-    bseObj.inputs.inputMRIFile = INPUT_MRI_FILE
+    bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
     # Provided atlas files
     cerebroObj.inputs.inputAtlasMRIFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_MRI_SUFFIX)
     cerebroObj.inputs.inputAtlasLabelFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_LABEL_SUFFIX)
@@ -113,7 +117,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     if 'BDP' in keyword_parameters:
         INPUT_DWI_BASE = keyword_parameters['BDP']
         bdpObj = pe.Node(interface=bs.BDP(), name='BDP')
-        bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+        bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
+                       # + '_T1w'
 
         # bdp inputs that will be created. We delay execution of BDP until all CSE and datasink are done
         bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
@@ -129,11 +134,12 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
     if 'SVREG' in keyword_parameters:
         svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
-        svregInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+        svregInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
+                         # + '_T1w'
 
         # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
         svregObj.inputs.subjectFilePrefix = svregInputBase
-        svregObj.inputs.atlasFilePrefix = '/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+        svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
         if 'ATLAS' in keyword_parameters:
             svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
         if 'SingleThread' in keyword_parameters:

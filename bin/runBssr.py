@@ -1,0 +1,58 @@
+#!/opt/conda/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+import rpy2
+from rpy2.robjects.packages import importr
+import rpy2.robjects as ro
+
+
+valid_analysis_types = ['vbm', 'tbm', 'cbm', 'dbm', 'croi', 'droi']
+ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
+bssr = importr('bssr')
+
+def load_bss_data(specs):
+
+    if specs.measure not in valid_analysis_types:
+        sys.stdout.write("Specified measure of interest is not a valid type.\n")
+        return
+
+    elif specs.measure == "cbm":
+        bss_data = bssr.load_bss_data(type='cbm', subjdir= specs.outputdir, csv=specs.tsv, hemi=specs.hemi,
+                                      smooth=specs.smooth)
+    elif specs.measure == "tbm":
+        bss_data = bssr.load_bss_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=specs.smooth)
+
+    elif specs.measure == "dbm":
+        bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=specs.smooth,
+                                      measure=specs.dbmmeas)
+    elif specs.measure == "roi":
+        rois = ro.r('c({0})'.format(",".join(specs.roiid)))
+        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiid=rois, roimeas=specs.roimeas)
+
+    else:
+        sys.stdout.write("This imaging measure it not supported yet.")
+        return
+
+    return bss_data
+
+def run_model(specs, bss_data):
+    if specs.test == 'anova':
+        cov = ro.r('c({0})'.format(",".join(specs.covariates)))
+        bss_model = bssr.bss_anova(main_effect=specs.main_effect, covariates=cov, bss_data=bss_data,
+                                   mult_comp=specs.mult_comp)
+
+    elif specs.test == 'corr':
+        bss_model = bssr.bss_corr(corr_var=specs.corr_var, bss_data=bss_data, mult_comp=specs.mult_comp)
+
+    elif specs.test == 'ttest':
+        bss_model = bssr.bss_ttest(group_var=specs.group_var, bss_data=bss_data, paired=specs.paired, mult_comp=specs.mult_comp)
+
+    else:
+        sys.stdout.write("Specified test is not a valid type.\n")
+        return
+
+    return bss_model
+
+def save_bss(bss_data, bss_model, outdir):
+    bssr.save_bss_out(bss_data, bss_model, outdir=outdir)
