@@ -1017,6 +1017,8 @@ class SVRegInputSpec(CommandLineInputSpec):
         desc='Use single threaded mode.'
     )
 
+class SVRegOutputSpec(TraitedSpec):
+    outputLabelFile = File(desc='path/name of svreg label file')
 
 class SVReg(CommandLine):
 
@@ -1046,6 +1048,7 @@ class SVReg(CommandLine):
     """
 
     input_spec = SVRegInputSpec
+    output_spec = SVRegOutputSpec
     _cmd = 'svreg.sh'
 
     def _format_arg(self, name, spec, value):
@@ -1053,6 +1056,8 @@ class SVReg(CommandLine):
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
             return spec.argstr % ''
+        if name == 'outputLabelFile':
+            return getFileName(self.inputs.subjectFilePrefix, '.svreg.label.nii.gz')
         return super(SVReg, self)._format_arg(name, spec, value)
 
 
@@ -1577,6 +1582,15 @@ class ThicknessPVCInputSpec(CommandLineInputSpec):
         argstr='%s', mandatory=True,
         desc='Absolute path and filename prefix of the subject data'
     )
+    dataSinkDelay = traits.List(
+        str, argstr='%s',
+        desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
+             'until dataSink has finished sinking CSE outputs.'
+             'For use with parallel processing workflows including Brainsuites Cortical '
+             'Surface Extraction sequence (SVReg requires certain files from Brainsuite '
+             'CSE, which must all be in the pathway specified by subjectFilePrefix. see '
+             'http://brainsuite.org/processing/svreg/usage/ for list of required inputs '
+    )
 
 
 class ThicknessPVC(CommandLine):
@@ -1605,6 +1619,14 @@ class ThicknessPVC(CommandLine):
 
     input_spec = ThicknessPVCInputSpec
     _cmd = 'thicknessPVC.sh'
+
+    def _format_arg(self, name, spec, value):
+        if name == 'subjectFilePrefix':
+            return spec.argstr % os.path.expanduser(value)
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(ThicknessPVC, self)._format_arg(name, spec, value)
 
 
 # used to generate file names for outputs

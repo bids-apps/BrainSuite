@@ -148,6 +148,17 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
         brainsuite_workflow.connect(ds, 'out_file', svregObj, 'dataSinkDelay')
 
+        ds2 = pe.Node(io.DataSink(), name='DATASINK2')
+        ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+
+        brainsuite_workflow.connect(svregObj, 'outputLabelFile', ds2, '@')
+
+        thickPVCobj = pe.Node(bs.ThicknessPVC(), name='ThickPVC')
+        thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
+        thickPVCobj.inputs.subjectFilePrefix = thickPVCInputBase
+
+        brainsuite_workflow.connect(ds2, 'out_file', thickPVCobj, 'dataSinkDelay')
+
     brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2})
 
 
