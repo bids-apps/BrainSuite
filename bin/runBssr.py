@@ -11,7 +11,16 @@ valid_analysis_types = ['vbm', 'tbm', 'cbm', 'dbm', 'croi', 'droi']
 ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
 bssr = importr('bssr')
 
+def equal(a, b):
+    return abs( a - b ) <= 0
+
 def load_bss_data(specs):
+
+    # make optional strings
+    if not specs.smooth or specs.smooth == '' or equal(float(specs.smooth), 0):
+        OPT = 0
+    else:
+        OPT = specs.smooth
 
     if specs.measure not in valid_analysis_types:
         sys.stdout.write("Specified measure of interest is not a valid type.\n")
@@ -19,12 +28,12 @@ def load_bss_data(specs):
 
     elif specs.measure == "cbm":
         bss_data = bssr.load_bss_data(type='cbm', subjdir= specs.outputdir, csv=specs.tsv, hemi=specs.hemi,
-                                      smooth=specs.smooth)
+                                      smooth=OPT)
     elif specs.measure == "tbm":
-        bss_data = bssr.load_bss_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=specs.smooth)
+        bss_data = bssr.load_bss_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=OPT)
 
     elif specs.measure == "dbm":
-        bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=specs.smooth,
+        bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=OPT,
                                       measure=specs.dbmmeas)
     elif specs.measure == "roi":
         rois = ro.r('c({0})'.format(",".join(specs.roiid)))
