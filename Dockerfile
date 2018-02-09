@@ -24,14 +24,20 @@ RUN mkdir mcr_install && \
     cd / && \
     rm -rf mcr_install
 
-RUN apt-get update && apt-get install -y --no-install-recommends python-six python-nibabel python-setuptools && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN git clone https://github.com/benjaminp/six.git && \
+    cd six && git checkout c3ec058 && cd - && \
+    git clone https://github.com/nipy/nibabel.git && \
+    cd nibabel && git checkout 26d4d31 && cd - && \
+    git clone https://github.com/pypa/setuptools.git && \
+    cd setuptools && git checkout 629ad3d && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  
 RUN pip install git+https://github.com/INCF/pybids.git
 ENV PYTHONPATH=""
 
 # Nipype
 RUN git clone https://github.com/nipy/nipype && \
     cd nipype && \
+    git checkout bdb7afc && \
     pip install -r requirements.txt && \
     python setup.py develop
 
@@ -64,4 +70,3 @@ ADD . /qc-system
 RUN chmod +x ./qc-system/run.py
 
 ENTRYPOINT ["./qc-system/run.py"]
-
