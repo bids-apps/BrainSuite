@@ -24,12 +24,9 @@ RUN mkdir mcr_install && \
     cd / && \
     rm -rf mcr_install
 
-RUN git clone https://github.com/benjaminp/six.git && \
-    cd six && git checkout c3ec058 && cd - && \
-    git clone https://github.com/nipy/nibabel.git && \
-    cd nibabel && git checkout 26d4d31 && cd - && \
-    git clone https://github.com/pypa/setuptools.git && \
-    cd setuptools && git checkout 629ad3d && \
+RUN pip install -Iv https://pypi.python.org/packages/b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55 && \
+    pip install -Iv https://pypi.python.org/packages/e0/ec/c4d49fb2aecb80d1c61f89542fdc0ba9686b232bc24f490caeba69d231b6/nibabel-2.1.0.tar.gz#md5=b5ffc03962aa4875b1ce7cb597730772 && \
+    pip install -Iv https://pypi.python.org/packages/87/ba/54197971d107bc06f5f3fbdc0d728a7ae0b10cafca46acfddba65a0899d8/setuptools-27.2.0.tar.gz#md5=b39715612fdc0372dbfd7b3fcf5d4fe5 && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*  
 RUN pip install git+https://github.com/INCF/pybids.git
 ENV PYTHONPATH=""
