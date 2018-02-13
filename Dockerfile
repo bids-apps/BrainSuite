@@ -68,6 +68,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gfortran
 
 RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \
     dpkg --configure -a && apt-get install -y -f
+RUN apt-get install -y aptitude && aptitude install -f
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
     apt-get update && apt-get install -y r-base
