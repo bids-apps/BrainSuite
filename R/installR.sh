@@ -3,7 +3,7 @@
 cd /BrainSuite/R/
 wget https://cran.r-project.org/src/contrib/Archive/pander/pander_0.6.0.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/markdown/markdown_0.7.7.tar.gz
-wget https://cran.r-project.org/src/contrib/DT_0.2.tar.gz
+wget https://cran.r-project.org/src/contrib/Archive/DT/DT_0.2.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/ini/ini_0.1.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/RColorBrewer/RColorBrewer_1.0-5.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/RNifti/RNifti_0.5.1.tar.gz
