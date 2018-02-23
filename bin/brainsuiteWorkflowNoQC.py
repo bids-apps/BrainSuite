@@ -159,7 +159,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
         brainsuite_workflow.connect(ds2, 'out_file', thickPVCobj, 'dataSinkDelay')
 
-    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 4})
+    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2})
 
 
 
