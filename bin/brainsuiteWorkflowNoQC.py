@@ -182,13 +182,13 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', smoothSurfRightObj, 'inputSurface')
         # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', smoothSurfRightObj, 'dataSinkDelay')  # inputdelay
 
-        brainsuite_workflow.connect(thickPVCobj, 'atlasSurfLeftFile', ds3, '@')
-        brainsuite_workflow.connect(ds3, 'atlasSurfLeftFile', smoothSurfLeftObj, 'dataSinkDelay')  # inputdelay
-        brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', ds3, '@1')
-        brainsuite_workflow.connect(ds3, 'atlasSurfRightFile', smoothSurfRightObj,
-                                    'dataSinkDelay')  # inputdelay
+        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfLeftFile', ds3, '@')
+        # brainsuite_workflow.connect(ds3, 'atlasSurfLeftFile', smoothSurfLeftObj, 'dataSinkDelay')  # inputdelay
+        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', ds3, '@1')
+        # brainsuite_workflow.connect(ds3, 'atlasSurfRightFile', smoothSurfRightObj,
+        #                             'dataSinkDelay')  # inputdelay
 
-    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 8})
+    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2})
 
     # if 'SVREG' and 'BDP' in keyword_parameters:
     #     applyMapObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP')
