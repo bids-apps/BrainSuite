@@ -36,7 +36,7 @@ def run(command, env={}, cwd=None):
 
 __version__ = open('/BrainSuite/version').read()
 
-parser = argparse.ArgumentParser(description='BrainSuite17a BIDS-App (T1w, dMRI)')
+parser = argparse.ArgumentParser(description='BrainSuite18a BIDS-App (T1w, dMRI)')
 parser.add_argument('bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
 parser.add_argument('output_dir', help='The directory where the output files '
@@ -64,7 +64,7 @@ parser.add_argument('--modelspec', help='Optional. Only for group analysis level
                     required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
 parser.add_argument('-v', '--version', action='version',
-                    version='BrainSuite17a Pipelines BIDS App version {}'.format(__version__))
+                    version='BrainSuite18a Pipelines BIDS App version {}'.format(__version__))
 
 
 args = parser.parse_args()
@@ -89,8 +89,8 @@ if args.singleThread:
 else:
     thread= str('OFF')
 
-atlases = { 'BCI' : '/opt/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
-            'BSA' : '/opt/BrainSuite17a/svreg/BrainSuiteAtlas1/mri'}
+atlases = { 'BCI' : '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
+            'BSA' : '/opt/BrainSuite18a/svreg/BrainSuiteAtlas1/mri'}
 atlas = atlases[str(args.atlas)]
 
 
