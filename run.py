@@ -56,8 +56,8 @@ parser.add_argument('--participant_label', help='The label of the participant th
 parser.add_argument('--stages', help='Processing stage to be run. Space delimited list.', nargs="+",
                     choices=['CSE', 'SVREG', 'BDP'], default='ALL')
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
-                                    'Default atlas: BCI-DNI. Options: BSA, BCI.',
-                    choices=['BSA', 'BCI'], default='BCI', required=False)
+                                    'Default atlas: BCI-DNI. Options: BSA, BCI, USCBrain.',
+                    choices=['BSA', 'BCI', 'USCBrain'], default='BCI', required=False)
 parser.add_argument('--modelspec', help='Optional. Only for group analysis level.'
                                       'Path to JSON file that contains statistical model'
                                         'specifications. ',
@@ -90,7 +90,8 @@ else:
     thread= str('OFF')
 
 atlases = { 'BCI' : '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
-            'BSA' : '/opt/BrainSuite18a/svreg/BrainSuiteAtlas1/mri'}
+            'BSA' : '/opt/BrainSuite18a/svreg/BrainSuiteAtlas1/mri',
+            'USCBrain' : '/opt/BrainSuite18a/svreg/USCBrain/BCI-DNI_brain'}
 atlas = atlases[str(args.atlas)]
 
 

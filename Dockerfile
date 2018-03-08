@@ -40,13 +40,13 @@ RUN git clone https://github.com/nipy/nipype && \
     python setup.py develop
 
 # BrainSuite
-RUN wget -q shattuck.bmap.ucla.edu/BrainSuite18a/BrainSuite18a.linux.tgz && \
-    tar -xf BrainSuite18a.linux.tgz && \
+RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite18a.BIDS.tgz && \
+    tar -xf BrainSuite18a.BIDS.tgz && \
     mv /BrainSuite18a /opt && \
     cd /opt/BrainSuite18a/bin && \
     chmod -R ugo+r /opt/BrainSuite18a && \
     cd / && \
-    rm BrainSuite18a.linux.tgz
+    rm BrainSuite18a.BIDS.tgz
 
 RUN chmod -R ugo+r /opt/BrainSuite18a
 
