@@ -1626,16 +1626,10 @@ class ThicknessPVC(CommandLine):
     _cmd = 'thicknessPVC.sh'
 
     def _gen_filename(self, name):
-        # inputs = self.inputs.get()
-        # if isdefined(inputs[name]):
-        #     return os.path.abspath(inputs[name])
-
         if name == 'atlasSurfLeftFile':
             return 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs'
-
         if name == 'atlasSurfRightFile':
             return 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'
-
         return None
 
     def _list_outputs(self):
@@ -1646,10 +1640,6 @@ class ThicknessPVC(CommandLine):
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
             return spec.argstr % ''
-        # if name == 'atlasSurfLeftFile':
-        #     return 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs'
-        # if name == 'atlasSurfRightFile':
-        #     return 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'
 
         return super(ThicknessPVC, self)._format_arg(name, spec, value)
 
@@ -1659,63 +1649,53 @@ class SVRegSmoothSurfFunctionInputSpec(CommandLineInputSpec):
     outSurface = File(mandatory=False, argstr='%s', position=2, desc='output surface file', genfile=True)
     param = traits.Float(mandatory=False, argstr='%f', position=3, desc='smoothing parameter (std dev in mm)')
     dataSinkDelay = traits.List(
-        str, argstr='%s',
-        desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
-             'until dataSink has finished sinking CSE outputs.'
-             'For use with parallel processing workflows including Brainsuites Cortical '
-             'Surface Extraction sequence (SVReg requires certain files from Brainsuite '
-             'CSE, which must all be in the pathway specified by subjectFilePrefix. see '
-             'http://brainsuite.org/processing/svreg/usage/ for list of required inputs '
-    )
+                                str,
+                                argstr='%s',
+                                desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
+                                'until dataSink has finished sinking CSE outputs.'
+                                'For use with parallel processing workflows including Brainsuites Cortical '
+                                'Surface Extraction sequence (SVReg requires certain files from Brainsuite '
+                                'CSE, which must all be in the pathway specified by subjectFilePrefix. see '
+                                'http://brainsuite.org/processing/svreg/usage/ for list of required inputs '
+                                )
 
-
-# class SVRegSmoothSurfFunctionOutputSpec(TraitedSpec):
-#     outSurface = File(desc='output surface file')
-
+class SVRegSmoothSurfFunctionOutputSpec(TraitedSpec):
+    smoothSurfFile = File(desc='path/name of smoothed surface file')
 
 class SVRegSmoothSurfFunction(CommandLine):
     """
         SVRegApplyMap (SVRegApplyMap)
         This program applies an SVReg deformation file to an input volume.
-
-    http://brainsuite.org/processing/svreg/
-
-    Examples
+        
+        http://brainsuite.org/processing/svreg/
+        
+        Examples
         --------
-
-    >>> from nipype.interfaces import brainsuite
-    >>> from nipype.testing import example_data
-    >>> svregSmoothSurfFunction = brainsuite.SVRegSmoothSurfFunction()
-    >>> svregSmoothSurfFunction.inputs.inputMRIFile = example_data('structural.nii')
-    >>> results = svregApplyMap.run() #doctest: +SKIP
-    """
-
+        
+        >>> from nipype.interfaces import brainsuite
+        >>> from nipype.testing import example_data
+        >>> svregSmoothSurfFunction = brainsuite.SVRegSmoothSurfFunction()
+        >>> svregSmoothSurfFunction.inputs.inputMRIFile = example_data('structural.nii')
+        >>> results = svregApplyMap.run() #doctest: +SKIP
+        """
+    
     input_spec = SVRegSmoothSurfFunctionInputSpec
-    # output_spec = SVRegSmoothSurfFunctionOutputSpec
+    output_spec = SVRegSmoothSurfFunctionOutputSpec
     _cmd = 'svreg_smooth_surf_function.sh'
-
+    
+    def _gen_filename(self, name):
+        return outSurface
+    
+    def _list_outputs(self):
+        return l_outputs(self)
+    
     def _format_arg(self, name, spec, value):
         if name == 'inputSurface':
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
             return spec.argstr % ''
-
+        
         return super(SVRegSmoothSurfFunction, self)._format_arg(name, spec, value)
-
-    # def _gen_filename(self, name):
-    #     inputs = self.inputs.get()
-    #     if isdefined(inputs[name]):
-    #         return os.path.abspath(inputs[name])
-    #
-    #     fileToSuffixMap = {'outSurface': '.smooth.dfs'}
-    #
-    #     if name in fileToSuffixMap:
-    #         return getFileName(self.inputs.inputSurface, fileToSuffixMap[name])
-    #
-    #     return None
-    #
-    # def _list_outputs(self):
-    #     return l_outputs(self)
 
 
 # class SVRegApplyMapInputSpec(CommandLineInputSpec):
