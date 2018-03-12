@@ -1684,7 +1684,7 @@ class SVRegSmoothSurfFunction(CommandLine):
     _cmd = 'svreg_smooth_surf_function.sh'
     
     def _gen_filename(self, name):
-        return outSurface
+        return self.inputs.outSurface
     
     def _list_outputs(self):
         return l_outputs(self)
