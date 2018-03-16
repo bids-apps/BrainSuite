@@ -31,11 +31,11 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     WORKFLOW_NAME = SUBJECT_ID + "_cse"
 
     brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
-     brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
-#    brainsuite_workflow.base_dir = "/tmp"
+#    brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
+    brainsuite_workflow.base_dir = "/tmp"
     t1 = INPUT_MRI_FILE.split("/")[-1].replace("_T1w", '')
-#    copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
-    copyfile(INPUT_MRI_FILE, os.path.join(WORKFLOW_BASE_DIRECTORY, t1))
+    copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
+#    copyfile(INPUT_MRI_FILE, os.path.join(WORKFLOW_BASE_DIRECTORY, t1))
 
     bseObj = pe.Node(interface=bs.Bse(), name='BSE')
     bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
@@ -52,8 +52,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     # =====Inputs=====
 
     # Provided input file
-#    bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
-    bseObj.inputs.inputMRIFile = os.path.join(WORKFLOW_BASE_DIRECTORY, t1)
+    bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
+#    bseObj.inputs.inputMRIFile = os.path.join(WORKFLOW_BASE_DIRECTORY, t1)
     # Provided atlas files
     cerebroObj.inputs.inputAtlasMRIFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_MRI_SUFFIX)
     cerebroObj.inputs.inputAtlasLabelFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_LABEL_SUFFIX)
@@ -184,7 +184,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfLeftObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfRightObj, 'dataSinkDelay')
     
-    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=True)
+    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
 
     # if 'SVREG' and 'BDP' in keyword_parameters:
     #     applyMapObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP')

@@ -1646,7 +1646,7 @@ class ThicknessPVC(CommandLine):
 class SVRegSmoothSurfFunctionInputSpec(CommandLineInputSpec):
     inputSurface = File(mandatory=True, argstr='%s', position=0, desc='input surface file')
     funcFile = File(mandatory=True, argstr='%s', position=1, desc='surface file with function to be smoothed in .attributes field')
-    outSurface = File(mandatory=False, argstr='%s', position=2, desc='output surface file', genfile=True)
+    outSurface = File(mandatory=True, argstr='%s', position=2, desc='output surface file', genfile=True)
     param = traits.Float(mandatory=False, argstr='%f', position=3, desc='smoothing parameter (std dev in mm)')
     dataSinkDelay = traits.List(
                                 str,
@@ -1684,12 +1684,14 @@ class SVRegSmoothSurfFunction(CommandLine):
     _cmd = 'svreg_smooth_surf_function.sh'
     
     def _gen_filename(self, name):
-        return self.input_spec.outSurface
+        return getFileName(self.inputs.outSurface, '')
     
     def _list_outputs(self):
         return l_outputs(self)
     
     def _format_arg(self, name, spec, value):
+        if name == 'smoothSurfFile':
+            return getFileName(self.inputs.outSurface, '')
         if name == 'inputSurface':
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
