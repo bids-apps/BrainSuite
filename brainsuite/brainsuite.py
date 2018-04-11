@@ -11,6 +11,7 @@ from ..traits_extension import str
 Please see brainsuite.org for more information.
 
 Author: Jason Wong
+Edit: Clayton Jerlow
 """
 
 class BseInputSpec(CommandLineInputSpec):
@@ -1651,12 +1652,8 @@ class SVRegSmoothSurfFunctionInputSpec(CommandLineInputSpec):
     dataSinkDelay = traits.List(
                                 str,
                                 argstr='%s',
-                                desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
-                                'until dataSink has finished sinking CSE outputs.'
-                                'For use with parallel processing workflows including Brainsuites Cortical '
-                                'Surface Extraction sequence (SVReg requires certain files from Brainsuite '
-                                'CSE, which must all be in the pathway specified by subjectFilePrefix. see '
-                                'http://brainsuite.org/processing/svreg/usage/ for list of required inputs '
+                                desc='Connect datasink out_file to dataSinkDelay to delay execution of '
+                                'SVReg smooth surf until dataSink has finished sinking SVReg outputs.'
                                 )
 
 class SVRegSmoothSurfFunctionOutputSpec(TraitedSpec):
@@ -1685,13 +1682,12 @@ class SVRegSmoothSurfFunction(CommandLine):
     
     def _gen_filename(self, name):
         return getFileName(self.inputs.outSurface, '')
+        return None
     
     def _list_outputs(self):
         return l_outputs(self)
     
     def _format_arg(self, name, spec, value):
-        if name == 'smoothSurfFile':
-            return getFileName(self.inputs.outSurface, '')
         if name == 'inputSurface':
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
@@ -1700,72 +1696,67 @@ class SVRegSmoothSurfFunction(CommandLine):
         return super(SVRegSmoothSurfFunction, self)._format_arg(name, spec, value)
 
 
-# class SVRegApplyMapInputSpec(CommandLineInputSpec):
-#     mapFile = File(mandatory=True, argstr='%s', position=0, desc='input SVReg map file')
-#     dataFile = File(mandatory=True, argstr='%s', position=1, desc='input nifti datafile file')
-#     outFile = File(argstr='%s', position=2, desc='output resampled nifti file containing warped data', genfile=True)
-#     targetFile = File(mandatory=True, argstr='%s', position=3, desc='target file')
-#     smoothness = traits.Float(1, usedefault=True, argstr='%f', position=4, desc='stddev of gaussian smoothing'
+#class SVRegApplyMapInputSpec(CommandLineInputSpec):
+#    mapFile = File(mandatory=True, argstr='%s', position=0, desc='input SVReg map file')
+#    dataFile = File(mandatory=True, argstr='%s', position=1, desc='input nifti datafile file')
+#    outFile = File(argstr='%s', position=2, desc='output resampled nifti file containing warped data', genfile=True)
+#    smoothness = traits.Float(1, usedefault=True, argstr='%f', position=3, desc='stddev of gaussian smoothing'
 #                              'of deformation in voxels for accurate computation in of derivatives')
-#     datatype = traits.String(argstr='%s', position=5, desc='data type of output file. default is same as input_file')
-#     bitpix = traits.Int(argstr='%d', position=6, desc='bitpix of output file. default is same as input_file')
-#     interpType = traits.String('nearest', argstr='%d', position=7, usedefault=True, desc='default is nearest')
+#    datatype = traits.String(argstr='%s', position=4, desc='data type of output file. default is same as input_file')
+#    bitpix = traits.Int(argstr='%d', position=5, desc='bitpix of output file. default is same as input_file')
+#    interpType = traits.String('nearest', argstr='%d', position=6, usedefault=True, desc='default is nearest')
+#    dataSinkDelay = traits.List(
+#                                str,
+#                                argstr='%s',
+#                                desc='Connect datasink out_file to dataSinkDelay to delay execution of '
+#                                'SVReg apply map until dataSink has finished sinking SVReg outputs.'
+#                                )
 #
 #
-# class SVRegApplyMapOutputSpec(TraitedSpec):
-#     outFile = File(desc='path/name of resampled nifti file containing warped data')
+#class SVRegApplyMapOutputSpec(TraitedSpec):
+#    mappedFile = File(desc='path/name of resampled nifti file containing warped data')
 #
 #
-# class SVRegApplyMap(CommandLine):
-#     """
-#         SVRegApplyMap (SVRegApplyMap)
-#         This program applies an SVReg deformation file to an input volume.
+#class SVRegApplyMap(CommandLine):
+#    """
+#        SVRegApplyMap (SVRegApplyMap)
+#        This program applies an SVReg deformation file to an input volume.
 #
-#     http://brainsuite.org/processing/svreg/
+#    http://brainsuite.org/processing/svreg/
 #
-#     Examples
-#         --------
+#    Examples
+#        --------
 #
-#     >>> from nipype.interfaces import brainsuite
-#     >>> from nipype.testing import example_data
-#     >>> svregApplyMap = brainsuite.SVRegApplyMap()
-#     >>> svregApplyMap.inputs.inputMRIFile = example_data('structural.nii')
-#     >>> results = svregApplyMap.run() #doctest: +SKIP
-#     """
+#    >>> from nipype.interfaces import brainsuite
+#    >>> from nipype.testing import example_data
+#    >>> svregApplyMap = brainsuite.SVRegApplyMap()
+#    >>> svregApplyMap.inputs.inputMRIFile = example_data('structural.nii')
+#    >>> results = svregApplyMap.run() #doctest: +SKIP
+#    """
 #
-#     input_spec = SVRegApplyMapInputSpec
-#     output_spec = SVRegApplyMapOutputSpec
-#     _cmd = 'svreg_apply_map.sh'
+#    input_spec = SVRegApplyMapInputSpec
+#    output_spec = SVRegApplyMapOutputSpec
+#    _cmd = 'svreg_apply_map.sh'
 #
-#     def _format_arg(self, name, spec, value):
-#         # inputs = self.inputs.get()
-#         # if isdefined(inputs[name]):
-#         #     return spec.argstr % os.path.abspath(inputs[name])
-#         if name == 'dataFile':
-#             return spec.argstr % os.path.expanduser(value)
-#         if name == 'dataSinkDelay':
-#             return spec.argstr % ''
-#         if name == 'outFile':
-#             return self.inputs.outFile
+#    def _format_arg(self, name, spec, value):
+#        inputs = self.inputs.get()
+#        if isdefined(inputs[name]):
+#            return spec.argstr % os.path.abspath(inputs[name])
+#        if name == 'dataFile':
+#            return spec.argstr % os.path.expanduser(value)
+#        if name == 'dataSinkDelay':
+#            return spec.argstr % ''
 #
-#         return super(SVRegApplyMap, self)._format_arg(name, spec, value)
+#        return super(SVRegApplyMap, self)._format_arg(name, spec, value)
 #
-#     # def _gen_filename(self, name):
-#     #     inputs = self.inputs.get()
-#     #     if isdefined(inputs[name]):
-#     #         return os.path.abspath(inputs[name])
-#     #
-#     #     fileToSuffixMap = {'outFile': '.mapped.nii.gz'}
-#     #
-#     #     if name in fileToSuffixMap:
-#     #         return getFileName(self.inputs.dataFile, fileToSuffixMap[name])
-#     #
-#     #     return None
-#     #
-#     # def _list_outputs(self):
-#     #     return l_outputs(self)
+#    def _gen_filename(self, name):
+#        return getFileName(self.inputs.outFile, '')
+#        return None
 #
-#
+#    def _list_outputs(self):
+#        return l_outputs(self)
+
+
 # used to generate file names for outputs
 # removes pathway and extension of inputName, returns concatenation of:
 # inputName and suffix
