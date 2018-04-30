@@ -5,6 +5,9 @@ import sys
 import rpy2
 from rpy2.robjects.packages import importr
 import rpy2.robjects as ro
+import warnings
+from rpy2.rinterface import RRuntimeWarning
+warnings.filterwarnings("ignore", category=RRuntimeWarning)
 
 
 valid_analysis_types = ['vbm', 'tbm', 'cbm', 'dbm', 'croi', 'droi']
