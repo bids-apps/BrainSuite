@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Author: Jason Wong
-Edit: Yeun Kim
+Edit: Yeun Kim, Clayton Jerlow
 """
 from __future__ import unicode_literals, print_function
 
@@ -31,10 +31,14 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     WORKFLOW_NAME = SUBJECT_ID + "_cse"
 
     brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
-    # brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
-    brainsuite_workflow.base_dir = "/tmp"
+
+    brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
+    CACHE_DIRECTORY = keyword_parameters['CACHE']
+
+    # brainsuite_workflow.base_dir = "/tmp"
     t1 = INPUT_MRI_FILE.split("/")[-1].replace("_T1w", '')
-    copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
+    # copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
+    copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
 
     bseObj = pe.Node(interface=bs.Bse(), name='BSE')
     bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
@@ -51,7 +55,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     # =====Inputs=====
 
     # Provided input file
-    bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
+    # bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
+    bseObj.inputs.inputMRIFile = os.path.join(CACHE_DIRECTORY, t1)
     # Provided atlas files
     cerebroObj.inputs.inputAtlasMRIFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_MRI_SUFFIX)
     cerebroObj.inputs.inputAtlasLabelFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_LABEL_SUFFIX)
@@ -153,50 +158,78 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
         brainsuite_workflow.connect(svregObj, 'outputLabelFile', ds2, '@')
 
-        thickPVCobj = pe.Node(bs.ThicknessPVC(), name='ThickPVC')
-        thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
-        thickPVCobj.inputs.subjectFilePrefix = thickPVCInputBase
+#        if 'SVREG' and 'BDP' in keyword_parameters:
+#            applyMapInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
+#            applyMapMapFile = applyMapInputBase + '.svreg.inv.map.nii.gz'
+#
+#            applyMapFAObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_FA')
+#            applyMapFAObj.inputs.mapFile = applyMapMapFile
+#            applyMapFAObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.FA.T1_coord.nii.gz'
+#            applyMapFAObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.FA.nii.gz'
+#
+#            applyMapMDObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_MD')
+#            applyMapMDObj.inputs.mapFile = applyMapMapFile
+#            applyMapMDObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.MD.T1_coord.nii.gz'
+#            applyMapMDObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.MD.nii.gz'
+#
+#            applyMapAxialObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_AXIAL')
+#            applyMapAxialObj.inputs.mapFile = applyMapMapFile
+#            applyMapAxialObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.axial.T1_coord.nii.gz'
+#            applyMapAxialObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.axial.nii.gz'
+#
+#            applyMapRadialObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_RADIAL')
+#            applyMapRadialObj.inputs.mapFile = applyMapMapFile
+#            applyMapRadialObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.radial.T1_coord.nii.gz'
+#            applyMapRadialObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.radial.nii.gz'
+#
+#            applyMapmADCObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_mADC')
+#            applyMapmADCObj.inputs.mapFile = applyMapMapFile
+#            applyMapmADCObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.mADC.T1_coord.nii.gz'
+#            applyMapmADCObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.mADC.nii.gz'
+#
+#            applyMapFRT_GFAObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_FRT_GFA')
+#            applyMapFRT_GFAObj.inputs.mapFile = applyMapMapFile
+#            applyMapFRT_GFAObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.FRT_GFA.T1_coord.nii.gz'
+#            applyMapFRT_GFAObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.FRT_GFA.nii.gz'
+#
+#            brainsuite_workflow.connect(ds2, 'out_file', applyMapFAObj, 'dataSinkDelay')
+#            brainsuite_workflow.connect(ds2, 'out_file', applyMapMDObj, 'dataSinkDelay')
+#            brainsuite_workflow.connect(ds2, 'out_file', applyMapAxialObj, 'dataSinkDelay')
+#            brainsuite_workflow.connect(ds2, 'out_file', applyMapRadialObj, 'dataSinkDelay')
+#            brainsuite_workflow.connect(ds2, 'out_file', applyMapmADCObj, 'dataSinkDelay')
+#            brainsuite_workflow.connect(ds2, 'out_file', applyMapFRT_GFAObj, 'dataSinkDelay')
 
-        brainsuite_workflow.connect(ds2, 'out_file', thickPVCobj, 'dataSinkDelay')
+        thickPVCObj = pe.Node(interface=bs.ThicknessPVC(), name='ThickPVC')
+        thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
+        thickPVCObj.inputs.subjectFilePrefix = thickPVCInputBase
+
+        brainsuite_workflow.connect(ds2, 'out_file', thickPVCObj, 'dataSinkDelay')
 
         ds3 = pe.Node(io.DataSink(), name='DATASINK3')
         ds3.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
-
+        
+        brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', ds3, '@')
+        brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', ds3, '@1')
+        
         smoothSurfLeftObj = pe.Node(interface=bs.SVRegSmoothSurfFunction(), name='SMOOTHSURFLEFT')
         smoothSurfLeftInputBase = WORKFLOW_BASE_DIRECTORY + os.sep
         smoothSurfLeftObj.inputs.inputSurface = smoothSurfLeftInputBase + 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs'
         smoothSurfLeftObj.inputs.funcFile = smoothSurfLeftInputBase + 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs'
         smoothSurfLeftObj.inputs.outSurface = smoothSurfLeftInputBase + 'atlas.pvc-thickness_0-6mm.smooth5.0mm.left.mid.cortex.dfs'
         smoothSurfLeftObj.inputs.param = 5
-        #
-        # #TODO make names unique
+        
         smoothSurfRightObj = pe.Node(interface=bs.SVRegSmoothSurfFunction(), name='SMOOTHSURFRIGHT')
         smoothSurfRightInputBase = WORKFLOW_BASE_DIRECTORY + os.sep
         smoothSurfRightObj.inputs.inputSurface = smoothSurfRightInputBase + 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'
         smoothSurfRightObj.inputs.funcFile = smoothSurfRightInputBase + 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'
         smoothSurfRightObj.inputs.outSurface = smoothSurfRightInputBase + 'atlas.pvc-thickness_0-6mm.smooth5.0mm.right.mid.cortex.dfs'
         smoothSurfRightObj.inputs.param = 5
-
-        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfLeftFile', smoothSurfLeftObj, 'inputSurface')
-        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfLeftFile', smoothSurfLeftObj, 'dataSinkDelay') #inputdelay
-        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', smoothSurfRightObj, 'inputSurface')
-        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', smoothSurfRightObj, 'dataSinkDelay')  # inputdelay
-
-        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfLeftFile', ds3, '@')
-        # brainsuite_workflow.connect(ds3, 'atlasSurfLeftFile', smoothSurfLeftObj, 'dataSinkDelay')  # inputdelay
-        # brainsuite_workflow.connect(thickPVCobj, 'atlasSurfRightFile', ds3, '@1')
-        # brainsuite_workflow.connect(ds3, 'atlasSurfRightFile', smoothSurfRightObj,
-        #                             'dataSinkDelay')  # inputdelay
-
-    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2})
-
-    # if 'SVREG' and 'BDP' in keyword_parameters:
-    #     applyMapObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP')
-    #     applyMapObj.inputs.mapFile =
-    #     applyMapObj.inputs.dataFile =
-    #     applyMapObj.inputs.outFile =
-    #     applyMapObj.inputs.targetFile =
-    #     applyMapObj.inputs.smoothness =
+        
+        brainsuite_workflow.connect(ds3, 'out_file', smoothSurfLeftObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds3, 'out_file', smoothSurfRightObj, 'dataSinkDelay')
+    
+    
+    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
 
     # Print message when all processing is complete.
     print('Processing for subject %s has completed. Nipype workflow is located at: %s' % (

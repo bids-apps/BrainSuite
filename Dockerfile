@@ -68,7 +68,7 @@ COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 ADD . /BrainSuite
 
 RUN apt-get update && apt-get install -y --no-install-recommends gfortran
-#RUN apt-get install -y r-cran-rcpp
+RUN apt-get install -y pandoc
 #RUN conda install -y -c r r-base
 
 RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \
