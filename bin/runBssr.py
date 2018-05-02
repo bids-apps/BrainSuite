@@ -48,6 +48,7 @@ def load_bss_data(specs):
 
     else:
         sys.stdout.write("This imaging measure it not supported yet.")
+        sys.exit(1)
         return
 
     return bss_data
