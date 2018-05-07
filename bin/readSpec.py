@@ -61,7 +61,7 @@ class bssrSpec(object):
         # self.null_model = specs['null_model']
         self.mult_comp = specs['BrainSuite']['mult_comp']
         self.measure = specs['BrainSuite']['measure']
-        self.main_effect = specs['BrainSuite']['main_effect'][0]
+        self.main_effect = specs['BrainSuite']['main_effect']
         # self.covariates = ['"' + item + '"' for item in specs['BrainSuite']['covariates']]
         self.corr_var = specs['BrainSuite']['corr_var']
         self.covariates = specs['BrainSuite']['covariates']
