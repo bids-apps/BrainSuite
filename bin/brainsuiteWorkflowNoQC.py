@@ -183,6 +183,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfRightObj, 'dataSinkDelay')
 
     if 'SVREG' and 'BDP' in keyword_parameters:
+
+        ######## Apply Map ########
         applyMapInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID 
         applyMapMapFile = applyMapInputBase + '.svreg.map.nii.gz'
         applyMapTargetFile = applyMapInputBase + '.bfc.nii.gz'
@@ -230,7 +232,78 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         brainsuite_workflow.connect(ds2, 'out_file', applyMapmADCObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds2, 'out_file', applyMapFRT_GFAObj, 'dataSinkDelay')
 
+        ds4 = pe.Node(io.DataSink(), name='DATASINK4')
+        ds4.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
     
+        brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', ds4, '@')
+        brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', ds4, '@1')
+        brainsuite_workflow.connect(applyMapAxialObj, 'mappedFile', ds4, '@2')
+        brainsuite_workflow.connect(applyMapRadialObj, 'mappedFile', ds4, '@3')
+        brainsuite_workflow.connect(applyMapmADCObj, 'mappedFile', ds4, '@4')
+        brainsuite_workflow.connect(applyMapFRT_GFAObj, 'mappedFile', ds4, '@5')
+
+
+        ####### Smooth Vol #######
+        smoothVolInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '.dwi.RAS.correct.atlas.'
+
+        smoothVolFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FA')
+        smoothVolFAObj.inputs.inFile = smoothVolInputBase + 'FA.nii.gz'
+        smoothVolFAObj.inputs.stdx = 6
+        smoothVolFAObj.inputs.stdy = 6
+        smoothVolFAObj.inputs.stdz = 6
+        smoothVolFAObj.inputs.outFile = smoothVolInputBase + 'FA.smooth6.0mm.nii.gz'
+
+        smoothVolMDObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_MD')
+        smoothVolMDObj.inputs.inFile = smoothVolInputBase + 'MD.nii.gz'       
+        smoothVolMDObj.inputs.stdx = 6
+        smoothVolMDObj.inputs.stdy = 6
+        smoothVolMDObj.inputs.stdz = 6
+        smoothVolMDObj.inputs.outFile = smoothVolInputBase + 'MD.smooth6.0mm.nii.gz'   
+
+        smoothVolAxialObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_AXIAL')
+        smoothVolAxialObj.inputs.inFile = smoothVolInputBase + 'axial.nii.gz'       
+        smoothVolAxialObj.inputs.stdx = 6
+        smoothVolAxialObj.inputs.stdy = 6
+        smoothVolAxialObj.inputs.stdz = 6
+        smoothVolAxialObj.inputs.outFile = smoothVolInputBase + 'axial.smooth6.0mm.nii.gz'   
+
+        smoothVolRadialObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_RADIAL')
+        smoothVolRadialObj.inputs.inFile = smoothVolInputBase + 'radial.nii.gz'       
+        smoothVolRadialObj.inputs.stdx = 6
+        smoothVolRadialObj.inputs.stdy = 6
+        smoothVolRadialObj.inputs.stdz = 6
+        smoothVolRadialObj.inputs.outFile = smoothVolInputBase + 'radial.smooth6.0mm.nii.gz'   
+ 
+        smoothVolmADCObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_mADC')
+        smoothVolmADCObj.inputs.inFile = smoothVolInputBase + 'mADC.nii.gz'       
+        smoothVolmADCObj.inputs.stdx = 6
+        smoothVolmADCObj.inputs.stdy = 6
+        smoothVolmADCObj.inputs.stdz = 6
+        smoothVolmADCObj.inputs.outFile = smoothVolInputBase + 'mADC.smooth6.0mm.nii.gz'   
+
+        smoothVolFRT_GFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FRT_GFA')
+        smoothVolFRT_GFAObj.inputs.inFile = smoothVolInputBase + 'FRT_GFA.nii.gz'       
+        smoothVolFRT_GFAObj.inputs.stdx = 6
+        smoothVolFRT_GFAObj.inputs.stdy = 6
+        smoothVolFRT_GFAObj.inputs.stdz = 6
+        smoothVolFRT_GFAObj.inputs.outFile = smoothVolInputBase + 'FRT_GFA.smooth6.0mm.nii.gz'           
+
+        smoothVolJacObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_MAP')
+        smoothVolJacObj.inputs.inFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '.svreg.inv.jacobian.nii.gz'
+        smoothVolJacObj.inputs.stdx = 6
+        smoothVolJacObj.inputs.stdy = 6
+        smoothVolJacObj.inputs.stdz = 6
+        smoothVolJacObj.inputs.outFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '.svreg.inv.jacobian.smooth6.0mm.nii.gz'
+        
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolFAObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolMDObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolAxialObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolRadialObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolmADCObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolFRT_GFAObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds4, 'out_file', smoothVolJacObj, 'dataSinkDelay')
+
+
     brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
 
     # Print message when all processing is complete.

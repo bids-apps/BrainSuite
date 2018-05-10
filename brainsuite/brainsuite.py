@@ -1747,6 +1747,55 @@ class SVRegApplyMap(CommandLine):
     def _list_outputs(self):
         return l_outputs(self)
 
+class SVRegSmoothVolInputSpec(CommandLineInputSpec):
+    inFile = File(mandatory=True, argstr='%s', position=0, desc='input DTI vol file')
+    stdx = traits.Float(mandatory=True, argstr='%f', position=1, desc='smoothing parameter (std dev in mm) in x direction')
+    stdy = traits.Float(mandatory=True, argstr='%f', position=2, desc='smoothing parameter (std dev in mm) in y direction')
+    stdz = traits.Float(mandatory=True, argstr='%f', position=3, desc='smoothing parameter (std dev in mm) in z direction')
+    outFile = File(mandatory=True, argstr='%s', position=4, desc='output smoothed vol filei', genfile=True)
+    dataSinkDelay = traits.List(
+                                str,
+                                argstr='%s',
+                                desc='Connect datasink out_file to dataSinkDelay to delay execution of '
+                                'SVReg smooth vol until dataSink has finished sinking SVReg apply map outputs.'
+                                )
+
+class SVRegSmoothVolOutputSpec(TraitedSpec):
+    smoothFile = File(desc='path/name of resampled nifti file containing smooth vol data')
+
+class SVRegSmoothVol(CommandLine):
+    """
+        SVRegSmoothVol (SVRegSmoothVol)
+        This program applies volumetric smoothing on an input atlas file.
+
+    http://brainsuite.org/processing/svreg/
+
+    Examples
+        --------
+
+    >>> from nipype.interfaces import brainsuite
+    >>> from nipype.testing import example_data
+    >>> svregSmoothVol = brainsuite.SVRegSmoothVol()
+    >>> svregSmoothVol.inputs.inFile = example_data('structural.nii')
+    >>> results = svregSmoothVol.run() #doctest: +SKIP
+    """
+    
+    input_spec = SVRegSmoothVolInputSpec
+    output_spec = SVRegSmoothVolOutputSpec
+    _cmd = 'svreg_smooth_vol_function.sh'
+
+    def _format_arg(self, name, spec, value):
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(SVRegSmoothVol, self)._format_arg(name, spec, value)
+
+    def _gen_filename(self, name):
+        return getFileName(self.inputs.outFile, '')
+        return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
 
 # used to generate file names for outputs
 # removes pathway and extension of inputName, returns concatenation of:
