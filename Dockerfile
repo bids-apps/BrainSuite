@@ -40,15 +40,15 @@ RUN git clone https://github.com/nipy/nipype && \
     python setup.py develop
 
 # BrainSuite
-RUN wget -q users.bmap.ucla.edu/~yeunkim/private/BrainSuite17a.linux.tgz && \
-    tar -xf BrainSuite17a.linux.tgz && \
-    mv /BrainSuite17a /opt && \
-    cd /opt/BrainSuite17a/bin && \
-    chmod -R ugo+r /opt/BrainSuite17a && \
+RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite18a.BIDS.tgz && \
+    tar -xf BrainSuite18a.BIDS.tgz && \
+    mv /BrainSuite18a /opt && \
+    cd /opt/BrainSuite18a/bin && \
+    chmod -R ugo+r /opt/BrainSuite18a && \
     cd / && \
-    rm BrainSuite17a.linux.tgz
+    rm BrainSuite18a.BIDS.tgz
 
-RUN chmod -R ugo+r /opt/BrainSuite17a
+RUN chmod -R ugo+r /opt/BrainSuite18a
 
 
 ## Install the validator
@@ -60,7 +60,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN npm install -g bids-validator@0.19.2
 
-ENV PATH=/opt/BrainSuite17a/bin/:/opt/BrainSuite17a/svreg/bin/:/opt/BrainSuite17a/bdp/:${PATH}
+ENV PATH=/opt/BrainSuite18a/bin/:/opt/BrainSuite18a/svreg/bin/:/opt/BrainSuite18a/bdp/:${PATH}
 
 COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
 COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
@@ -68,7 +68,7 @@ COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 ADD . /BrainSuite
 
 RUN apt-get update && apt-get install -y --no-install-recommends gfortran
-#RUN apt-get install -y r-cran-rcpp
+RUN apt-get install -y pandoc
 #RUN conda install -y -c r r-base
 
 RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \

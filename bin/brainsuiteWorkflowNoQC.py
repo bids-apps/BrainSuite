@@ -22,7 +22,7 @@ import os
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
 ATLAS_LABEL_SUFFIX = 'brainsuite.icbm452.v15a.label.img'
 
-BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite17a/atlas/"
+BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite18a/atlas/"
 
 
 def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECTORY, **keyword_parameters):
@@ -32,10 +32,12 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
     brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
     brainsuite_workflow.base_dir = WORKFLOW_BASE_DIRECTORY
-#    brainsuite_workflow.base_dir = "/tmp"
+    CACHE_DIRECTORY = keyword_parameters['CACHE']
+
+    # brainsuite_workflow.base_dir = "/tmp"
     t1 = INPUT_MRI_FILE.split("/")[-1].replace("_T1w", '')
-#    copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
-    copyfile(INPUT_MRI_FILE, os.path.join(WORKFLOW_BASE_DIRECTORY, t1))
+    # copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
+    copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
 
     bseObj = pe.Node(interface=bs.Bse(), name='BSE')
     bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
@@ -52,8 +54,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
     # =====Inputs=====
 
     # Provided input file
-#    bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
-    bseObj.inputs.inputMRIFile = os.path.join(WORKFLOW_BASE_DIRECTORY, t1)
+    # bseObj.inputs.inputMRIFile = os.path.join("/tmp", t1)
+    bseObj.inputs.inputMRIFile = os.path.join(CACHE_DIRECTORY, t1)
     # Provided atlas files
     cerebroObj.inputs.inputAtlasMRIFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_MRI_SUFFIX)
     cerebroObj.inputs.inputAtlasLabelFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_LABEL_SUFFIX)
@@ -139,7 +141,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
         # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
         svregObj.inputs.subjectFilePrefix = svregInputBase
-        svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+        svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
         if 'ATLAS' in keyword_parameters:
             svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
         if 'SingleThread' in keyword_parameters:

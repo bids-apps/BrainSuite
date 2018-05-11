@@ -36,7 +36,7 @@ def run(command, env={}, cwd=None):
 
 __version__ = open('/BrainSuite/version').read()
 
-parser = argparse.ArgumentParser(description='BrainSuite17a BIDS-App (T1w, dMRI)')
+parser = argparse.ArgumentParser(description='BrainSuite18a BIDS-App (T1w, dMRI)')
 parser.add_argument('bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
 parser.add_argument('output_dir', help='The directory where the output files '
@@ -45,8 +45,9 @@ parser.add_argument('output_dir', help='The directory where the output files '
                     'participant level analysis.')
 parser.add_argument('analysis_level', help='Level of the analysis that will be performed. '
                     'Multiple participant level analyses can be run independently '
-                    '(in parallel) using the same output_dir.',
-                    choices=['participant'])
+                    '(in parallel) using the same output_dir. The group analysis '
+                    'performs group statistical analysis.',
+                    choices=['participant', 'group'])
 parser.add_argument('--participant_label', help='The label of the participant that should be analyzed. The label '
                    'corresponds to sub-<participant_label> from the BIDS spec '
                    '(so it does not include "sub-"). If this parameter is not '
@@ -56,15 +57,16 @@ parser.add_argument('--participant_label', help='The label of the participant th
 parser.add_argument('--stages', help='Processing stage to be run. Space delimited list.', nargs="+",
                     choices=['CSE', 'SVREG', 'BDP'], default='ALL')
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
-                                    'Default atlas: BCI-DNI. Options: BSA, BCI.',
-                    choices=['BSA', 'BCI'], default='BCI', required=False)
+                                    'Default atlas: BCI-DNI. Options: BSA, BCI, USCBrain.',
+                    choices=['BSA', 'BCI', 'USCBrain'], default='BCI', required=False)
 parser.add_argument('--modelspec', help='Optional. Only for group analysis level.'
                                       'Path to JSON file that contains statistical model'
                                         'specifications. ',
                     required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
+parser.add_argument('--cache', help='Nipype cache output folder', default='/tmp', required=False)
 parser.add_argument('-v', '--version', action='version',
-                    version='BrainSuite17a Pipelines BIDS App version {}'.format(__version__))
+                    version='BrainSuite18a Pipelines BIDS App version {}'.format(__version__))
 
 
 args = parser.parse_args()
@@ -89,8 +91,9 @@ if args.singleThread:
 else:
     thread= str('OFF')
 
-atlases = { 'BCI' : '/opt/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
-            'BSA' : '/opt/BrainSuite17a/svreg/BrainSuiteAtlas1/mri'}
+atlases = { 'BCI' : '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
+            'BSA' : '/opt/BrainSuite18a/svreg/BrainSuiteAtlas1/mri',
+            'USCBrain' : '/opt/BrainSuite18a/svreg/USCBrain/BCI-DNI_brain'}
 atlas = atlases[str(args.atlas)]
 
 
@@ -133,28 +136,29 @@ if args.analysis_level == "participant":
                             bvec = layout.get_bvec(dwis[i])
                             if 'ALL' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, BDP=dwis[i].split('.')[0],
-                                            BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread, ATLAS=str(atlas))
+                                            BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread,
+                                            ATLAS=str(atlas), CACHE=args.cache)
                             if 'CSE' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir)
+                                runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, CACHE=args.cache)
                             if 'BDP' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, BDP=dwis[i].split('.')[0],
-                                            BVAL=str(bval), BVEC=str(bvec))
+                                            BVAL=str(bval), BVEC=str(bvec), CACHE=args.cache)
                             if 'SVREG' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, args.bids_dir, SVREG=True, SingleThread=thread,
-                                            ATLAS=str(atlas))
+                                            ATLAS=str(atlas), CACHE=args.cache)
                     else:
                         for t1 in t1ws:
                             if 'ALL' in stages:
                                 runWorkflow(subjectID, t1, outputdir, args.bids_dir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas))
+                                            SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
                             if 'CSE' in stages:
-                                runWorkflow(subjectID, t1, outputdir, args.bids_dir)
+                                runWorkflow(subjectID, t1, outputdir, args.bids_dir, CACHE=args.cache)
                             if 'SVREG' in stages:
                                 runWorkflow(subjectID, t1, outputdir, args.bids_dir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas))
+                                            SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
                             if 'BDP' in stages:
                                 print('\nNo DWI data found. Running CSE only.')
-                                runWorkflow(subjectID, t1, outputdir, args.bids_dir)
+                                runWorkflow(subjectID, t1, outputdir, args.bids_dir, CACHE=args.cache)
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -174,28 +178,28 @@ if args.analysis_level == "participant":
                         if 'ALL' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
                                         BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
-                                        SingleThread=thread, ATLAS=str(atlas))
+                                        SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
                         if 'CSE' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir)
+                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir, CACHE=args.cache)
                         if 'BDP' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
-                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec))
+                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), CACHE=args.cache)
                         if 'SVREG' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, args.bids_dir,
-                                        SVREG=True, SingleThread=thread, ATLAS=str(atlas))
+                                        SVREG=True, SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
                 else:
                     for t1 in t1ws:
                         if 'ALL' in stages:
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, SVREG=True,
-                                        SingleThread=thread, ATLAS=(atlas))
+                                        SingleThread=thread, ATLAS=(atlas), CACHE=args.cache)
                         if 'CSE' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir)
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, CACHE=args.cache)
                         if 'SVREG' in stages:
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, SVREG=True,
-                                        SingleThread=thread, ATLAS=(atlas))
+                                        SingleThread=thread, ATLAS=(atlas), CACHE=args.cache)
                         if 'BDP' in stages:
                             print('\nNo DWI data found. Running CSE only.')
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir)
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, args.bids_dir, CACHE=args.cache)
 
 if args.analysis_level == "group":
     specs = bssrSpec(args.modelspec, args.output_dir)
