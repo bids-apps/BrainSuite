@@ -69,7 +69,7 @@ class bssrSpec(object):
         self.paired = specs['BrainSuite']['paired']
         self.smooth = specs['BrainSuite']['smooth']
         # self.roi = ['"' + str(item) + '"' for item in specs['BrainSuite']['roiid']]
-        self.roi = specs['BrainSuite']['roiid']
+        self.roi = specs['BrainSuite']['roiid'] # bssr roi read in list
         self.hemi = specs['BrainSuite']['hemi']
         self.maskfile = specs['BrainSuite']['maskfile']
         self.atlas = specs['BrainSuite']['atlas']

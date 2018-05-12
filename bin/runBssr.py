@@ -8,9 +8,9 @@ import rpy2.robjects as ro
 import warnings
 from rpy2.rinterface import RRuntimeWarning
 warnings.filterwarnings("ignore", category=RRuntimeWarning)
-# import numpy as np
-# import rpy2.robjects.numpy2ri
-# rpy2.robjects.numpy2ri.activate()
+import numpy as np
+import rpy2.robjects.numpy2ri
+rpy2.robjects.numpy2ri.activate()
 
 valid_analysis_types = ['vbm', 'tbm', 'cbm', 'dbm', 'roi', 'croi', 'droi']
 ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
@@ -42,9 +42,8 @@ def load_bss_data(specs):
         bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=OPT,
                                       measure=specs.dbmmeas)
     elif specs.measure == "roi":
-        # rois = ro.r('c({0})'.format(",".join(specs.roi)))
-        # rois = np.array(specs.roi)
-        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiid=specs.roi, roimeas=specs.roimeas)
+        rois = np.array(specs.roi)
+        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiid=rois, roimeas=specs.roimeas)
 
     else:
         sys.stdout.write("This imaging measure it not supported yet.")

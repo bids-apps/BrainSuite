@@ -43,4 +43,5 @@ base64enc_0.1-2.tar.gz
 backports_1.0.5.tar.gz
 rprojroot_1.1.tar.gz
 rmarkdown_1.5.tar.gz
-bssr_0.2.1.tar.gz
+R6_2.2.2.tar.gz
+bssr_0.2.1.roi.tar.gz
