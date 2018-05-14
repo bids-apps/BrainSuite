@@ -42,7 +42,7 @@ def load_bss_data(specs):
         bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=OPT,
                                       measure=specs.dbmmeas)
     elif specs.measure == "roi":
-        rois = np.array(specs.roi)
+        rois = ro.vectors.IntVector(specs.roi)
         bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiid=rois, roimeas=specs.roimeas)
 
     else:
