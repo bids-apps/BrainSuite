@@ -71,10 +71,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends gfortran
 RUN apt-get install -y pandoc
 #RUN conda install -y -c r r-base
 
-RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \
-    dpkg --configure -a && apt-get install -y -f
-RUN apt-get install -y aptitude && aptitude install -f
+
 #RUN apt-get install -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id.mzEonjpe
+#RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \
+#    dpkg --configure -a && apt-get install -y -f
+#RUN apt-get install -y aptitude && aptitude install -f
+RUN install -d /opt/conda/var/lib/dbus/
+RUN apt-get install -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
     apt-get update && apt-get install -y r-base

@@ -185,18 +185,21 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfRightObj, 'dataSinkDelay')
 
     if 'SVREG' and 'BDP' in keyword_parameters:
+        atlasFilePrefix = '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+        if 'ATLAS' in keyword_parameters:
+            atlasFilePrefix = keyword_parameters['ATLAS']
 
         ######## Apply Map ########
         applyMapInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID 
-        applyMapMapFile = applyMapInputBase + '.svreg.map.nii.gz'
-        applyMapTargetFile = applyMapInputBase + '.bfc.nii.gz'
+        applyMapMapFile = applyMapInputBase + '.svreg.inv.map.nii.gz'
+        applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
 
         applyMapFAObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_FA')
         applyMapFAObj.inputs.mapFile = applyMapMapFile
         applyMapFAObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.FA.T1_coord.nii.gz'
         applyMapFAObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.FA.nii.gz'
         applyMapFAObj.inputs.targetFile = applyMapTargetFile
- 
+
         applyMapMDObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_MD')
         applyMapMDObj.inputs.mapFile = applyMapMapFile
         applyMapMDObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.MD.T1_coord.nii.gz'
