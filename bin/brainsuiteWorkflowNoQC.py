@@ -230,6 +230,9 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         applyMapFRT_GFAObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.FRT_GFA.nii.gz'
         applyMapFRT_GFAObj.inputs.targetFile = applyMapTargetFile
 
+        ds2 = pe.Node(io.DataSink(), name='DATASINK2')
+        ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+
         brainsuite_workflow.connect(ds2, 'out_file', applyMapFAObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds2, 'out_file', applyMapMDObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds2, 'out_file', applyMapAxialObj, 'dataSinkDelay')
