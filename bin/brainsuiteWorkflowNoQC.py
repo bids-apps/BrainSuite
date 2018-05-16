@@ -184,7 +184,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfLeftObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfRightObj, 'dataSinkDelay')
 
-    if 'SVREG' and 'BDP' in keyword_parameters:
+    if 'SVREG' in keyword_parameters and 'BDP' in keyword_parameters:
         atlasFilePrefix = '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
         if 'ATLAS' in keyword_parameters:
             atlasFilePrefix = keyword_parameters['ATLAS']
