@@ -43,7 +43,7 @@ def load_bss_data(specs):
                                       measure=specs.dbmmeas)
     elif specs.measure == "roi":
         rois = ro.vectors.IntVector(specs.roi)
-        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiid=rois, roimeas=specs.roimeas)
+        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiids=rois, roimeas=specs.roimeas)
 
     else:
         sys.stdout.write("This imaging measure it not supported yet.")

@@ -44,4 +44,4 @@ backports_1.0.5.tar.gz
 rprojroot_1.1.tar.gz
 rmarkdown_1.5.tar.gz
 R6_2.2.2.tar.gz
-bssr_0.2.1.roi.tar.gz
+bssr_0.2.1.tar.gz
