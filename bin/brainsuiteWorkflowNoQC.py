@@ -233,12 +233,12 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         ds5 = pe.Node(io.DataSink(), name='DATASINK5')
         ds5.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
 
-        brainsuite_workflow.connect(ds5, 'out_file', applyMapFAObj, 'dataSinkDelay')
-        brainsuite_workflow.connect(ds5, 'out_file', applyMapMDObj, 'dataSinkDelay')
-        brainsuite_workflow.connect(ds5, 'out_file', applyMapAxialObj, 'dataSinkDelay')
-        brainsuite_workflow.connect(ds5, 'out_file', applyMapRadialObj, 'dataSinkDelay')
-        brainsuite_workflow.connect(ds5, 'out_file', applyMapmADCObj, 'dataSinkDelay')
-        brainsuite_workflow.connect(ds5, 'out_file', applyMapFRT_GFAObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds2, 'out_file', applyMapFAObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds2, 'out_file', applyMapMDObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds2, 'out_file', applyMapAxialObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds2, 'out_file', applyMapRadialObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds2, 'out_file', applyMapmADCObj, 'dataSinkDelay')
+        brainsuite_workflow.connect(ds2, 'out_file', applyMapFRT_GFAObj, 'dataSinkDelay')
 
         ds4 = pe.Node(io.DataSink(), name='DATASINK4')
         ds4.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
