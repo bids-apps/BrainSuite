@@ -73,7 +73,7 @@ To run it in participant level mode:
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
-  brainsuitebids \
+  bids/brainsuite \
   /data /output participant --participant_label 01
 ```
 Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages. 
@@ -88,7 +88,7 @@ To run it in group level mode:
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
-  brainsuitebids \
+  bids/brainsuite \
   /data /output group --modelspec modelspec.json
 ```
 
@@ -97,7 +97,7 @@ docker run -ti --rm \
 * A JSON file containing the specifications for group level analysis. Details on the fields are listed below.
 ![Sample JSON](http://brainsuite.org/wp-content/uploads/2018/05/examplemodspecJSON-e1525727233202.png)
 
-#### Modelspec.json fields explained:####
+#### Explanation of odelspec.json fields ####
 * **tsv** : Name of the TSV file containing data that is to be used for group analysis.
 * **measure** : Imaging measure of interest. Options: cbm, tbm, roi, dbm.
 * **test** : Model to be run. Options: anova, corr, ttest.
@@ -124,3 +124,6 @@ Issues or suggestions can be directly submitted as an issue to this Github Repos
 * BDP requires at least 6GB of memory. You may have to increase memory when you run the container. 
 * Turn on single thread mode (``` --singleThread ```) if your machine cannot support MATLAB's parpool.
 * BDP estimates tensors, FRT ODF, and FRACT ODF.
+
+## Acknowledgments ##
+This project is supported by NIH Grant R01-NS074980.
