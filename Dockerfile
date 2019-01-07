@@ -87,6 +87,50 @@ RUN bash /BrainSuite/R/installR.sh
 #    tar -xvf rpy2-2.4.0.tar.gz && \
 #    cd rpy2-2.4.0 && python setup.py install
 
+## install FSL
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -sSL http://neuro.debian.net/lists/trusty.us-ca.full >> /etc/apt/sources.list.d/neurodebian.sources.list && \
+    wget -q -O- http://neuro.debian.net/_static/neuro.debian.net.asc | apt-key add - && \
+    apt-get update && \
+    apt-get remove -y curl && \
+    apt-get install -y --no-install-recommends fsl-core=5.0.9-4~nd14.04+1 && \
+    apt-get install -y --no-install-recommends afni=18.0.05+git24-gb25b21054~dfsg.1-1~nd14.04+1 && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN wget -qO- http://brainsuite.org/data/BFP/bfp_ver2p19.tar.gz | tar xvz
+ENV BFP=/bfp_ver2p19
+ENV PATH=${BFP}:${PATH}
+
+# Configure INI file
+## TODO : edit to modify the corresponding variables
+ENV INIFile=/config.ini
+RUN echo [main] >> $INIFile && \
+    echo AFNIPATH=/usr/lib/afni >> $INIFile && \
+    echo BFPPATH=${BFP} >> $INIFile && \
+    echo BrainSuitePath=/BrainSuite18a >> $INIFile && \
+    echo LD_LIBRARY_PATH=/usr/lib/fsl/5.0 >> $INIFile && \
+    echo CONTINUERUN=1 >> $INIFile && \
+    echo MultiThreading=1 >> $INIFile && \
+    echo EnabletNLMPdfFiltering=1 >> $INIFile && \
+    echo fpr=0.001 >> $INIFile && \
+    echo FSLOUTPUTTYPE=NIFTI_GZ >> $INIFile && \
+    echo FSLPATH=/usr/share/fsl/5.0 >> $INIFile && \
+    echo FWHM=6 >> $INIFile && \
+    echo HIGHPASS=0.005 >> $INIFile && \
+    echo LOWPASS=0.1 >> $INIFile && \
+    echo memory=16 >> $INIFile && \
+    echo scbPath=/bfp_ver2p19/SCB.mat >> $INIFile && \
+    echo EnableShapeMeasures=0 >> $INIFile && \
+    echo T1SpaceProcessing=1 >> $INIFile && \
+    echo FSLRigid=0 >> $INIFile
+
+RUN pip install vtk
+
+RUN apt-get update && apt-get -y install build-essential imagemagick
+
+RUN apt-get update && apt-get -y install vim
+
 RUN conda install -y -c r rpy2
 RUN conda install libgcc
 RUN chmod +x /BrainSuite/run.py
