@@ -32,6 +32,16 @@ class bssrSpec(object):
         self.roimeas = ''
         self.dbmmeas = ''
         self.resultdir=''
+        self.sessionid = ''
+        self.ndim = ''
+        self.numtimepoints = ''
+        self.filtered = False
+        self.fileext = ''
+        self.resultdir = ''
+        self.controls = ''
+        self.exclude = ''
+        self.GOfolder = ''
+        self.statsdir = os.path.join(outputdir, 'stats')
 
         self.read_success = True
         self.read_modelfile(modelfile)
@@ -59,6 +69,7 @@ class bssrSpec(object):
         self.test = specs['BrainSuite']['test']
         # self.full_model = specs['full_model']
         # self.null_model = specs['null_model']
+        self.sessionid = specs['BrainSuite']['session_id']
         self.mult_comp = specs['BrainSuite']['mult_comp']
         self.measure = specs['BrainSuite']['measure']
         self.main_effect = specs['BrainSuite']['main_effect']
@@ -75,8 +86,18 @@ class bssrSpec(object):
         self.atlas = specs['BrainSuite']['atlas']
         self.roimeas = specs['BrainSuite']['roimeas']
         self.dbmmeas = specs['BrainSuite']['dbmmeas']
+        self.controls = specs['BrainSuite']['groups']
+        self.exclude = specs['BrainSuite']['exclude']
+        self.ndim = specs['BrainSuite']['ndim']
+        self.numtimepoints = specs['BrainSuite']['num_timempoints']
+        self.filtered = specs['BrainSuite']['filtered']
+        self.GOfolder = specs['BrainSuite']['GOfolder']
         self.resultdir = specs['BrainSuite']['results']
 
+        if self.filtered == 'True':
+            self.fileext = '_{0}_bold.32k.GOrd.filt.mat'.format(self.sessionid)
+        elif self.filtered == 'False':
+            self.fileext = '_{0}_bold.32k.GOrd.mat'.format(self.sessionid)
     # def create_subjectList(self):
         # if self.session:
         #     subjects = []

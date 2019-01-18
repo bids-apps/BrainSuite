@@ -62,10 +62,9 @@ RUN npm install -g bids-validator@0.19.2
 
 ENV PATH=/opt/BrainSuite18a/bin/:/opt/BrainSuite18a/svreg/bin/:/opt/BrainSuite18a/bdp/:${PATH}
 
-COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
-COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 
-ADD . /BrainSuite
+
+
 
 RUN apt-get update && apt-get install -y --no-install-recommends gfortran
 RUN apt-get install -y pandoc
@@ -82,7 +81,6 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/a
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
     apt-get update && apt-get install -y r-base
 
-RUN bash /BrainSuite/R/installR.sh
 #RUN wget https://pypi.python.org/packages/75/a4/182f9dc82934768680b663968115cc3e7e4a1be24478cbb2e1ed44e22b60/rpy2-2.4.0.tar.gz && \
 #    tar -xvf rpy2-2.4.0.tar.gz && \
 #    cd rpy2-2.4.0 && python setup.py install
@@ -90,17 +88,17 @@ RUN bash /BrainSuite/R/installR.sh
 ## install FSL
 RUN apt-get update && \
     apt-get install -y curl && \
-    curl -sSL http://neuro.debian.net/lists/trusty.us-ca.full >> /etc/apt/sources.list.d/neurodebian.sources.list && \
+    curl -sSL http://neuro.debian.net/lists/xenial.us-ca.full >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     wget -q -O- http://neuro.debian.net/_static/neuro.debian.net.asc | apt-key add - && \
     apt-get update && \
     apt-get remove -y curl && \
-    apt-get install -y --no-install-recommends fsl-core=5.0.9-4~nd14.04+1 && \
-    apt-get install -y --no-install-recommends afni=18.0.05+git24-gb25b21054~dfsg.1-1~nd14.04+1 && \
+    apt-get install -y --no-install-recommends fsl-core=5.0.9-5~nd16.04+1 && \
+    apt-get install -y --no-install-recommends afni=16.2.07~dfsg.1-5~nd16.04+1 && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN wget -qO- http://brainsuite.org/data/BFP/bfp_ver2p19.tar.gz | tar xvz
 ENV BFP=/bfp_ver2p19
-ENV PATH=${BFP}:${PATH}
+ENV PATH="${BFP}:$PATH"
 
 # Configure INI file
 ## TODO : edit to modify the corresponding variables
@@ -108,7 +106,7 @@ ENV INIFile=/config.ini
 RUN echo [main] >> $INIFile && \
     echo AFNIPATH=/usr/lib/afni >> $INIFile && \
     echo BFPPATH=${BFP} >> $INIFile && \
-    echo BrainSuitePath=/BrainSuite18a >> $INIFile && \
+    echo BrainSuitePath=/opt/BrainSuite18a >> $INIFile && \
     echo LD_LIBRARY_PATH=/usr/lib/fsl/5.0 >> $INIFile && \
     echo CONTINUERUN=1 >> $INIFile && \
     echo MultiThreading=1 >> $INIFile && \
@@ -133,7 +131,14 @@ RUN apt-get update && apt-get -y install vim
 
 RUN conda install -y -c r rpy2
 RUN conda install libgcc
+
+COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
+COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
+
+ADD . /BrainSuite
+RUN bash /BrainSuite/R/installR.sh
 RUN chmod +x /BrainSuite/run.py
+
 
 ENTRYPOINT ["/BrainSuite/run.py"]
 

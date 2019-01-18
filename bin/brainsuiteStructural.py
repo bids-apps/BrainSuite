@@ -14,13 +14,16 @@ BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite18a/atlas/"
 
 
 def runStructuralProcessing(infile, base_dir, subjID, **keyword_parameters):
-    layout = BIDSLayout(base_dir)
+    # layout = BIDSLayout(base_dir)
 
-    WORKFLOW_NAME = 'CSE_SVREG'
+    # if 'BSEONLY' in keyword_parameters:
+
+
+    WORKFLOW_NAME = 'BrainSuite'
 
     brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
     brainsuite_workflow.base_dir = base_dir
-    # CACHE_DIRECTORY = keyword_parameters['CACHE']
+    CACHE_DIRECTORY = keyword_parameters['CACHE']
 
     # brainsuite_workflow.base_dir = "/tmp"
 

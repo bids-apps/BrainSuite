@@ -7,7 +7,9 @@ import configparser
 import subprocess
 from func_preproc import func_preproc
 from subprocess import Popen, PIPE, check_output
-from brainsuiteStructural import runStructuralProcessing
+# from brainsuiteStructural import runStructuralProcessing
+from brainsuiteWorkflowNoQC import runWorkflow
+import traceback
 # import nipype.pipeline.engine as pe
 # import nipype.interfaces.brainsuite as bs
 # import nipype.interfaces.io as io
@@ -22,7 +24,14 @@ def run(command, env={}, cwd=None):
     print(command)
     process = Popen(command, stdout=PIPE, stderr=subprocess.STDOUT,
                     shell=True, env=merged_env, cwd=cwd)
+    while True:
+        line = process.stdout.readline()
+        line = str(line)[:-1]
+        print(line)
+        if line == '' and process.poll() != None:
+            break
     if process.returncode != 0:
+        # traceback.print_exc()
         sys.exit('Non zero return code. Processing pipeline errored.')
         # raise Exception("Non zero return code: %d" % process.returncode)
 
@@ -124,28 +133,37 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if (os.path.exists(subdir) and continueRun==0):
         sys.exit('The subject directory {} already exists!\n Please check that directory for previous runs and delete it if necessary'.format(subdir))
     if not os.path.exists(subdir):
-        subprocess.call(['mkdir', subdir])
+        cmd = ' '.join(['mkdir', subdir])
+        run(cmd, cwd=subdir)
+        # subprocess.call(['mkdir', subdir])
 
     print('Creating Directory: {}'.format(anatDir))
     if not os.path.exists(anatDir):
-        subprocess.call(['mkdir', anatDir])
+        cmd = ' '.join(['mkdir', anatDir])
+        run(cmd, cwd=subdir)
+        # subprocess.call(['mkdir', anatDir])
 
-    t1hires = os.path.join(anatDir, '{}.orig.hires.nii.gz'.format(subid))
+    t1hires = os.path.join(anatDir, '{}_T1w.orig.hires.nii.gz'.format(subid))
     t1ds = os.path.join(anatDir, '{}_T1w.ds.orig.nii.gz'.format(subid))
 
     if int(config.get('main', 'T1SpaceProcessing')) == 1:
         ATLAS=t1hires
 
     if not os.path.exists(t1hires):
-        subprocess.call(['cp', t1, t1hires])
+        # subprocess.call(['cp', t1, t1hires])
+        run(' '.join(['cp', t1, t1hires]), cwd=subdir)
 
     print('Creating Directory: {}'.format(funcDir))
     if not os.path.exists(funcDir):
-        subprocess.call(['mkdir', funcDir])
+        cmd = ' '.join(['mkdir', funcDir])
+        run(cmd, cwd=subdir)
+        # subprocess.call(['mkdir', funcDir])
 
     print('Copying fMRI files')
     if not os.path.exists(os.path.join(funcDir, '{}_{}_bold.nii.gz'.format(subid, sessionid))):
-        subprocess.call(['cp', fmri, os.path.join(funcDir, '{}_{}_bold.nii.gz'.format(subid, sessionid))])
+        cmd = ' '.join(['cp', fmri, os.path.join(funcDir, '{}_{}_bold.nii.gz'.format(subid, sessionid))])
+        run(cmd, cwd=subdir)
+        # subprocess.call(['cp', fmri, os.path.join(funcDir, '{}_{}_bold.nii.gz'.format(subid, sessionid))])
     else:
         print('Subject={} Session={} : Already'.format(subid, sessionid))
 
@@ -166,7 +184,7 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
         print('Creating a copy of the t1 image to be used as the standard brain')
 
     if not os.path.exists(ATLAS_DS): # subprocess.call(cmd)
-        run(cmd, cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -184,8 +202,8 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if not os.path.exists(t1ds):
         # subprocess.call(cmd)
         # subprocess.call([nii2int16_exe, t1ds, t1ds])
-        run(cmd, cwd= subdir)
-        run([nii2int16_exe, t1ds, t1ds], cwd=subdir)
+        run(' '.join(cmd), cwd= subdir)
+        run(' '.join([nii2int16_exe, t1ds, t1ds]), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -203,9 +221,11 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     else:
         bseout = os.path.join(anatDir, '{}_T1w.ds.orig.bse.nii.gz'.format(subid))
     #
-    cmd = [bse, '--auto', '--trim', '-i', t1ds, '-o', bseout]
+    # cmd = [bse, '--auto', '--trim', '-i', t1ds, '-o', bseout]
     if not os.path.exists(bseout):
-        subprocess.call(cmd)
+        # subprocess.call(cmd)
+        # run(' '.join(cmd), cwd=subdir)
+        runWorkflow(subid, t1ds, anatDir, SVREG=True, BSEONLY=True, CACHE=anatDir)
     else:
         print('Already ')
     print('done')
@@ -224,8 +244,8 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if not os.path.exists(bsenew):
         # subprocess.call(cmd)
         # subprocess.call([nii2int16_exe, bsenew, bsenew, '0'])
-        run(cmd, cwd=subdir)
-        run([nii2int16_exe, bsenew, bsenew, '0'], cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
+        run(' '.join([nii2int16_exe, bsenew, bsenew, '0']), cwd=subdir)
 
     bsenew2 = os.path.join(anatDir, '{}_T1w.bse.nii.gz'.format(subid))
 
@@ -234,11 +254,11 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
             cmd = ['cp', bseout, bsenew2]
             # subprocess.call(['cp', bseout, bsenew2])
             # subprocess.call([nii2int16_exe, bsenew2, bsenew2, '0'])
-            run(cmd, cwd=subdir)
-            run([nii2int16_exe, bsenew2, bsenew2, '0'], cwd=subdir)
+            run(' '.join(cmd), cwd=subdir)
+            run(' '.join([nii2int16_exe, bsenew2, bsenew2, '0']), cwd=subdir)
         else:
             # subprocess.call(['cp', bsenew, bsenew2])
-            run(cmd, cwd=subdir)
+            run(' '.join(cmd), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -246,19 +266,22 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     bsemask = os.path.join(anatDir, '{}_T1w.mask.nii.gz'.format(subid))
     cmd = ['fslmaths', bsenew2, '-thr', '0', '-bin', '-mul', '255', bsemask, '-odt', 'char']
     if not os.path.exists(bsemask):
-        subprocess.call(cmd)
+        # subprocess.call(cmd)
+        run(' '.join(cmd), cwd=subdir)
 
 
     ## Run BrainSuite and SVReg
     ## TODO: check if it re-runs
     print('## Running BrainSuite CSE')
-    cmd = [bst_exe, subbasename]
+    # cmd = [bst_exe, subbasename]
 
     if (int(config.get('main', 'MultiThreading')) == 1):
         singleThread = 'ON'
     else:
         singleThread = 'OFF'
-    runStructuralProcessing(t1ds, anatDir, subid, singleThread=singleThread)
+    # runStructuralProcessing(t1ds, anatDir, subid, singleThread=singleThread)
+    runWorkflow(subid, t1ds, anatDir, SVREG=True,
+                SingleThread=singleThread, CACHE=anatDir)
     print('Running BrainSuite CSE and SVReg')
 
     # if not os.path.exists(subbasename+'.right.pial.cortex.dfs'):
@@ -284,13 +307,13 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     # This is used a template for fMRI data
     ##
     if (int(config.get('main', 'T1SpaceProcessing')) == 1):
-        ALTAS = os.path.join(anatDir, '{}_T1w.bfc.nii.gz'.format(subid))
+        ATLAS = os.path.join(anatDir, '{}_T1w.bfc.nii.gz'.format(subid))
 
     cmd = ['flirt', '-ref', ATLAS, '-in', ATLAS, '-out', os.path.join(funcDir, 'standard.nii.gz'), '-applyisoxfm', '3']
     print('Creating 3mm isotropic standard brain')
     if not os.path.exists(os.path.join(funcDir, 'standard.nii.gz')):
         # subprocess.call(cmd)
-        run(cmd, cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -323,7 +346,7 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if ((not os.path.exists(fmri2surfFile)) and (not os.path.exists(GOrdSurfFile)) and (not os.path.exists(GOrdFile))):
         cmd= [resample2surf_exe, subbasename, fmri2standard, fmri2surfFile, str(int(config.get('main', 'MultiThreading')))]
         # subprocess.call([resample2surf_exe, subbasename, fmri2standard, fmri2surfFile, str(int(config.get('main', 'MultiThreading')))])
-        run(cmd, cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -332,10 +355,10 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if ((not os.path.exists(GOrdSurfFile)) and (not os.path.exists(GOrdFile))):
         cmd = [generateSurfGOrdfMRI_exe, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile]
         # subprocess.call([generateSurfGOrdfMRI_exe, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile])
-        run(cmd, cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
         # The surf file is very large, deleting to save space
         # subprocess.call(['rm', fmri2surfFile])
-        run(['rm', fmri2surfFile], cwd=subdir)
+        run(' '.join(['rm', fmri2surfFile]), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -344,7 +367,7 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if ((not os.path.exists(GOrdVolFile)) and (not os.path.exists(GOrdFile))):
         # subprocess.call([generateVolGOrdfMRI_exe, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile])
         cmd=[generateVolGOrdfMRI_exe, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile]
-        run(cmd, cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -355,8 +378,8 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
         # subprocess.call([combineSurfVolGOrdfMRI_exe, GOrdSurfFile, GOrdVolFile, GOrdFile])
         # subprocess.call(['rm', GOrdSurfFile])
         # subprocess.call(['rm', GOrdVolFile])
-        run(cmd, cwd=subdir)
-        run(['rm', GOrdSurfFile, GOrdVolFile], cwd=subdir)
+        run(' '.join(cmd), cwd=subdir)
+        run(' '.join(['rm', GOrdSurfFile, GOrdVolFile]), cwd=subdir)
     else:
         print('Already ')
     print('done')
@@ -374,9 +397,10 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
         GOrdFiltFile = os.path.join(funcDir, '{}_{}_bold.32k.GOrd.filt.mat'.format(subid, sessionid))
         print('tNLMPdf filtering for subject = {} session = {}'.format(subid, sessionid))
         if not os.path.exists(GOrdFiltFile):
-            cmd = [tNLMPDFGOrdfMRI_exe, GOrdFile, GOrdFiltFile, str(float(config.get('main', 'fpr'))), str(float(config.get('main', 'memory'))), config.get('main', 'scbPath')]
+            cmd = [tNLMPDFGOrdfMRI_exe, GOrdFile, GOrdFiltFile, str(float(config.get('main', 'fpr'))), str(float(config.get('main', 'memory'))),
+                   str(float(config.get('main', 'MultiThreading'))), config.get('main', 'scbPath')]
             # subprocess.call([tNLMPDFGOrdfMRI_exe, GOrdFile, GOrdFiltFile, str(float(config.get('main', 'fpr'))), str(float(config.get('main', 'memory'))), config.get('main', 'scbPath')])
-            run(cmd, cwd=subdir)
+            run(' '.join(cmd), cwd=subdir)
         else:
             print('Already ')
         print('done')
@@ -384,19 +408,19 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
 
 
     if (int(config.get('main', 'EnableShapeMeasures')) == 1):
-        print('Running thicknessPVC')
+        # print('Running thicknessPVC')
         # cmd = [thicknessPVC_exe, subbasename]
         # if not os.path.exists(os.path.join(subbasename, 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs')):
         #     subprocess.call(cmd)
         # else:
         #     print('Already computed thicknessPVC')
 
-        runStructuralProcessing(t1ds, anatDir, subid, singleThread=singleThread, THICKPVC=True)
+        # runStructuralProcessing(t1ds, anatDir, subid, singleThread=singleThread, THICKPVC=True)
 
         if not os.path.exists(subbasename+'.SCT.GOrd.mat'):
             cmd=[generateGOrdSCT_exe, subbasename, GOrdSurfIndFile]
             # subprocess.call([generateGOrdSCT_exe, subbasename, GOrdSurfIndFile])
-            run(cmd, cwd=subdir)
+            run(' '.join(cmd), cwd=subdir)
         else:
             print('Already done SCT')
         print('done')
