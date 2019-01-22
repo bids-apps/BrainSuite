@@ -61,7 +61,7 @@ parser.add_argument('--participant_label', help='The label of the participant th
                    'participants can be specified with a space separated list.',
                    nargs="+")
 parser.add_argument('--stages', help='Processing stage to be run. Space delimited list.', nargs="+",
-                    choices=['CSE', 'SVREG', 'BDP', 'BFP'], default='ALL')
+                    choices=['CSE', 'SVREG', 'BDP', 'BFP', 'ALL'], default='ALL')
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
                                     'Default atlas: BCI-DNI. Options: BSA, BCI, USCBrain.',
                     choices=['BSA', 'BCI', 'USCBrain'], default='BCI', required=False)
@@ -77,7 +77,7 @@ parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing pa
                                         'specifications. ',
                     required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
-parser.add_argument('--cache', help='Nipype cache output folder', default='/tmp', required=False)
+parser.add_argument('--cache', help='Nipype cache output folder', required=False)
 parser.add_argument('--TR', help='Repetition time of MRI', default='2')
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite18a Pipelines BIDS App version {}'.format(__version__))
@@ -149,6 +149,8 @@ if args.analysis_level == "participant":
 
                     subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
                     outputdir = os.path.join(args.output_dir, subjectID, 'anat') # str(args.output_dir + os.sep + subjectID + os.sep + 'anat')
+                    if not args.cache:
+                        args.cache = outputdir
                     if not os.path.exists(outputdir):
                         os.makedirs(outputdir)
                     if (len(dwis) > 0):
@@ -192,7 +194,7 @@ if args.analysis_level == "participant":
                                                  funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
                                                      '_bold')]
                                     bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
-                                        args.TR)
+                                        args.TR, args.cache)
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -202,6 +204,8 @@ if args.analysis_level == "participant":
                 dwis = [f.filename for f in layout.get(subject=subject_label,
                                                        type='dwi', extensions=["nii.gz", "nii"])]
                 outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
+                if not args.cache:
+                    args.cache = outputdir
                 if not os.path.exists(outputdir):
                     os.makedirs(outputdir)
                 if (len(dwis) > 0):
@@ -258,7 +262,7 @@ if args.analysis_level == "participant":
                                              funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
                                                  '_bold')]
                                 bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
-                                    args.TR)
+                                    args.TR, args.cache)
 
 if args.analysis_level == "group":
 

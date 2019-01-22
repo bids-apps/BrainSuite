@@ -35,7 +35,7 @@ def run(command, env={}, cwd=None):
         sys.exit('Non zero return code. Processing pipeline errored.')
         # raise Exception("Non zero return code: %d" % process.returncode)
 
-def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
+def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR, cache):
     subdir = os.path.join(studydir, subid)
     anatDir = os.path.join(subdir, 'anat')
     funcDir = os.path.join(subdir, 'func')
@@ -225,7 +225,7 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
     if not os.path.exists(bseout):
         # subprocess.call(cmd)
         # run(' '.join(cmd), cwd=subdir)
-        runWorkflow(subid, t1ds, anatDir, SVREG=True, BSEONLY=True, CACHE=anatDir)
+        runWorkflow(subid, t1ds, anatDir, SVREG=True, BSEONLY=True, CACHE=cache)
     else:
         print('Already ')
     print('done')
@@ -281,7 +281,7 @@ def bfp(configfile, t1, fmri, studydir, subid, sessionid, TR):
         singleThread = 'OFF'
     # runStructuralProcessing(t1ds, anatDir, subid, singleThread=singleThread)
     runWorkflow(subid, t1ds, anatDir, SVREG=True,
-                SingleThread=singleThread, CACHE=anatDir)
+                SingleThread=singleThread, CACHE=cache)
     print('Running BrainSuite CSE and SVReg')
 
     # if not os.path.exists(subbasename+'.right.pial.cortex.dfs'):
