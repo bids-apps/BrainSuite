@@ -1540,6 +1540,8 @@ class BDPInputSpec(CommandLineInputSpec):
              'out-of-memory error when BDP cannot allocate sufficient memory. '
     )
 
+class BDPOutputSpec(TraitedSpec):
+    tensor_coord = File(desc='path/name of the tensor bst file in T1 coordinate space')
 
 class BDP(CommandLine):
 
@@ -1568,7 +1570,16 @@ class BDP(CommandLine):
     """
 
     input_spec = BDPInputSpec
+    output_spec = BDPOutputSpec
     _cmd = 'bdp.sh'
+
+    def _gen_filename(self, name):
+        if name == 'tensor_coord':
+            return getFileName(self.inputs.inputDiffusionData, '.tensor.T1_coord.bst')
+        return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
         if name == 'BVecBValPair':

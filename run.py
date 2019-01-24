@@ -110,6 +110,8 @@ atlases = { 'BCI' : '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
             'USCBrain' : '/opt/BrainSuite18a/svreg/USCBrain/BCI-DNI_brain'}
 atlas = atlases[str(args.atlas)]
 
+if args.cache:
+    cache = args.cache
 
 if args.analysis_level == "participant":
     # check stages argument info
@@ -122,8 +124,13 @@ if args.analysis_level == "participant":
     else:
         stages = args.stages
 
+    cacheset =False
     if args.preprocspec:
         preprocspecs = preProcSpec(args.preprocspec)
+        atlas = atlases[str(preprocspecs.atlas)]
+        cache = preprocspecs.cache
+        thread = preprocspecs.singleThread
+        cacheset = True
 
     print('\nWill run: {0}'.format(args.stages))
     for subject_label in subjects_to_analyze:
@@ -149,8 +156,8 @@ if args.analysis_level == "participant":
 
                     subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
                     outputdir = os.path.join(args.output_dir, subjectID, 'anat') # str(args.output_dir + os.sep + subjectID + os.sep + 'anat')
-                    if not args.cache:
-                        args.cache = outputdir
+                    if not cacheset:
+                        cache = outputdir
                     if not os.path.exists(outputdir):
                         os.makedirs(outputdir)
                     if (len(dwis) > 0):
@@ -161,28 +168,28 @@ if args.analysis_level == "participant":
                             if 'ALL' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
                                             BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread,
-                                            ATLAS=str(atlas), CACHE=args.cache)
+                                            ATLAS=str(atlas), CACHE=cache)
                             if 'CSE' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, CACHE=args.cache)
+                                runWorkflow(subjectID, t1ws[i], outputdir, CACHE=cache)
                             if 'BDP' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
-                                            BVAL=str(bval), BVEC=str(bvec), CACHE=args.cache)
+                                            BVAL=str(bval), BVEC=str(bvec), CACHE=cache)
                             if 'SVREG' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, SVREG=True, SingleThread=thread,
-                                            ATLAS=str(atlas), CACHE=args.cache)
+                                            ATLAS=str(atlas), CACHE=cache)
                     else:
                         for t1 in t1ws:
                             if 'ALL' in stages:
                                 runWorkflow(subjectID, t1, outputdir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
+                                            SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
                             if 'CSE' in stages:
-                                runWorkflow(subjectID, t1, outputdir, CACHE=args.cache)
+                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
                             if 'SVREG' in stages:
                                 runWorkflow(subjectID, t1, outputdir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
+                                            SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
                             if 'BDP' in stages:
                                 print('\nNo DWI data found. Running CSE only.')
-                                runWorkflow(subjectID, t1, outputdir, CACHE=args.cache)
+                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
 
                     for t1 in t1ws:
                         if 'BFP' or 'ALL' in stages:
@@ -190,11 +197,13 @@ if args.analysis_level == "participant":
                                 print("No fMRI files found for subject %s!" % subject_label)
                             else:
                                 for i in range(0, len(funcs)):
-                                    sess_input = funcs[i][
-                                                 funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
-                                                     '_bold')]
+                                    # sess_input = funcs[i][
+                                    #              funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
+                                    #                  '_bold')]
+                                    taskname = funcs[i].split("task-")[1].split("_")[0]
+                                    sess_input = "task-" + taskname
                                     bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
-                                        args.TR, args.cache)
+                                        args.TR, cache)
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -204,8 +213,8 @@ if args.analysis_level == "participant":
                 dwis = [f.filename for f in layout.get(subject=subject_label,
                                                        type='dwi', extensions=["nii.gz", "nii"])]
                 outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
-                if not args.cache:
-                    args.cache = outputdir
+                if not cache:
+                    cache = outputdir
                 if not os.path.exists(outputdir):
                     os.makedirs(outputdir)
                 if (len(dwis) > 0):
@@ -216,28 +225,28 @@ if args.analysis_level == "participant":
                         if 'ALL' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
                                         BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
-                                        SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
+                                        SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
                         if 'CSE' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, CACHE=args.cache)
+                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, CACHE=cache)
                         if 'BDP' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
-                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), CACHE=args.cache)
+                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), CACHE=cache)
                         if 'SVREG' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
-                                        SVREG=True, SingleThread=thread, ATLAS=str(atlas), CACHE=args.cache)
+                                        SVREG=True, SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
                 else:
                     for t1 in t1ws:
                         if 'ALL' in stages:
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, SVREG=True,
-                                        SingleThread=thread, ATLAS=(atlas), CACHE=args.cache)
+                                        SingleThread=thread, ATLAS=(atlas), CACHE=cache)
                         if 'CSE' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=args.cache)
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
                         if 'SVREG' in stages:
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, SVREG=True,
-                                        SingleThread=thread, ATLAS=(atlas), CACHE=args.cache)
+                                        SingleThread=thread, ATLAS=(atlas), CACHE=cache)
                         if 'BDP' in stages:
                             print('\nNo DWI data found. Running CSE only.')
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=args.cache)
+                            runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
                         # if 'BFP' in stages:
 
                         #     assert (len(funcs) > 0), "No fMRI files found for subject %s!" % subject_label
@@ -258,11 +267,13 @@ if args.analysis_level == "participant":
                             print("No fMRI files found for subject %s!" % subject_label)
                         else:
                             for i in range(0, len(funcs)):
-                                sess_input = funcs[i][
-                                             funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
-                                                 '_bold')]
+                                # sess_input = funcs[i][
+                                #              funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
+                                #                  '_bold')]
+                                taskname = funcs[i].split("task-")[1].split("_")[0]
+                                sess_input = "task-" + taskname
                                 bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
-                                    args.TR, args.cache)
+                                    args.TR, cache)
 
 if args.analysis_level == "group":
 
