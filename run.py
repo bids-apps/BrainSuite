@@ -20,8 +20,14 @@ from bin.bfp import bfp
 from bin.readPreprocSpec import preProcSpec
 from bin.readSpec import bssrSpec
 from bin.groupDiff import runGroupDiff
-import io
-import csv
+from bin.bfp_linear_regr import bfp_linear_regr
+from bin.bfp_linear_regr_pairwise import bfp_linear_regr_pairwise
+from bin.bfp_group_compare import bfp_group_compare
+from rpy2.robjects.packages import importr
+import rpy2.robjects as ro
+from run_rmarkdown import run_rmarkdown
+import os
+
 
 def run(command, env={}, cwd=None):
     merged_env = os.environ
@@ -39,10 +45,24 @@ def run(command, env={}, cwd=None):
     if process.returncode != 0:
         raise Exception("Non zero return code: %d"%process.returncode)
 
+BFPpath= os.environ['BFP'] + '/bfp.sh'
+def run_bfp(**args):
+    args.update(os.environ)
+    cmd = '{BFPpath} ' + \
+        "{t1} " + \
+        "{func} " + \
+        "{studydir} " + \
+        "{subjID} " + \
+        "{sess} " + \
+        "{TR} " + \
+        "{cache} "
+    cmd = cmd.format(**args)
+    run(cmd, cwd=args['studydir'])
 
 __version__ = open('/BrainSuite/version').read()
+BrainsuiteVersion = os.environ['BrainSuiteVersion']
 
-parser = argparse.ArgumentParser(description='BrainSuite18a BIDS-App (T1w, dMRI)')
+parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI)'.format(BrainsuiteVersion))
 parser.add_argument('bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
 parser.add_argument('output_dir', help='The directory where the output files '
@@ -76,11 +96,15 @@ parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing pa
                                       'Path to JSON file that contains preprocessing'
                                         'specifications. ',
                     required=False)
+parser.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
+                                        'group analysis stage.'
+                                      'Path to Rmarkdown file that contains bssr analysis commands. ',
+                    required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
 parser.add_argument('--cache', help='Nipype cache output folder', required=False)
 parser.add_argument('--TR', help='Repetition time of MRI', default='2')
 parser.add_argument('-v', '--version', action='version',
-                    version='BrainSuite18a Pipelines BIDS App version {}'.format(__version__))
+                    version='BrainSuite{0} Pipelines BIDS App version {1}'.format(BrainsuiteVersion, __version__))
 
 
 args = parser.parse_args()
@@ -105,9 +129,9 @@ if args.singleThread:
 else:
     thread= str('OFF')
 
-atlases = { 'BCI' : '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain',
-            'BSA' : '/opt/BrainSuite18a/svreg/BrainSuiteAtlas1/mri',
-            'USCBrain' : '/opt/BrainSuite18a/svreg/USCBrain/BCI-DNI_brain'}
+atlases = { 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
+            'BSA' : '/opt/BrainSuite{0}/svreg/BrainSuiteAtlas1/mri'.format(BrainsuiteVersion),
+            'USCBrain' : '/opt/BrainSuite{0}/svreg/USCBrain/BCI-DNI_brain'.format(BrainsuiteVersion)}
 atlas = atlases[str(args.atlas)]
 
 if args.cache:
@@ -202,8 +226,20 @@ if args.analysis_level == "participant":
                                     #                  '_bold')]
                                     taskname = funcs[i].split("task-")[1].split("_")[0]
                                     sess_input = "task-" + taskname
-                                    bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
-                                        args.TR, cache)
+                                    # bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
+                                    #     args.TR, cache)
+                                    cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
+                                              BFPpath=BFPpath,
+                                              configini= '/config.ini',
+                                              t1=t1,
+                                              func=funcs[i],
+                                              studydir=args.output_dir,
+                                              subjID=subjectID,
+                                              sess=sess_input,
+                                              TR=args.TR
+                                          )
+                                    print(cmd)
+                                    subprocess.call(cmd, shell=True)
             else:
 
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -272,8 +308,19 @@ if args.analysis_level == "participant":
                                 #                  '_bold')]
                                 taskname = funcs[i].split("task-")[1].split("_")[0]
                                 sess_input = "task-" + taskname
-                                bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
-                                    args.TR, cache)
+                                # bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
+                                #     args.TR, cache)
+                                cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
+                                    BFPpath=BFPpath,
+                                    configini='/config.ini',
+                                    t1=t1,
+                                    func=funcs[i],
+                                    studydir=args.output_dir,
+                                    subjID='sub-%s' % subject_label,
+                                    sess=sess_input,
+                                    TR=args.TR
+                                )
+                                subprocess.call(cmd, shell=True)
 
 if args.analysis_level == "group":
 
@@ -286,33 +333,53 @@ if args.analysis_level == "group":
         analyses.append(args.analysistype)
 
     if 'ANAT' in analyses:
-        specs = bssrSpec(args.modelspec, args.output_dir)
-        bss_data = load_bss_data(specs)
-        bss_model = run_model(specs, bss_data)
-        save_bss(bss_data, bss_model, specs.resultdir)
+        if args.rmarkdown:
+            run_rmarkdown(args.rmarkdown)
+        else:
+            specs = bssrSpec(args.modelspec, args.output_dir)
+            bss_data = load_bss_data(specs)
+            bss_model = run_model(specs, bss_data)
+            save_bss(bss_data, bss_model, specs.resultdir)
     if 'FUNC' in analyses:
         if not os.path.exists(os.path.join(args.output_dir, 'stats')):
             os.mkdir(os.path.join(args.output_dir, 'stats'))
 
         specs = bssrSpec(args.modelspec, args.output_dir)
         if specs.GOfolder != "":
-            runGroupDiff(specs, specs.GOfolder)
+            # TODO fix
+            # runGroupDiff(specs, specs.GOfolder)
+            if specs.bfptest == 'linreg':
+                bfp_linear_regr(specs, specs.GOfolder)
+            elif specs.bfptest == 'linreg_pairwise':
+                bfp_linear_regr_pairwise(specs, specs.GOfolder)
+            elif specs.bfptest == 'group_compare':
+                bfp_group_compare(specs, specs.GOfolder)
         else:
-            with io.open(specs.tsv, newline='') as tsvfile:
-                treader = csv.DictReader(tsvfile, delimiter=str(u'\t').encode('utf-8'),
-                                         quotechar=str(u'"').encode('utf-8'))
-                for row in treader:
-                    sub = row['participant_id']
-                    qc = row[specs.exclude]
-                    if int(qc) == 0:
-                        fname = os.path.join(args.output_dir, sub, 'func', sub + specs.fileext)
-                        newfname = os.path.join(args.output_dir, 'stats', sub + specs.fileext)
-                        try:
-                            copyfile(fname, newfname)
-                        except:
-                            print('{0} file does not exist.'.format(
-                                os.path.join(args.output_dir, sub, 'func', sub + specs.fileext)))
-            runGroupDiff(specs, specs.statsdir)
-
+            # bfp_linear_regr(specs, specs.outputdir)
+            if specs.bfptest == 'linreg':
+                bfp_linear_regr(specs, specs.outputdir)
+            elif specs.bfptest == 'linreg_pairwise':
+                bfp_linear_regr_pairwise(specs, specs.outputdir)
+            elif specs.bfptest == 'group_compare':
+                bfp_group_compare(specs, specs.outputdir)
+            else:
+                sys.stdout.writable("Please write a valid test type.")
+        # else:
+        #     with io.open(specs.tsv, newline='') as tsvfile:
+        #         treader = csv.DictReader(tsvfile, delimiter=str(u'\t').encode('utf-8'),
+        #                                  quotechar=str(u'"').encode('utf-8'))
+        #         for row in treader:
+        #             sub = row['participant_id']
+        #             qc = row[specs.exclude]
+        #             if int(qc) == 0:
+        #                 fname = os.path.join(args.output_dir, sub, 'func', sub + specs.fileext)
+        #                 newfname = os.path.join(args.output_dir, 'stats', sub + specs.fileext)
+        #                 try:
+        #                     copyfile(fname, newfname)
+        #                 except:
+        #                     print('{0} file does not exist.'.format(
+        #                         os.path.join(args.output_dir, sub, 'func', sub + specs.fileext)))
+        #     # runGroupDiff(specs, specs.statsdir)
+        #     bfp_linear_regr(specs, specs.statsdir)
 
 

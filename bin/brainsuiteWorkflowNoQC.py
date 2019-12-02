@@ -18,11 +18,11 @@ from bids.grabbids import BIDSLayout
 from shutil import copyfile
 import os
 
-
+BRAINSUITE_VERSION= os.environ['BrainSuiteVersion']
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
 ATLAS_LABEL_SUFFIX = 'brainsuite.icbm452.v15a.label.img'
 
-BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite18a/atlas/"
+BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite{0}/atlas/".format(BRAINSUITE_VERSION)
 
 
 def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_parameters):
@@ -148,6 +148,9 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             bdpObj.inputs.estimateODF_FRACT = True
             bdpObj.inputs.estimateODF_FRT = True
 
+            bdpsubdir = '/../dwi'
+            bdpObj.inputs.outputSubdir = bdpsubdir
+
             brainsuite_workflow.connect(ds, 'out_file', bdpObj, 'dataSinkDelay')
             if 'SVREG' in keyword_parameters:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
@@ -160,7 +163,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
             # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
             svregObj.inputs.subjectFilePrefix = svregInputBase
-            svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+            svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
             if 'ATLAS' in keyword_parameters:
                 svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
             if 'SingleThread' in keyword_parameters:
@@ -211,14 +214,15 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             ## TODO: place svreg.inv.map smoothing here ##
 
         if 'SVREG' in keyword_parameters and 'BDP' in keyword_parameters:
-
-            atlasFilePrefix = '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+            bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
+            atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
             if 'ATLAS' in keyword_parameters:
                 atlasFilePrefix = keyword_parameters['ATLAS']
 
             ######## Apply Map ########
-            applyMapInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
-            applyMapMapFile = applyMapInputBase + '.svreg.inv.map.nii.gz'
+            applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w'
+            applyMapInputBaseSVReg = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            applyMapMapFile = applyMapInputBaseSVReg + '.svreg.inv.map.nii.gz'
             applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
 
             applyMapFAObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_FA')
@@ -280,8 +284,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
             ####### Smooth Vol #######
             smoothKernel = 3.0
-
-            smoothVolInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w' + '.dwi.RAS.correct.atlas.'
+            bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
+            smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w' + '.dwi.RAS.correct.atlas.'
 
             smoothVolFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FA')
             smoothVolFAObj.inputs.inFile = smoothVolInputBase + 'FA.nii.gz'

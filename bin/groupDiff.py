@@ -3,7 +3,7 @@ import scipy as sp
 from scipy import stats
 import numpy as np
 from BrainSync.fmri_methods_sipi import hotelling_t2
-from BrainSync.surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
+from BrainSync.surfproc_novtk import patch_color_attrib #, smooth_surf_function, smooth_patch #view_patch_vtk,
 from BrainSync.dfsio import readdfs, writedfs
 import os
 from BrainSync.brainsync import normalizeData, brainSync
@@ -14,10 +14,12 @@ import csv
 import io
 import subprocess
 
+BrainSuiteVersion = os.environ['BrainSuiteVersion']
+
 def runGroupDiff(specs, outputdir):
 
     BFPPATH='/bfp_ver2p19'
-    BrainSuitePath = '/BrainSuite18a/svreg/'
+    BrainSuitePath = '/BrainSuite{0}/svreg/'.format(BrainSuiteVersion)
     NDim = specs.ndim # Dimensionality reduction for analysis
 
     # study directory where all the grayordinate files lie
@@ -215,8 +217,8 @@ def runGroupDiff(specs, outputdir):
 
     lsurf.attributes = np.zeros((lsurf.vertices.shape[0]))
     rsurf.attributes = np.zeros((rsurf.vertices.shape[0]))
-    lsurf = smooth_patch(lsurf, iterations=1500)
-    rsurf = smooth_patch(rsurf, iterations=1500)
+    # lsurf = smooth_patch(lsurf, iterations=1500)
+    # rsurf = smooth_patch(rsurf, iterations=1500)
     labs[sp.isnan(labs)] = 0
     diff = diff * (labs.T > 0)
     diffgroup1 = diffgroup1 * (labs.T > 0)

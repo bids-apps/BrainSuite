@@ -63,23 +63,29 @@ class preProcSpec(object):
         self.shape = specs['BrainSuite']['EnableShapeMeasures']
         self.t1space = specs['BrainSuite']['T1SpaceProcessing']
         self.fslrigid = specs['BrainSuite']['FSLRigid']
+        self.simref = specs['BrainSuite']['SimRef']
+        self.rundetrend = specs['BrainSuite']['RunDetrend']
+        self.runnsr = specs['BrainSuite']['RunNSR']
 
         config = configparser.ConfigParser()
         config.read('/config.ini')
 
         ## edit config file
-        config.set('main', 'CONTINUERUN', str(self.continuerun))
-        config.set('main', 'MultiThreading', str(self.multithread))
-        config.set('main', 'EnabletNLMPdfFiltering', str(self.tnlmpdf))
-        config.set('main', 'fpr', str(self.fpr))
-        config.set('main', 'FSLOUTPUTTYPE', str(self.fslotype))
-        config.set('main', 'FWHM', str(self.fwhm))
-        config.set('main', 'HIGHPASS', str(self.highpass))
-        config.set('main', 'LOWPASS', str(self.lowpass))
-        config.set('main', 'memory', str(self.memory))
-        config.set('main', 'EnableShapeMeasures', str(self.shape))
-        config.set('main', 'T1SpaceProcessing', str(self.t1space))
-        config.set('main', 'FSLRigid', str(self.fslrigid))
+        config.set('CONTINUERUN', str(self.continuerun))
+        config.set('MultiThreading', str(self.multithread))
+        config.set('EnabletNLMPdfFiltering', str(self.tnlmpdf))
+        config.set('fpr', str(self.fpr))
+        config.set('FSLOUTPUTTYPE', str(self.fslotype))
+        config.set('FWHM', str(self.fwhm))
+        config.set('HIGHPASS', str(self.highpass))
+        config.set('LOWPASS', str(self.lowpass))
+        config.set('memory', str(self.memory))
+        config.set('EnableShapeMeasures', str(self.shape))
+        config.set('T1SpaceProcessing', str(self.t1space))
+        config.set('FSLRigid', str(self.fslrigid))
+        config.set('SimRef', str(self.simref))
+        config.set('RunDetrend', str(self.rundetrend))
+        config.set('RunNSR', str(self.runnsr))
 
         with open('/config.ini', 'wb') as configfile:
             config.write(configfile)

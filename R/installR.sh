@@ -77,3 +77,7 @@ wget https://cran.r-project.org/src/contrib/Archive/backports/backports_1.0.5.ta
 for i in `cat /BrainSuite/R/Rpackages.txt`; do
     R CMD INSTALL $i;
 done
+
+python /BrainSuite/R/install_dep.py
+
+rm *.tar.gz

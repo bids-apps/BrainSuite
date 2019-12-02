@@ -10,7 +10,8 @@ import os
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
 ATLAS_LABEL_SUFFIX = 'brainsuite.icbm452.v15a.label.img'
 
-BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite18a/atlas/"
+BrainSuiteVersion = os.environ['BrainSuiteVersion']
+BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite{0}/atlas/".format(BrainSuiteVersion)
 
 
 def runStructuralProcessing(infile, base_dir, subjID, **keyword_parameters):
@@ -113,7 +114,7 @@ def runStructuralProcessing(infile, base_dir, subjID, **keyword_parameters):
 
     # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
     svregObj.inputs.subjectFilePrefix = svregInputBase
-    svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite18a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
+    svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainSuiteVersion)
     # if 'ATLAS' in keyword_parameters:
     #     svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
     if 'SingleThread' in keyword_parameters:

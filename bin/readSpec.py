@@ -66,33 +66,54 @@ class bssrSpec(object):
 
         # self.session = specs['level']
         self.tsv = os.path.join(self.outputdir, specs['BrainSuite']['tsv'])
-        self.test = specs['BrainSuite']['test']
+        self.test = specs['BrainSuite']['Structural']['test']
         # self.full_model = specs['full_model']
         # self.null_model = specs['null_model']
-        self.sessionid = specs['BrainSuite']['session_id']
-        self.mult_comp = specs['BrainSuite']['mult_comp']
-        self.measure = specs['BrainSuite']['measure']
-        self.main_effect = specs['BrainSuite']['main_effect']
+
+        self.mult_comp = specs['BrainSuite']['Structural']['mult_comp']
+        self.measure = specs['BrainSuite']['Structural']['measure']
+        self.main_effect = specs['BrainSuite']['Structural']['main_effect']
         # self.covariates = ['"' + item + '"' for item in specs['BrainSuite']['covariates']]
-        self.corr_var = specs['BrainSuite']['corr_var']
-        self.covariates = specs['BrainSuite']['covariates']
-        self.group_var = specs['BrainSuite']['group_var']
-        self.paired = specs['BrainSuite']['paired']
-        self.smooth = specs['BrainSuite']['smooth']
+        self.corr_var = specs['BrainSuite']['Structural']['corr_var']
+        self.covariates = specs['BrainSuite']['Structural']['covariates']
+        self.group_var = specs['BrainSuite']['Structural']['group_var']
+        self.paired = specs['BrainSuite']['Structural']['paired']
+        self.smooth = specs['BrainSuite']['Structural']['smooth']
         # self.roi = ['"' + str(item) + '"' for item in specs['BrainSuite']['roiid']]
-        self.roi = specs['BrainSuite']['roiid'] # bssr roi read in list
-        self.hemi = specs['BrainSuite']['hemi']
-        self.maskfile = specs['BrainSuite']['maskfile']
-        self.atlas = specs['BrainSuite']['atlas']
-        self.roimeas = specs['BrainSuite']['roimeas']
-        self.dbmmeas = specs['BrainSuite']['dbmmeas']
-        self.controls = specs['BrainSuite']['groups']
-        self.exclude = specs['BrainSuite']['exclude']
-        self.ndim = specs['BrainSuite']['ndim']
-        self.numtimepoints = specs['BrainSuite']['num_timempoints']
-        self.filtered = specs['BrainSuite']['filtered']
-        self.GOfolder = specs['BrainSuite']['GOfolder']
+        self.roi = specs['BrainSuite']['Structural']['roiid'] # bssr roi read in list
+        self.hemi = specs['BrainSuite']['Structural']['hemi']
+        self.maskfile = specs['BrainSuite']['Structural']['maskfile']
+        self.atlas = specs['BrainSuite']['Structural']['atlas']
+        self.roimeas = specs['BrainSuite']['Structural']['roimeas']
+        self.dbmmeas = specs['BrainSuite']['Structural']['dbmmeas']
+
+        ## make bfp stats separate
+        self.bfptest = specs['BrainSuite']['Functional']['test']
+        self.controls = specs['BrainSuite']['Functional']['groups']
+        self.exclude = specs['BrainSuite']['Functional']['exclude']
+        self.ndim = specs['BrainSuite']['Functional']['ndim']
+        # self.numtimepoints = specs['BrainSuite']['Functional']['num_timempoints']
+        self.sessionid = "task-" + specs['BrainSuite']['Functional']['session_id']
+        self.lentime = specs['BrainSuite']['Functional']['lentime']
+        self.filtered = specs['BrainSuite']['Functional']['filtered']
+        self.GOfolder = specs['BrainSuite']['Functional']['GOfolder']
+        self.outname = specs['BrainSuite']['Functional']['outname']
+        self.smooth_iter = specs['BrainSuite']['Functional']['smooth_iter']
+        self.save_surfaces = specs['BrainSuite']['Functional']['save_surfaces']
+        self.save_figures = specs['BrainSuite']['Functional']['save_figures']
+        self.atlas_groupsync = specs['BrainSuite']['Functional']['atlas_groupsync']
+        self.atlas_fname = specs['BrainSuite']['Functional']['atlas_fname']
+        self.test_all = specs['BrainSuite']['Functional']['test_all']
+        self.main = specs['BrainSuite']['Functional']['main']
+        self.reg1 = specs['BrainSuite']['Functional']['reg1']
+        self.reg2 = specs['BrainSuite']['Functional']['reg2']
+        self.atlas = specs['BrainSuite']['Functional']['atlas']
+
+
         self.resultdir = specs['BrainSuite']['results']
+
+
+        ## TODO: add parameters for fmri group analysis
 
         if self.filtered == 'True':
             self.fileext = '_{0}_bold.32k.GOrd.filt.mat'.format(self.sessionid)
