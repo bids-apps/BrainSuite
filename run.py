@@ -150,11 +150,15 @@ if args.analysis_level == "participant":
 
     cacheset =False
     if args.preprocspec:
-        preprocspecs = preProcSpec(args.preprocspec)
+        preprocspecs = preProcSpec(args.preprocspec, args.bids_dir)
         atlas = atlases[str(preprocspecs.atlas)]
         cache = preprocspecs.cache
         thread = preprocspecs.singleThread
-        cacheset = True
+        if preprocspecs.cache:
+            cacheset = True
+        configini = '{0}/config.ini'.format(args.bids_dir)
+    else:
+        configini = '/config.ini'
 
     print('\nWill run: {0}'.format(args.stages))
     for subject_label in subjects_to_analyze:
@@ -230,7 +234,7 @@ if args.analysis_level == "participant":
                                     #     args.TR, cache)
                                     cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
                                               BFPpath=BFPpath,
-                                              configini= '/config.ini',
+                                              configini= configini,
                                               t1=t1,
                                               func=funcs[i],
                                               studydir=args.output_dir,
@@ -249,7 +253,7 @@ if args.analysis_level == "participant":
                 dwis = [f.filename for f in layout.get(subject=subject_label,
                                                        type='dwi', extensions=["nii.gz", "nii"])]
                 outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
-                if not cache:
+                if not cacheset:
                     cache = outputdir
                 if not os.path.exists(outputdir):
                     os.makedirs(outputdir)
@@ -312,7 +316,7 @@ if args.analysis_level == "participant":
                                 #     args.TR, cache)
                                 cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
                                     BFPpath=BFPpath,
-                                    configini='/config.ini',
+                                    configini=configini,
                                     t1=t1,
                                     func=funcs[i],
                                     studydir=args.output_dir,

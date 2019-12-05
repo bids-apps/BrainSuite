@@ -5,10 +5,11 @@ import os
 import sys
 import json
 import configparser
+from io import StringIO
 
 class preProcSpec(object):
 
-    def __init__(self, preprocfile):
+    def __init__(self, preprocfile, bids_dir):
         self.atlas = 'BCI'
         self.singleThread = 'OFF'
         self.cache = '/tmp'
@@ -25,6 +26,7 @@ class preProcSpec(object):
         self.shape = 0
         self.t1space = 1
         self.fslrigid = 0
+        self.bids_dir = bids_dir
 
         self.read_success = True
         self.read_preprocfile(preprocfile)
@@ -66,30 +68,41 @@ class preProcSpec(object):
         self.simref = specs['BrainSuite']['SimRef']
         self.rundetrend = specs['BrainSuite']['RunDetrend']
         self.runnsr = specs['BrainSuite']['RunNSR']
+        self.scbpath = specs['BrainSuite']['scbPath']
 
-        config = configparser.ConfigParser()
-        config.read('/config.ini')
+        ini_str = u'[main]\n' + open('/config.ini', 'r').read()
+        ini_fp = StringIO(ini_str)
+        config = configparser.RawConfigParser()
+        # config.optionxform(str())
+        config.optionxform = str
+        config.readfp(ini_fp)
+        # config = configparser.ConfigParser()
+        # config.read('/config.ini')
 
         ## edit config file
-        config.set('CONTINUERUN', str(self.continuerun))
-        config.set('MultiThreading', str(self.multithread))
-        config.set('EnabletNLMPdfFiltering', str(self.tnlmpdf))
-        config.set('fpr', str(self.fpr))
-        config.set('FSLOUTPUTTYPE', str(self.fslotype))
-        config.set('FWHM', str(self.fwhm))
-        config.set('HIGHPASS', str(self.highpass))
-        config.set('LOWPASS', str(self.lowpass))
-        config.set('memory', str(self.memory))
-        config.set('EnableShapeMeasures', str(self.shape))
-        config.set('T1SpaceProcessing', str(self.t1space))
-        config.set('FSLRigid', str(self.fslrigid))
-        config.set('SimRef', str(self.simref))
-        config.set('RunDetrend', str(self.rundetrend))
-        config.set('RunNSR', str(self.runnsr))
+        config.set('main','CONTINUERUN', str(self.continuerun))
+        config.set('main','MultiThreading', str(self.multithread))
+        config.set('main','EnabletNLMPdfFiltering', str(self.tnlmpdf))
+        config.set('main','fpr', str(self.fpr))
+        config.set('main','FSLOUTPUTTYPE', str(self.fslotype))
+        config.set('main','FWHM', str(self.fwhm))
+        config.set('main','HIGHPASS', str(self.highpass))
+        config.set('main','LOWPASS', str(self.lowpass))
+        config.set('main','memory', str(self.memory))
+        config.set('main','EnableShapeMeasures', str(self.shape))
+        config.set('main','T1SpaceProcessing', str(self.t1space))
+        config.set('main','FSLRigid', str(self.fslrigid))
+        config.set('main','SimRef', str(self.simref))
+        config.set('main','RunDetrend', str(self.rundetrend))
+        config.set('main','RunNSR', str(self.runnsr))
+        config.set('main', 'scbPath', str(self.scbpath))
 
-        with open('/config.ini', 'wb') as configfile:
+        with open('{0}/config.ini'.format(self.bids_dir), 'wb') as configfile:
             config.write(configfile)
 
-
+        with open('{0}/config.ini'.format(self.bids_dir), 'r') as fin:
+            data = fin.read().splitlines(True)
+        with open('{0}/config.ini'.format(self.bids_dir), 'w') as fout:
+            fout.writelines(data[1:])
 
 
