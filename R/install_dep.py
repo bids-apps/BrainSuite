@@ -25,6 +25,6 @@ utils.install_packages('bit')
 utils.install_packages('Matrix')
 utils.install_packages('R6')
 
-utils.install_packages('/bssr_0.2.1.RC.tar.gz')
+utils.install_packages('/bssr_0.2.2.tar.gz')
 bssr = importr('bssr')
 bssr.setup('/opt/BrainSuite{0}/'.format(BrainSuiteVersion))

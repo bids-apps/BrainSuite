@@ -2,11 +2,11 @@ import scipy.io as spio
 import scipy as sp
 from scipy import stats
 import numpy as np
-from BrainSync.fmri_methods_sipi import hotelling_t2
-from BrainSync.surfproc_novtk import patch_color_attrib #, smooth_surf_function, smooth_patch #view_patch_vtk,
-from BrainSync.dfsio import readdfs, writedfs
+from bin.BrainSync.fmri_methods_sipi import hotelling_t2
+from bin.BrainSync.surfproc_novtk import patch_color_attrib #, smooth_surf_function, smooth_patch #view_patch_vtk,
+from bin.BrainSync.dfsio import readdfs, writedfs
 import os
-from BrainSync.brainsync import normalizeData, brainSync
+from bin.BrainSync.brainsync import normalizeData, brainSync
 from statsmodels.sandbox.stats.multicomp import fdrcorrection0 as FDR
 from sklearn.decomposition import PCA
 from IPython import get_ipython
@@ -27,7 +27,7 @@ def runGroupDiff(specs, outputdir):
     p_out = specs.resultdir #output directory
     CSVFILE = specs.tsv #csv file with demographics
     colsubj = 'participant_id' #subject IDs
-    colcontrols = specs.controls # 1: controls for atlas; 0: subjects for testing
+    colcontrols = specs.groups # 1: controls for atlas; 0: subjects for testing
     colexclude = specs.exclude
     file_ext = specs.fileext #input file extension
     LenTime = specs.numtimepoints #number of timepoints

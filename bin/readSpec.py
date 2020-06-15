@@ -42,6 +42,8 @@ class bssrSpec(object):
         self.exclude = ''
         self.GOfolder = ''
         self.statsdir = os.path.join(outputdir, 'stats')
+        self.sig_alpha = 0.05
+        self.matcht = True
 
         self.read_success = True
         self.read_modelfile(modelfile)
@@ -89,7 +91,7 @@ class bssrSpec(object):
 
         ## make bfp stats separate
         self.bfptest = specs['BrainSuite']['Functional']['test']
-        self.controls = specs['BrainSuite']['Functional']['groups']
+        self.groups = specs['BrainSuite']['Functional']['groups']
         self.exclude = specs['BrainSuite']['Functional']['exclude']
         self.ndim = specs['BrainSuite']['Functional']['ndim']
         # self.numtimepoints = specs['BrainSuite']['Functional']['num_timempoints']
@@ -108,6 +110,7 @@ class bssrSpec(object):
         self.reg1 = specs['BrainSuite']['Functional']['reg1']
         self.reg2 = specs['BrainSuite']['Functional']['reg2']
         self.atlas = specs['BrainSuite']['Functional']['atlas']
+        # self.sig_alpha = specs['BrainSuite']['Functional']['sig_alpha']
 
 
         self.resultdir = specs['BrainSuite']['results']

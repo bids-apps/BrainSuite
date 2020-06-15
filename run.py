@@ -2,31 +2,24 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals, print_function
-from builtins import str
+
 import argparse
 import os
-import shutil
-import nibabel
-from glob import glob
-from subprocess import Popen, PIPE, check_output
-from shutil import rmtree
 import subprocess
+from glob import glob
+from subprocess import Popen, PIPE
+
 from bids.grabbids import BIDSLayout
-from shutil import copyfile
+# from bin.bfp_group_compare import bfp_group_compare
+from bin.bfp_linear_regr_pairwise import bfp_linear_regr_pairwise
+from builtins import str
+
 from bin.brainsuiteWorkflowNoQC import runWorkflow
-from bin.readSpec import *
-from bin.runBssr import *
-from bin.bfp import bfp
+from bin.bfp_linear_regr import bfp_linear_regr
 from bin.readPreprocSpec import preProcSpec
 from bin.readSpec import bssrSpec
-from bin.groupDiff import runGroupDiff
-from bin.bfp_linear_regr import bfp_linear_regr
-from bin.bfp_linear_regr_pairwise import bfp_linear_regr_pairwise
-from bin.bfp_group_compare import bfp_group_compare
-from rpy2.robjects.packages import importr
-import rpy2.robjects as ro
+from bin.runBssr import *
 from run_rmarkdown import run_rmarkdown
-import os
 
 
 def run(command, env={}, cwd=None):
@@ -162,97 +155,33 @@ if args.analysis_level == "participant":
 
     print('\nWill run: {0}'.format(args.stages))
     for subject_label in subjects_to_analyze:
+        mcrCache = os.path.join(args.output_dir, '.mcrCache/{0}.mcrCache'.format(subject_label))
+        # mcrCache = '/.mcrCache/{0}.mcrCache'.format(subject_label)
+        if not os.path.exists(mcrCache):
+            os.makedirs(mcrCache)
+        os.environ['MCR_CACHE_ROOT']= mcrCache
 
-            sessions = layout.get(target='session', return_type='id',
-                                  subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
+        sessions = layout.get(target='session', return_type='id',
+                              subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
 
-            if len(sessions) > 0:
-                for ses in range(0, len(sessions)):
-                    # layout._get_nearest_helper(dwi, 'bval', type='dwi')
-                    t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                           type='T1w', session=sessions[ses],
-                                                           extensions=["nii.gz", "nii"])]
-                    assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
-
-                    dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                           type='dwi', session=sessions[ses],
-                                                           extensions=["nii.gz", "nii"])]
-                    funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                            type='bold', session=sessions[ses],
-                                                            extensions=["nii.gz", "nii"])]
-
-
-                    subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
-                    outputdir = os.path.join(args.output_dir, subjectID, 'anat') # str(args.output_dir + os.sep + subjectID + os.sep + 'anat')
-                    if not cacheset:
-                        cache = outputdir
-                    if not os.path.exists(outputdir):
-                        os.makedirs(outputdir)
-                    if (len(dwis) > 0):
-                        numOfPairs = min(len(t1ws), len(dwis))
-                        for i in range(0, numOfPairs):
-                            bval = layout.get_bval(dwis[i])
-                            bvec = layout.get_bvec(dwis[i])
-                            if 'ALL' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
-                                            BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread,
-                                            ATLAS=str(atlas), CACHE=cache)
-                            if 'CSE' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, CACHE=cache)
-                            if 'BDP' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
-                                            BVAL=str(bval), BVEC=str(bvec), CACHE=cache)
-                            if 'SVREG' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, SVREG=True, SingleThread=thread,
-                                            ATLAS=str(atlas), CACHE=cache)
-                    else:
-                        for t1 in t1ws:
-                            if 'ALL' in stages:
-                                runWorkflow(subjectID, t1, outputdir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                            if 'CSE' in stages:
-                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
-                            if 'SVREG' in stages:
-                                runWorkflow(subjectID, t1, outputdir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                            if 'BDP' in stages:
-                                print('\nNo DWI data found. Running CSE only.')
-                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
-
-                    for t1 in t1ws:
-                        if 'BFP' or 'ALL' in stages:
-                            if (len(funcs) < 1):
-                                print("No fMRI files found for subject %s!" % subject_label)
-                            else:
-                                for i in range(0, len(funcs)):
-                                    # sess_input = funcs[i][
-                                    #              funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
-                                    #                  '_bold')]
-                                    taskname = funcs[i].split("task-")[1].split("_")[0]
-                                    sess_input = "task-" + taskname
-                                    # bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
-                                    #     args.TR, cache)
-                                    cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
-                                              BFPpath=BFPpath,
-                                              configini= configini,
-                                              t1=t1,
-                                              func=funcs[i],
-                                              studydir=args.output_dir,
-                                              subjID=subjectID,
-                                              sess=sess_input,
-                                              TR=args.TR
-                                          )
-                                    print(cmd)
-                                    subprocess.call(cmd, shell=True)
-            else:
-
+        if len(sessions) > 0:
+            for ses in range(0, len(sessions)):
+                # layout._get_nearest_helper(dwi, 'bval', type='dwi')
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='T1w', extensions=["nii.gz", "nii"])]
+                                                       type='T1w', session=sessions[ses],
+                                                       extensions=["nii.gz", "nii"])]
                 assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
 
                 dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='dwi', extensions=["nii.gz", "nii"])]
-                outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
+                                                       type='dwi', session=sessions[ses],
+                                                       extensions=["nii.gz", "nii"])]
+                funcs = [f.filename for f in layout.get(subject=subject_label,
+                                                        type='bold', session=sessions[ses],
+                                                        extensions=["nii.gz", "nii"])]
+
+
+                subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
+                outputdir = os.path.join(args.output_dir, subjectID, 'anat') # str(args.output_dir + os.sep + subjectID + os.sep + 'anat')
                 if not cacheset:
                     cache = outputdir
                 if not os.path.exists(outputdir):
@@ -263,9 +192,81 @@ if args.analysis_level == "participant":
                         bval = layout.get_bval(dwis[i])
                         bvec = layout.get_bvec(dwis[i])
                         if 'ALL' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
-                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
+                            runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
+                                        BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread,
+                                        ATLAS=str(atlas), CACHE=cache)
+                        else:
+                            if 'CSE' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, CACHE=cache)
+                            if 'BDP' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
+                                            BVAL=str(bval), BVEC=str(bvec), CACHE=cache)
+                            if 'SVREG' in stages:
+                                runWorkflow(subjectID, t1ws[i], outputdir, SVREG=True, SingleThread=thread,
+                                            ATLAS=str(atlas), CACHE=cache)
+                else:
+                    for t1 in t1ws:
+                        if 'ALL' in stages:
+                            runWorkflow(subjectID, t1, outputdir, SVREG=True,
                                         SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
+                        else:
+                            if 'CSE' in stages:
+                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
+                            if 'SVREG' in stages:
+                                runWorkflow(subjectID, t1, outputdir, SVREG=True,
+                                            SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
+                            if 'BDP' in stages:
+                                print('\nNo DWI data found. Running CSE only.')
+                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
+
+                if 'BFP' in stages or 'ALL' in stages:
+                    for t1 in t1ws:
+                        if (len(funcs) < 1):
+                            print("No fMRI files found for subject %s!" % subject_label)
+                        else:
+                            for i in range(0, len(funcs)):
+                                # sess_input = funcs[i][
+                                #              funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
+                                #                  '_bold')]
+                                taskname = funcs[i].split("task-")[1].split("_")[0]
+                                sess_input = "task-" + taskname
+                                # bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
+                                #     args.TR, cache)
+                                cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
+                                          BFPpath=BFPpath,
+                                          configini= configini,
+                                          t1=t1,
+                                          func=funcs[i],
+                                          studydir=args.output_dir,
+                                          subjID=subjectID,
+                                          sess=sess_input,
+                                          TR=args.TR
+                                      )
+                                print(cmd)
+                                subprocess.call(cmd, shell=True)
+        else:
+
+            t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                   type='T1w', extensions=["nii.gz", "nii"])]
+            assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
+
+            dwis = [f.filename for f in layout.get(subject=subject_label,
+                                                   type='dwi', extensions=["nii.gz", "nii"])]
+            outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
+            if not cacheset:
+                cache = outputdir
+            if not os.path.exists(outputdir):
+                os.makedirs(outputdir)
+            if (len(dwis) > 0):
+                numOfPairs = min(len(t1ws), len(dwis))
+                for i in range(0, numOfPairs):
+                    bval = layout.get_bval(dwis[i])
+                    bvec = layout.get_bvec(dwis[i])
+                    if 'ALL' in stages:
+                        runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
+                                    BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
+                                    SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
+                    else:
                         if 'CSE' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, CACHE=cache)
                         if 'BDP' in stages:
@@ -274,11 +275,12 @@ if args.analysis_level == "participant":
                         if 'SVREG' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
                                         SVREG=True, SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                else:
-                    for t1 in t1ws:
-                        if 'ALL' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, SVREG=True,
-                                        SingleThread=thread, ATLAS=(atlas), CACHE=cache)
+            else:
+                for t1 in t1ws:
+                    if 'ALL' in stages:
+                        runWorkflow('sub-%s' % subject_label, t1, outputdir, SVREG=True,
+                                    SingleThread=thread, ATLAS=(atlas), CACHE=cache)
+                    else:
                         if 'CSE' in stages:
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
                         if 'SVREG' in stages:
@@ -287,44 +289,46 @@ if args.analysis_level == "participant":
                         if 'BDP' in stages:
                             print('\nNo DWI data found. Running CSE only.')
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
-                        # if 'BFP' in stages:
+                    # if 'BFP' in stages:
 
-                        #     assert (len(funcs) > 0), "No fMRI files found for subject %s!" % subject_label
-                        #
-                        #     subjectID = 'sub-{}'.format(subject_label)
-                        #
-                        #     for i in range(0, len(funcs)):
-                        #         sess_input = funcs[i][
-                        #                      funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
-                        #                          '_bold')]
-                        #         bfp('/config.ini', t1ws[0], funcs[i], args.output_dir, subjectID, sess_input, args.TR)
+                    #     assert (len(funcs) > 0), "No fMRI files found for subject %s!" % subject_label
+                    #
+                    #     subjectID = 'sub-{}'.format(subject_label)
+                    #
+                    #     for i in range(0, len(funcs)):
+                    #         sess_input = funcs[i][
+                    #                      funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
+                    #                          '_bold')]
+                    #         bfp('/config.ini', t1ws[0], funcs[i], args.output_dir, subjectID, sess_input, args.TR)
+
+            if 'BFP' in stages or 'ALL' in stages:
                 for t1 in t1ws:
-                    if 'BFP' or 'ALL' in stages:
-                        funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                                type='bold',
-                                                                extensions=["nii.gz", "nii"])]
-                        if (len(funcs) < 1):
-                            print("No fMRI files found for subject %s!" % subject_label)
-                        else:
-                            for i in range(0, len(funcs)):
-                                # sess_input = funcs[i][
-                                #              funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
-                                #                  '_bold')]
-                                taskname = funcs[i].split("task-")[1].split("_")[0]
-                                sess_input = "task-" + taskname
-                                # bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
-                                #     args.TR, cache)
-                                cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
-                                    BFPpath=BFPpath,
-                                    configini=configini,
-                                    t1=t1,
-                                    func=funcs[i],
-                                    studydir=args.output_dir,
-                                    subjID='sub-%s' % subject_label,
-                                    sess=sess_input,
-                                    TR=args.TR
-                                )
-                                subprocess.call(cmd, shell=True)
+                    funcs = [f.filename for f in layout.get(subject=subject_label,
+                                                            type='bold',
+                                                            extensions=["nii.gz", "nii"])]
+                    if (len(funcs) < 1):
+                        print("No fMRI files found for subject %s!" % subject_label)
+                    else:
+                        for i in range(0, len(funcs)):
+                            # sess_input = funcs[i][
+                            #              funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
+                            #                  '_bold')]
+                            taskname = funcs[i].split("task-")[1].split("_")[0]
+                            sess_input = "task-" + taskname
+                            # bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
+                            #     args.TR, cache)
+                            cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
+                                BFPpath=BFPpath,
+                                configini=configini,
+                                t1=t1,
+                                func=funcs[i],
+                                studydir=args.output_dir,
+                                subjID='sub-%s' % subject_label,
+                                sess=sess_input,
+                                TR=args.TR
+                            )
+                            subprocess.call(cmd, shell=True)
+        os.remove(mcrCache)
 
 if args.analysis_level == "group":
 
@@ -356,16 +360,16 @@ if args.analysis_level == "group":
                 bfp_linear_regr(specs, specs.GOfolder)
             elif specs.bfptest == 'linreg_pairwise':
                 bfp_linear_regr_pairwise(specs, specs.GOfolder)
-            elif specs.bfptest == 'group_compare':
-                bfp_group_compare(specs, specs.GOfolder)
+            # elif specs.bfptest == 'group_compare':
+            #     bfp_group_compare(specs, specs.GOfolder)
         else:
             # bfp_linear_regr(specs, specs.outputdir)
             if specs.bfptest == 'linreg':
                 bfp_linear_regr(specs, specs.outputdir)
             elif specs.bfptest == 'linreg_pairwise':
                 bfp_linear_regr_pairwise(specs, specs.outputdir)
-            elif specs.bfptest == 'group_compare':
-                bfp_group_compare(specs, specs.outputdir)
+            # elif specs.bfptest == 'group_compare':
+            #     bfp_group_compare(specs, specs.outputdir)
             else:
                 sys.stdout.writable("Please write a valid test type.")
         # else:

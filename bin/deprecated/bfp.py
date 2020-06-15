@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import os
+import subprocess
 import sys
 from math import isnan
+from subprocess import Popen, PIPE
+
 import configparser
-import subprocess
-from func_preproc import func_preproc
-from subprocess import Popen, PIPE, check_output
+
 # from brainsuiteStructural import runStructuralProcessing
-from brainsuiteWorkflowNoQC import runWorkflow
-import traceback
+from bin.brainsuiteWorkflowNoQC import runWorkflow
+from bin.deprecated.func_preproc import func_preproc
+
+
 # import nipype.pipeline.engine as pe
 # import nipype.interfaces.brainsuite as bs
 # import nipype.interfaces.io as io

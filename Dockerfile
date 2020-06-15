@@ -44,14 +44,14 @@ RUN git clone https://github.com/nipy/nipype && \
     python setup.py develop
 
 # BrainSuite
-ENV BrainSuiteVersion=19a
-RUN wget -q http://users.bmap.ucla.edu/~yeunkim/BFP/BrainSuite${BrainSuiteVersion}.tar.gz && \
-    tar -xzf /BrainSuite${BrainSuiteVersion}.tar.gz && \
+ENV BrainSuiteVersion=19b
+RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
+    tar -xzf /BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
     mv /BrainSuite${BrainSuiteVersion} /opt && \
     cd /opt/BrainSuite${BrainSuiteVersion}/bin && \
     chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion} && \
     cd / && \
-    rm BrainSuite${BrainSuiteVersion}.tar.gz
+    rm BrainSuite${BrainSuiteVersion}.BIDS.tgz
 
 RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
 
@@ -101,11 +101,13 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends afni=16.2.07~dfsg.1-5~nd16.04+1 && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver2p28.tar.gz | tar xvz
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver2p30.tar.gz | tar xvz
 # RUN rm /bfp_ver2p24.tar.gz
-RUN mv bfp_ver2p28 bfp
+RUN mv bfp_ver2p30 bfp
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
+
+#RUN install -d /bfp_src && git clone https://github.com/ajoshiusc/bfp.git /bfp_src
 
 ENV INIFile=/config.ini
 #RUN echo [main] >> $INIFile && \
@@ -141,7 +143,7 @@ RUN conda install -y -c r rpy2
 RUN conda install libgcc
 RUN conda install -y -c conda-forge tqdm nilearn
 
-RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.1.RC.tar.gz
+RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.2.tar.gz
 
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py && \
     python install_dep.py
@@ -154,6 +156,7 @@ COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
 
 COPY . /BrainSuite
 #RUN bash /BrainSuite/R/installR.sh
+#RUN rsync -aP --exclude='bfp_*' /bfp_src/src/stats/* /BrainSuite/bin/
 RUN chmod +x /BrainSuite/run.py
 
 

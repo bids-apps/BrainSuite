@@ -1,13 +1,5 @@
 """ This module contains helpful utility function for running statistics using BFP """
 
-#try:
-#    import vtk
-#    VTK_INSTALLED = 1
-#except ImportError as e:
-#    VTK_INSTALLED = 0
-#VTK_INSTALLED = 0
-
-import csv
 import glob
 import itertools
 import multiprocessing
@@ -24,17 +16,7 @@ import sklearn
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 
-from itertools import product
-from dfsio import readdfs, writedfs
-
-#if VTK_INSTALLED:
-#    from surfproc import view_patch_vtk, smooth_patch
-
-from surfproc import patch_color_attrib, smooth_surf_function
-
-from brainsync import brainSync, normalizeData
-
-from multiprocessing import Pool
+from bin.deprecated.brainsync import brainSync, normalizeData
 
 
 def read_gord_data(data_dir, num_sub=1e6):
@@ -69,33 +51,25 @@ def dist2atlas(atlas, syn_data):
     ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
     inputs: atlas: Time x Vector matrix of reference atlas (see brainsync.py)
             syn_data: Time x Vector x Subjects matrix of subjects already synchronized to the atlas.
-    output: geo_dist Vector x Subjects data matrix of Geodesic distances
-            pearson_corr Vector x Subjects data matrix of Pearson correlations
-    '''
-
+    output: diff Vector x Subjects data matrix'''
     numSub = syn_data.shape[2]
     numVert = syn_data.shape[1]
     print('calculating geodesic distances between ' + str(numSub) +
           ' subjects to the atlas in ' + str(numVert) + ' vertices.')
     count1 = 0
     pbar = tqdm(total=numSub)
-    pearson_corr = sp.zeros([numVert, numSub])
-    geo_dist = sp.zeros([numVert, numSub])
-
+    diff = sp.zeros([numVert, numSub])
     for ind in range(numSub):
-        pearson_corr[:, ind] = sp.sum((syn_data[:, :, ind] * atlas), axis=0)
-        geo_dist[:, ind] = np.arccos(pearson_corr[:, ind])
-
+        diff[:, ind] = sp.sum((syn_data[:, :, ind] - atlas)**2, axis=0)
         count1 += 1
         pbar.update(1)  # update the progress bar
         #print('%d,' % count1, end='')
         if count1 == numSub:
             break
     pbar.close()
-    a = pearson_corr > 1
-    geo_dist[a] = 0
+
     print('done')
-    return geo_dist, pearson_corr
+    return diff
 
 
 def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
@@ -116,51 +90,16 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
     return fmri_diff
 
 
-def pair_dist_two_groups(rand_pair,
-                         sub_grp1_files,
-                         sub_grp2_files,
-                         sub_data1=[],
-                         sub_data2=[],
-                         len_time=235):
-
-    sub_data1 = np.array(sub_data1)
-    sub_data2 = np.array(sub_data2)
-    """ Pair distance for two groups of subjects """
-    if sub_data1.size > 0:
-        sub1_data = sub_data1[:, :, rand_pair[0]]
-    else:
-        sub1_data = spio.loadmat(sub_grp1_files[rand_pair[0]])['dtseries'].T
-        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
-
-    if sub_data2.size > 0:
-        sub2_data = sub_data2[:, :, rand_pair[1]]
-    else:
-        sub2_data = spio.loadmat(sub_grp2_files[rand_pair[1]])['dtseries'].T
-        sub2_data, _, _ = normalizeData(sub1_data[:len_time, :])
-
-    sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
-    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
-
-    # Returns SQUARE of the distance
-    return fmri_diff
-
-
-def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
+def pair_dist(rand_pair, sub_files, reg_var=[], len_time=235):
     """ Pair distance """
-    sub_data = np.array(sub_data)
-    if sub_data.size > 0:
-        sub1_data = sub_data[:, :, rand_pair[0]]
-        sub2_data = sub_data[:, :, rand_pair[1]]
-    else:
-        sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
-        sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
-        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
-        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+    sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
+    sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+
+    sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+    sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
-
-    # Returns SQUARE of the distance
     if len(reg_var) > 0:
         regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
         return fmri_diff, regvar_diff
@@ -226,19 +165,14 @@ def pairsdist_regression(bfp_path,
     return corr_pval, corr_pval_fdr
 
 
-def corr_pearson_fdr(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
+def corr_pearson_fdr(X_pairs, reg_var, num_sub, nperm=1000):
     #X: nsub x vertices
     #Y: cognitive scores nsub X 1
-    X, _, _ = normalizeData(X_pairs)
-
-    Y, _, _ = normalizeData(Y_pairs[:, None])
-
-
     num_vert = X.shape[1]
 
     corr_pval = sp.zeros(num_vert)
     for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(X[:, ind], Y.squeeze())
+        _, corr_pval[ind] = sp.stats.pearsonr(X[:, ind], Y)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -264,7 +198,7 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
         pairs, _ = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
         pairs = np.array(pairs)
         Y = sp.square(reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])
-
+ 
         Y, _, _ = normalizeData(Y[:, None])
 
         rho_perm = np.sum(X * Y, axis=0)
@@ -278,20 +212,6 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     _, pval_perm_fdr = fdrcorrection(pval_perm)
 
     return pval_max, pval_perm_fdr, pval_perm
-
-
-'''
-#
-def rand_pair_dist(sub_files=sub_fname, num_pairs=num_pairs):
-
-    print('hi')
-
-    num_sub = len(sub_fname)
-    pairs = gen_rand_pairs(num_sub, num_pairs)
-
-    return pairs, pair_dist
-
-'''
 
 
 def gen_rand_pairs(num_sub, num_pairs):
@@ -309,96 +229,6 @@ def gen_rand_pairs(num_sub, num_pairs):
     return pairs, num_pairs
 
 
-def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
-                       len_time=255):
-
-    print('Grp diff')
-
-    num_vert = spio.loadmat(sub_grp1_files[0])['dtseries'].shape[0]
-
-    print('Generating random pairs from group 1')
-    pairs_grp1, num_pairs1 = gen_rand_pairs(num_sub=len(sub_grp1_files),
-                                            num_pairs=num_pairs)
-
-    fmri_diff1 = sp.zeros((num_vert, num_pairs1))
-
-    # Preload data This only slighly faster, better is to load on the fly and multiprocess
-    print('Reading data for group 1')
-    sub_data1 = np.zeros((len_time, num_vert, len(sub_grp1_files)))
-    for i, fname in enumerate(tqdm(sub_grp1_files)):
-        sub1_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
-        sub_data1[:, :, i], _, _ = normalizeData(sub1_data)
-
-    print('Compute differences in fMRI of random pairs from group 1')
-    for i, rand_pair in enumerate(tqdm(pairs_grp1)):
-        fmri_diff1[:, i] = pair_dist(rand_pair=rand_pair,
-                                     sub_files=sub_grp1_files,
-                                     sub_data=sub_data1,
-                                     len_time=len_time)
-
-    S1 = 0.5 * np.mean(fmri_diff1, axis=1)
-
-    print('Generating random pairs from group 2')
-    pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
-                                            num_pairs=num_pairs)
-
-    fmri_diff2 = sp.zeros((num_vert, num_pairs2))
-
-    # Preload data for group 2
-    print('Reading data for group 2')
-    sub_data2 = np.zeros((len_time, num_vert, len(sub_grp2_files)))
-    for i, fname in enumerate(tqdm(sub_grp2_files)):
-        sub2_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
-        sub_data2[:, :, i], _, _ = normalizeData(sub2_data)
-
-    print('Compute differences in fMRI of random pairs from group 2')
-    for i, rand_pair in enumerate(tqdm(pairs_grp2)):
-        fmri_diff2[:, i] = pair_dist(rand_pair=rand_pair,
-                                     sub_files=sub_grp2_files,
-                                     sub_data=sub_data2,
-                                     len_time=len_time)
-
-    S2 = 0.5 * np.mean(fmri_diff2, axis=1)
-
-    print('Generating random pairs from all subjects (grp1 + grp2)')
-
-    # Generating random pairs. For large group this may allocate huge amount of memory,
-    # use the following solution in that case
-    # https://stackoverflow.com/questions/36779729/shuffling-combinations-without-converting-iterable-itertools-combinations-to-l
-
-    all_pairs = np.array(
-        list(product(range(len(sub_grp1_files)), range(len(sub_grp2_files)))))
-    sp.random.shuffle(all_pairs)
-    all_pairs = all_pairs[:num_pairs, :]
-    fmri_diff = sp.zeros((num_vert, all_pairs.shape[0]))
-
-    print('Compute differences in fMRI of random pairs from group1 to group 2')
-    for i, rand_pair in enumerate(tqdm(all_pairs)):
-        fmri_diff[:, i] = pair_dist_two_groups(rand_pair=rand_pair,
-                                               sub_grp1_files=sub_grp1_files,
-                                               sub_grp2_files=sub_grp2_files,
-                                               sub_data1=sub_data1,
-                                               sub_data2=sub_data2,
-                                               len_time=len_time)
-
-    # We will perform Welch's t test (modified in a pairwise stats)
-    # https://en.wikipedia.org/wiki/Welch%27s_t-test
-
-    n1 = sub_data1.shape[2]
-    n2 = sub_data2.shape[2]
-
-    tscore = np.sqrt((0.5 * np.mean(fmri_diff, axis=1) - (S1 * n1 + S2 * n2) /
-                      (n1 + n2))) / np.sqrt(S1 / n1 + S1 / n2 + 1e-6)
-
-    tscore[np.isnan(tscore)] = 0
-
-    dof = (S1 / n1 + S2 / n2 + 1e-6)**2 / (S1**2 / ((n1**2) * (n1 - 1)) + S2**2 /
-                                    ((n2**2) * (n2 - 1)) + 1e-6)
-    pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
-
-    return tscore, pval
-
-
 def randpairs_regression(bfp_path,
                          sub_files,
                          reg_var,
@@ -412,20 +242,19 @@ def randpairs_regression(bfp_path,
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
-    pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
-                                      num_pairs=num_pairs)
+    pairs, num_pairs = gen_rand_pairs(
+        num_sub=len(sub_files), num_pairs=num_pairs)
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
 
     if num_proc > 1:
-        pool = Pool(num_proc)
-
-        results = pool.imap(
-            partial(pair_dist,
-                    sub_files=sub_files,
-                    reg_var=reg_var,
-                    len_time=len_time), pairs)
+        results = multiprocessing.Pool(num_proc).imap(
+            partial(
+                pair_dist,
+                sub_files=sub_files,
+                reg_var=reg_var,
+                len_time=len_time), pairs)
 
         ind = 0
         for res in results:
@@ -445,18 +274,16 @@ def randpairs_regression(bfp_path,
     corr_pval2 = 0
     if not pearson_fdr_test:
         print('Performing Permutation test with MAX statistic')
-        corr_pval, corr_pval2, _ = corr_perm_test(X_pairs=fmri_diff.T,
-                                                  Y_pairs=regvar_diff,
-                                                  reg_var=reg_var,
-                                                  num_sub=len(sub_files),
-                                                  nperm=nperm)
+        corr_pval, corr_pval2, _ = corr_perm_test(
+            X_pairs=fmri_diff.T,
+            Y_pairs=regvar_diff,
+            reg_var=reg_var,
+            num_sub=len(sub_files),
+            nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        corr_pval, corr_pval2 = corr_pearson_fdr(X_pairs=fmri_diff.T,
-                                                 Y_pairs=regvar_diff,
-                                                 reg_var=reg_var,
-                                                 num_sub=len(sub_files),
-                                                 nperm=nperm)
+        corr_pval, corr_pval2 = corr_pearson_fdr(
+            X_pairs=fmri_diff.T, reg_var=reg_var, nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -519,9 +346,8 @@ def compare_sub2ctrl(bfp_path,
 
     if num_proc == 1:
         for ind in tqdm(range(len(pairs))):
-            fmri_diff_null[:, ind] = pair_dist(sub_files=ctrl_files,
-                                               len_time=len_time,
-                                               rand_pair=pairs[ind])
+            fmri_diff_null[:, ind] = pair_dist(
+                sub_files=ctrl_files, len_time=len_time, rand_pair=pairs[ind])
 
     else:
         results = multiprocessing.Pool(num_proc).imap(
@@ -532,18 +358,16 @@ def compare_sub2ctrl(bfp_path,
             fmri_diff_null[:, ind] = res[0]
             ind += 1
 
-    sub2ctrl_diff = sub2ctrl_dist(sub_file=sub_file,
-                                  ctrl_files=ctrl_files,
-                                  len_time=len_time)
+    sub2ctrl_diff = sub2ctrl_dist(
+        sub_file=sub_file, ctrl_files=ctrl_files, len_time=len_time)
 
     if not fdr_test:
         print('Performing Permutation test with MAX statistic')
         #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
-                                        grp2=sub2ctrl_diff,
-                                        alt_hypo='less')
+        pval_fdr, pval = group_diff_fdr(
+            grp1=fmri_diff_null, grp2=sub2ctrl_diff, alt_hypo='less')
 
     return pval_fdr, pval
 
@@ -603,46 +427,37 @@ def multiLinReg_resid(x, y):
 
 
 def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
-                     subTest_varc2, sig_alpha, ttype):
+                     subTest_varc2,bfppath):
     subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
     for i in range(subTest_varc1.shape[0]):
         subTest_varc12[i, 0] = subTest_varc1[i]
         subTest_varc12[i, 1] = subTest_varc2[i]
     print('regressing out 2 covariates')
-    diff_resid1 = np.zeros(subTest_diff.shape)
+    diff_resid1 = sp.zeros(subTest_diff.shape)
     numV = subTest_diff.shape[0]
     for nv in tqdm(range(numV)):
         diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12,
                                                subTest_diff[nv, :])
 
     print('computing correlation against main variable')
-    rval = np.zeros(numV)
-    pval = np.zeros(numV)
+    rval = sp.zeros(numV)
+    pval = sp.zeros(numV)
     for nv in tqdm(range(numV)):
-        if ttype == 'linear':
-            rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain, diff_resid1[nv, :])
-        if ttype == 'group':
-            rval[nv], pval[nv] = sp.stats.ttest_ind(subTest_varmain, diff_resid1[nv, :])
-            #g = set(subTest_varmain)
-            #for gnum in len(g):
+        rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain,
+                                               diff_resid1[nv, :])
+    p = sp.zeros(len(pval))
+    p[pval < 0.05] = 1
 
-    p = np.zeros(len(pval))
-    p[pval <= sig_alpha] = 1
-    p[np.isnan(pval)] = 0
-
-    a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
+    a = spio.loadmat(bfppath+ '/supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
-    labs[np.isnan(labs)] = 0
-    labs[np.isnan(pval)] = 0
+    labs[sp.isnan(labs)] = 0
     pval_fdr = sp.zeros(numV)
-    _, pv = fdrcorrection(pval[labs > 0],alpha=sig_alpha)
+    _, pv = fdrcorrection(pval[labs > 0])
     pval_fdr[labs > 0] = pv
 
-    pf = np.zeros(len(pval))
-    pf[pval_fdr <= sig_alpha] = 1
+    pf = sp.zeros(len(pval))
+    pf[pval_fdr <= 0.05] = 1
     pf[labs == 0] = 0
-    
-    pval_fdr[labs == 0] = float("NAN")
 
     msg = str(np.sum(p)) + ' significant voxels found. ' + str(
         np.sum(pf)) + ' significant voxels found after FDR correction.'
@@ -651,7 +466,7 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     return rval, pval, pval_fdr, msg
 
 
-def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
+def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2, bfppath):
     print('regressing out 1st covariate')
     diff_resid1 = sp.zeros(subTest_diff.shape)
     numV = subTest_diff.shape[0]
@@ -670,7 +485,7 @@ def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
         _, _, rval[nv], pval[nv], _ = sp.stats.linregress(
             subTest_varmain, diff_resid2[nv, :])
 
-    a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
+    a = spio.loadmat(bfppath + '/supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
     labs[sp.isnan(labs)] = 0
     pval_fdr = sp.zeros(numV)
