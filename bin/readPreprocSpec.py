@@ -49,39 +49,40 @@ class preProcSpec(object):
                                 "\nPlease check that the format of the file is JSON.")
             return
 
-        self.atlas = specs['BrainSuite']['atlas']
-        self.singleThread = specs['BrainSuite']['singleThread']
-        self.cache = specs['BrainSuite']['cacheFolder']
-        self.TR = specs['BrainSuite']['TR']
-        self.continuerun = specs['BrainSuite']['ContinueRun']
-        self.multithread = specs['BrainSuite']['MultiThreading']
-        self.tnlmpdf = specs['BrainSuite']['EnabletNLMPdfFiltering']
-        self.fpr = specs['BrainSuite']['fpr']
-        self.fslotype = specs['BrainSuite']['FSLoutputType']
-        self.fwhm = specs['BrainSuite']['FWHM']
-        self.highpass = specs['BrainSuite']['Highpass']
-        self.lowpass = specs['BrainSuite']['Lowpass']
-        self.memory = specs['BrainSuite']['memory']
-        self.shape = specs['BrainSuite']['EnableShapeMeasures']
-        self.t1space = specs['BrainSuite']['T1SpaceProcessing']
-        self.fslrigid = specs['BrainSuite']['FSLRigid']
-        self.simref = specs['BrainSuite']['SimRef']
-        self.rundetrend = specs['BrainSuite']['RunDetrend']
-        self.runnsr = specs['BrainSuite']['RunNSR']
-        self.scbpath = specs['BrainSuite']['scbPath']
+        self.atlas = specs['BrainSuite']['Structural']['atlas']
+        self.singleThread = specs['BrainSuite']['Structural']['singleThread']
+        self.cache = specs['BrainSuite']['Structural']['cacheFolder']
+        self.TR = specs['BrainSuite']['Functional']['TR']
+        # self.continuerun = specs['BrainSuite']['ContinueRun']
+        # self.multithread = specs['BrainSuite']['MultiThreading']
+        self.tnlmpdf = specs['BrainSuite']['Functional']['EnabletNLMPdfFiltering']
+        self.fpr = specs['BrainSuite']['Functional']['fpr']
+        self.fslotype = specs['BrainSuite']['Functional']['FSLOUTPUTTYPE']
+        self.fwhm = specs['BrainSuite']['Functional']['FWHM']
+        self.highpass = specs['BrainSuite']['Functional']['HIGHPASS']
+        self.lowpass = specs['BrainSuite']['Functional']['LOWPASS']
+        self.memory = specs['BrainSuite']['Functional']['memory']
+        self.shape = specs['BrainSuite']['Functional']['EnableShapeMeasures']
+        self.t1space = specs['BrainSuite']['Functional']['T1SpaceProcessing']
+        self.fslrigid = specs['BrainSuite']['Functional']['FSLRigid']
+        self.simref = specs['BrainSuite']['Functional']['SimRef']
+        self.rundetrend = specs['BrainSuite']['Functional']['RunDetrend']
+        self.runnsr = specs['BrainSuite']['Functional']['RunNSR']
+        self.scbpath = specs['BrainSuite']['Functional']['scbPath']
+        self.T1mask = specs['BrainSuite']['Functional']['T1mask']
 
         ini_str = u'[main]\n' + open('/config.ini', 'r').read()
         ini_fp = StringIO(ini_str)
         config = configparser.RawConfigParser()
         # config.optionxform(str())
         config.optionxform = str
-        config.readfp(ini_fp)
+        config.read_file(ini_fp)
         # config = configparser.ConfigParser()
         # config.read('/config.ini')
 
         ## edit config file
-        config.set('main','CONTINUERUN', str(self.continuerun))
-        config.set('main','MultiThreading', str(self.multithread))
+        # config.set('main','CONTINUERUN', str(self.continuerun))
+        # config.set('main','MultiThreading', str(self.multithread))
         config.set('main','EnabletNLMPdfFiltering', str(self.tnlmpdf))
         config.set('main','fpr', str(self.fpr))
         config.set('main','FSLOUTPUTTYPE', str(self.fslotype))
@@ -96,6 +97,7 @@ class preProcSpec(object):
         config.set('main','RunDetrend', str(self.rundetrend))
         config.set('main','RunNSR', str(self.runnsr))
         config.set('main', 'scbPath', str(self.scbpath))
+        config.set('main', 'T1mask', str(self.T1mask))
 
         with open('{0}/config.ini'.format(self.bids_dir), 'wb') as configfile:
             config.write(configfile)

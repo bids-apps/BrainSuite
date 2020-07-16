@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+import configparser
 
 class bssrSpec(object):
 
@@ -37,7 +38,6 @@ class bssrSpec(object):
         self.numtimepoints = ''
         self.filtered = False
         self.fileext = ''
-        self.resultdir = ''
         self.controls = ''
         self.exclude = ''
         self.GOfolder = ''
@@ -46,7 +46,7 @@ class bssrSpec(object):
         self.matcht = True
 
         self.read_success = True
-        self.read_modelfile(modelfile)
+        # self.read_modelfile(modelfile)
 
         if self.read_success == False:
             return
@@ -67,7 +67,7 @@ class bssrSpec(object):
             return
 
         # self.session = specs['level']
-        self.tsv = os.path.join(self.outputdir, specs['BrainSuite']['tsv'])
+        self.tsv = os.path.join(self.outputdir, specs['BrainSuite']['tsv_name'])
         self.test = specs['BrainSuite']['Structural']['test']
         # self.full_model = specs['full_model']
         # self.null_model = specs['null_model']
@@ -88,40 +88,95 @@ class bssrSpec(object):
         self.atlas = specs['BrainSuite']['Structural']['atlas']
         self.roimeas = specs['BrainSuite']['Structural']['roimeas']
         self.dbmmeas = specs['BrainSuite']['Structural']['dbmmeas']
+        self.out_dir = specs['BrainSuite']['Structural']['out_dir']
 
         ## make bfp stats separate
-        self.bfptest = specs['BrainSuite']['Functional']['test']
-        self.groups = specs['BrainSuite']['Functional']['groups']
-        self.exclude = specs['BrainSuite']['Functional']['exclude']
-        self.ndim = specs['BrainSuite']['Functional']['ndim']
-        # self.numtimepoints = specs['BrainSuite']['Functional']['num_timempoints']
-        self.sessionid = "task-" + specs['BrainSuite']['Functional']['session_id']
-        self.lentime = specs['BrainSuite']['Functional']['lentime']
-        self.filtered = specs['BrainSuite']['Functional']['filtered']
-        self.GOfolder = specs['BrainSuite']['Functional']['GOfolder']
-        self.outname = specs['BrainSuite']['Functional']['outname']
-        self.smooth_iter = specs['BrainSuite']['Functional']['smooth_iter']
-        self.save_surfaces = specs['BrainSuite']['Functional']['save_surfaces']
-        self.save_figures = specs['BrainSuite']['Functional']['save_figures']
-        self.atlas_groupsync = specs['BrainSuite']['Functional']['atlas_groupsync']
-        self.atlas_fname = specs['BrainSuite']['Functional']['atlas_fname']
-        self.test_all = specs['BrainSuite']['Functional']['test_all']
-        self.main = specs['BrainSuite']['Functional']['main']
-        self.reg1 = specs['BrainSuite']['Functional']['reg1']
-        self.reg2 = specs['BrainSuite']['Functional']['reg2']
-        self.atlas = specs['BrainSuite']['Functional']['atlas']
+        # self.bfptest = specs['BrainSuite']['Functional']['test']
+        # self.groups = specs['BrainSuite']['Functional']['groups']
+        # self.exclude = specs['BrainSuite']['Functional']['exclude']
+        # self.ndim = specs['BrainSuite']['Functional']['ndim']
+        # # self.numtimepoints = specs['BrainSuite']['Functional']['num_timempoints']
+        # self.sessionid = "task-" + specs['BrainSuite']['Functional']['session_id']
+        # self.lentime = specs['BrainSuite']['Functional']['lentime']
+        # self.filtered = specs['BrainSuite']['Functional']['filtered']
+        # self.GOfolder = specs['BrainSuite']['Functional']['GOfolder']
+        # self.outname = specs['BrainSuite']['Functional']['outname']
+        # self.smooth_iter = specs['BrainSuite']['Functional']['smooth_iter']
+        # self.save_surfaces = specs['BrainSuite']['Functional']['save_surfaces']
+        # self.save_figures = specs['BrainSuite']['Functional']['save_figures']
+        # self.atlas_groupsync = specs['BrainSuite']['Functional']['atlas_groupsync']
+        # self.atlas_fname = specs['BrainSuite']['Functional']['atlas_fname']
+        # self.test_all = specs['BrainSuite']['Functional']['test_all']
+        # self.main = specs['BrainSuite']['Functional']['main']
+        # self.reg1 = specs['BrainSuite']['Functional']['reg1']
+        # self.reg2 = specs['BrainSuite']['Functional']['reg2']
+        # self.atlas = specs['BrainSuite']['Functional']['atlas']
         # self.sig_alpha = specs['BrainSuite']['Functional']['sig_alpha']
 
 
-        self.resultdir = specs['BrainSuite']['results']
+    def read_bfp_modelfile(self, modelfile):
+        try:
+            specs = json.load(open(modelfile))
+        except:
+            sys.stdout.writable("There was an error reading the model specification file."
+                                "\nPlease check that the format of the file is JSON.")
+            return
+
+        # self.data_dir = specs['BrainSuite']['Functional']['data_dir']
+        self.file_ext = specs['BrainSuite']['Functional']['file_ext']
+        self.lentime = specs['BrainSuite']['Functional']['lentime']
+        self.matchT= specs['BrainSuite']['Functional']['matchT']
+        self.stat_test = specs['BrainSuite']['Functional']['stat_test']
+        self.bfp_out_dir= specs['BrainSuite']['Functional']['out_dir']
+        self.outname = specs['BrainSuite']['Functional']['outname']
+        self.smooth_iter= specs['BrainSuite']['Functional']['smooth_iter']
+        self.save_surfaces = specs['BrainSuite']['Functional']['save_surfaces']
+        self.save_figures = specs['BrainSuite']['Functional']['save_figures']
+        self.sig_alpha= specs['BrainSuite']['Functional']['sig_alpha']
+        self.atlas_groupsync = specs['BrainSuite']['Functional']['atlas_groupsync']
+        self.atlas_fname = specs['BrainSuite']['Functional']['atlas_fname']
+        self.test_all = specs['BrainSuite']['Functional']['test_all']
+        self.tsv_fname = specs['BrainSuite']['Functional']['tsv_fname']
+        self.colvar_main = specs['BrainSuite']['Functional']['colvar_main']
+        self.colvar_reg1 = specs['BrainSuite']['Functional']['colvar_reg1']
+        self.colvar_reg2 = specs['BrainSuite']['Functional']['colvar_reg2']
+        self.colvar_exclude = specs['BrainSuite']['Functional']['colvar_exclude']
+        self.colvar_atlas = specs['BrainSuite']['Functional']['colvar_atlas']
+
+
+        # self.resultdir = specs['BrainSuite']['results']
+        config = configparser.ConfigParser()
+        config.read('/bfp_config_stats.ini')
+        config.set('inputs', 'file_ext', str(self.file_ext))
+        config.set('inputs', 'lentime', str(self.lentime))
+        config.set('inputs', 'matchT', str(self.matchT))
+        config.set('inputs', 'stat_test', str(self.stat_test))
+        config.set('outputs', 'out_dir', str(self.bfp_out_dir))
+        config.set('outputs', 'outname', str(self.outname))
+        config.set('outputs', 'smooth_iter', str(self.smooth_iter))
+        config.set('outputs', 'save_surfaces', str(self.save_surfaces))
+        config.set('outputs', 'save_figures', str(self.save_figures))
+        config.set('outputs', 'sig_alpha', str(self.sig_alpha))
+        config.set('parameters', 'atlas_groupsync', str(self.atlas_groupsync))
+        config.set('outputs', 'atlas_fname', str(self.atlas_fname))
+        config.set('outputs', 'test_all', str(self.test_all))
+        config.set('demographics', 'csv_fname', str(self.tsv_fname.split('.')[0]+'.csv'))
+        config.set('demographics', 'colvar_main', str(self.colvar_main))
+        config.set('demographics', 'colvar_reg1', str(self.colvar_reg1))
+        config.set('demographics', 'colvar_reg2', str(self.colvar_reg2))
+        config.set('demographics', 'colvar_exclude', str(self.colvar_exclude))
+        config.set('demographics', 'colvar_atlas', str(self.colvar_atlas))
+
+        with open('/bfp_config_stats.ini', 'w') as configfile:
+            config.write(configfile)
 
 
         ## TODO: add parameters for fmri group analysis
 
-        if self.filtered == 'True':
-            self.fileext = '_{0}_bold.32k.GOrd.filt.mat'.format(self.sessionid)
-        elif self.filtered == 'False':
-            self.fileext = '_{0}_bold.32k.GOrd.mat'.format(self.sessionid)
+        # if self.filtered == 'True':
+        #     self.fileext = '_{0}_bold.32k.GOrd.filt.mat'.format(self.sessionid)
+        # elif self.filtered == 'False':
+        #     self.fileext = '_{0}_bold.32k.GOrd.mat'.format(self.sessionid)
     # def create_subjectList(self):
         # if self.session:
         #     subjects = []

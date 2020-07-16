@@ -1,0 +1,47 @@
+{
+	"BrainSuite": {
+	  "Structural":{
+        "tsv_fname": "/data/participants.tsv",
+        "measure": "cbm",
+		"test": "anova",
+		"main_effect": "age",
+		"covariates": [
+			"sex",
+			"height"
+		],
+		"corr_var": "",
+		"group_var": "",
+		"paired": "",
+		"smooth": 2.0,
+		"mult_comp": "fdr",
+		"roiid": [102],
+		"hemi": "left",
+		"maskfile": "",
+		"atlas": "",
+		"roimeas": "",
+		"dbmmeas": "" },
+        "out_dir": "/output/stats",
+
+	"Functional":{
+        "tsv_fname": "/data/participants.tsv",
+		"file_ext": "_rest_bold.32k.GOrd.filt.mat",
+		"lentime": 240,
+		"matchT": "False",
+		"stat_test": "atlas-linear" ,
+		"outname": "BFPtest",
+        "sig_alpha" : 0.05,
+		"smooth_iter": 100,
+		"save_surfaces": "True",
+		"save_figures": "False",
+		"atlas_groupsync": "True",
+		"atlas_fname": "/data/atlas.mat",
+		"test_all": "True",
+		"colvar_main": "LogAge",
+		"colvar_reg1": "Age",
+		"colvar_reg2": "Sex",
+		"colvar_exclude": "Exclude",
+        "colvar_atlas": "Atlas",
+        "out_dir": "/output/stats"
+      }
+	}
+}

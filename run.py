@@ -1,4 +1,4 @@
-#!/opt/conda/bin/python
+#!/usr/local/miniconda/bin/python
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals, print_function
@@ -11,16 +11,16 @@ from subprocess import Popen, PIPE
 
 from bids.grabbids import BIDSLayout
 # from bin.bfp_group_compare import bfp_group_compare
-from bin.bfp_linear_regr_pairwise import bfp_linear_regr_pairwise
 from builtins import str
 
 from bin.brainsuiteWorkflowNoQC import runWorkflow
-from bin.bfp_linear_regr import bfp_linear_regr
 from bin.readPreprocSpec import preProcSpec
 from bin.readSpec import bssrSpec
 from bin.runBssr import *
 from run_rmarkdown import run_rmarkdown
 
+########################################################################
+### Authored by https://github.com/BIDS-Apps/HCPPipelines/blob/master/run.py
 
 def run(command, env={}, cwd=None):
     merged_env = os.environ
@@ -28,29 +28,20 @@ def run(command, env={}, cwd=None):
     merged_env.pop("DEBUG", None)
     print(command)
     process = Popen(command, stdout=PIPE, stderr=subprocess.STDOUT,
-                    shell=True, env=merged_env, cwd=cwd)
+                    shell=True, env=merged_env, cwd=cwd,
+                    universal_newlines=True)
     while True:
         line = process.stdout.readline()
+        print(line.rstrip())
         line = str(line)[:-1]
-        print(line)
         if line == '' and process.poll() != None:
             break
     if process.returncode != 0:
         raise Exception("Non zero return code: %d"%process.returncode)
 
+########################################################################
+
 BFPpath= os.environ['BFP'] + '/bfp.sh'
-def run_bfp(**args):
-    args.update(os.environ)
-    cmd = '{BFPpath} ' + \
-        "{t1} " + \
-        "{func} " + \
-        "{studydir} " + \
-        "{subjID} " + \
-        "{sess} " + \
-        "{TR} " + \
-        "{cache} "
-    cmd = cmd.format(**args)
-    run(cmd, cwd=args['studydir'])
 
 __version__ = open('/BrainSuite/version').read()
 BrainsuiteVersion = os.environ['BrainSuiteVersion']
@@ -289,17 +280,6 @@ if args.analysis_level == "participant":
                         if 'BDP' in stages:
                             print('\nNo DWI data found. Running CSE only.')
                             runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
-                    # if 'BFP' in stages:
-
-                    #     assert (len(funcs) > 0), "No fMRI files found for subject %s!" % subject_label
-                    #
-                    #     subjectID = 'sub-{}'.format(subject_label)
-                    #
-                    #     for i in range(0, len(funcs)):
-                    #         sess_input = funcs[i][
-                    #                      funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
-                    #                          '_bold')]
-                    #         bfp('/config.ini', t1ws[0], funcs[i], args.output_dir, subjectID, sess_input, args.TR)
 
             if 'BFP' in stages or 'ALL' in stages:
                 for t1 in t1ws:
@@ -345,49 +325,17 @@ if args.analysis_level == "group":
             run_rmarkdown(args.rmarkdown)
         else:
             specs = bssrSpec(args.modelspec, args.output_dir)
+            specs.read_modelfile(args.modelspec)
             bss_data = load_bss_data(specs)
             bss_model = run_model(specs, bss_data)
-            save_bss(bss_data, bss_model, specs.resultdir)
+            save_bss(bss_data, bss_model, specs.out_dir)
     if 'FUNC' in analyses:
-        if not os.path.exists(os.path.join(args.output_dir, 'stats')):
-            os.mkdir(os.path.join(args.output_dir, 'stats'))
-
         specs = bssrSpec(args.modelspec, args.output_dir)
-        if specs.GOfolder != "":
-            # TODO fix
-            # runGroupDiff(specs, specs.GOfolder)
-            if specs.bfptest == 'linreg':
-                bfp_linear_regr(specs, specs.GOfolder)
-            elif specs.bfptest == 'linreg_pairwise':
-                bfp_linear_regr_pairwise(specs, specs.GOfolder)
-            # elif specs.bfptest == 'group_compare':
-            #     bfp_group_compare(specs, specs.GOfolder)
-        else:
-            # bfp_linear_regr(specs, specs.outputdir)
-            if specs.bfptest == 'linreg':
-                bfp_linear_regr(specs, specs.outputdir)
-            elif specs.bfptest == 'linreg_pairwise':
-                bfp_linear_regr_pairwise(specs, specs.outputdir)
-            # elif specs.bfptest == 'group_compare':
-            #     bfp_group_compare(specs, specs.outputdir)
-            else:
-                sys.stdout.writable("Please write a valid test type.")
-        # else:
-        #     with io.open(specs.tsv, newline='') as tsvfile:
-        #         treader = csv.DictReader(tsvfile, delimiter=str(u'\t').encode('utf-8'),
-        #                                  quotechar=str(u'"').encode('utf-8'))
-        #         for row in treader:
-        #             sub = row['participant_id']
-        #             qc = row[specs.exclude]
-        #             if int(qc) == 0:
-        #                 fname = os.path.join(args.output_dir, sub, 'func', sub + specs.fileext)
-        #                 newfname = os.path.join(args.output_dir, 'stats', sub + specs.fileext)
-        #                 try:
-        #                     copyfile(fname, newfname)
-        #                 except:
-        #                     print('{0} file does not exist.'.format(
-        #                         os.path.join(args.output_dir, sub, 'func', sub + specs.fileext)))
-        #     # runGroupDiff(specs, specs.statsdir)
-        #     bfp_linear_regr(specs, specs.statsdir)
-
-
+        specs.read_bfp_modelfile(args.modelspec)
+        ## convert tsv to csv
+        basename = specs.tsv_fname.split(".")[0]
+        cmd = "sed 's/\t/,/g' {0}.tsv > {0}.csv".format(basename)
+        print(cmd)
+        subprocess.call(cmd, shell=True)
+        exec(open("{BFPpath}/src/stats/bfp_run_stat.py".format(
+            BFPpath=os.environ['BFP'])).read())

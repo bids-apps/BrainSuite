@@ -1,0 +1,27 @@
+{
+	"BrainSuite": {
+		"Stuctural": {
+			"atlas": "BCI",
+			"singleThread": "OFF",
+			"cacheFolder": "/tmp"
+		},
+		"Functional": {
+			"TR": 2,
+			"EnabletNLMPdfFiltering": 1,
+			"fpr": 0.001,
+			"FSLOUTPUTTYPE": "NIFTI_GZ",
+			"FWHM": 6,
+			"HIGHPASS":0.005,
+			"LOWPASS": 0.1,
+			"memory": 16,
+			"EnableShapeMeasures": 0,
+			"T1SpaceProcessing": 1,
+			"FSLRigid": 0,
+			"SimRef": 1,
+			"RunDetrend": 1,
+			"RunNSR": 1,
+			"scbPath": "/output/SCB.mat",
+			"T1mask": 1
+		}
+	}
+}

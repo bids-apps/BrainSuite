@@ -13,7 +13,7 @@ import rpy2.robjects.numpy2ri
 rpy2.robjects.numpy2ri.activate()
 
 valid_analysis_types = ['vbm', 'tbm', 'cbm', 'dbm', 'roi', 'croi', 'droi']
-ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
+# ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
 bssr = importr('bssr')
 
 def equal(a, b):
