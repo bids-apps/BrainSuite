@@ -1,217 +1,96 @@
 version: 2
+
 jobs:
-  get_data:
+  build:
     machine:
-      image: circleci/classic:201711-01
-    working_directory: /tmp/data
-    steps:
-      - restore_cache:
-          keys:
-            - data-v3-{{ .Revision }}
-            - data-v3-
-      - run:
-          name: Get ds114_test1
-          command: |
-            mkdir -p /tmp/data
-            if [[ ! -d /tmp/data/ds114_test1 ]]; then
-              wget -c -O ~/ds114_test1.tar \
-              "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && \
-              tar xf ~/ds114_test1.tar -C /tmp/data && \
-              rm ~/ds114_test1.tar;
-            else
-              echo "ds114_test1 was cached"
-            fi
-      - run:
-          name: Get ds114_test2
-          command: |
-            mkdir -p /tmp/data
-            if [[ ! -d /tmp/data/ds114_test2 ]]; then
-              wget -c -O ~/ds114_test2.tar \
-              "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && \
-              tar xf ~/ds114_test2.tar -C /tmp/data && \
-              rm ~/ds114_test2.tar;
-            else
-              echo "ds114_test2 was cached"
-            fi
-   build:
-    docker:
-      - image: docker:18.01.0-ce-git
+      image: circleci/classic:latest
+
     steps:
       - checkout
-      - run:
-          name: Install parallel gzip
-          command: |
-            apk add --no-cache pigz
       - restore_cache:
           keys:
-            - docker-v2-{{ .Branch }}-{{ .Revision }}
-            - docker-v2-{{ .Branch }}-
-            - docker-v2-master-
-            - docker-v2-
-          paths:
-            - /tmp/cache/docker.tar.gz
-      - setup_remote_docker
+            - my_cache
+
+      - run: if [[ ! -d ~/data/ds114_test1 ]]; then wget -c -O ${HOME}/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data; fi
+      - run: if [[ ! -d ~/data/ds114_test2 ]]; then wget -c -O ${HOME}/ds114_test2.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/data; fi
+      - run: if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
+      - run: git describe --tags --always > version
       - run:
-          name: Load Docker image layer cache
-          no_output_timeout: 30m
-          command: |
-            docker info
-            set +o pipefail
-            if [ -f /tmp/cache/docker.tar.gz ]; then
-              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
-            else
-              echo "No docker cache found"
-            fi
-            docker images
-      - run:
-          name: get version
-          command: |
-            git describe --tags --always > version
-            cat version
-      - run:
-          name: Build Docker image
-          no_output_timeout: 60m
-          command: |
-            docker images
-            set +o pipefail
-            docker build --cache-from=bids/${CIRCLE_PROJECT_REPONAME} \
-            -t bids/${CIRCLE_PROJECT_REPONAME}:latest .
-            docker images
-      - run:
-          name: Docker save
-          no_output_timeout: 40m
-          command: |
-            mkdir -p /tmp/cache
-            set +o pipefail
-            docker save bids/${CIRCLE_PROJECT_REPONAME}:latest \
-              | pigz -2 -p 3 > /tmp/cache/docker.tar.gz
+          command: docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
+          no_output_timeout: 6h
+      - run: mkdir -p ~/docker; docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
+      - run: mkdir -p ${HOME}/outputs
+
       - save_cache:
-           key: docker-v2-{{ .Branch }}-{{ epoch }}
-           paths:
-             - /tmp/cache/docker.tar.gz
-      # Usage and version
-      - run:
-          name: Usage BIDS
-          command: docker run -ti --rm bids/${CIRCLE_PROJECT_REPONAME}:latest -h
-
-  test:
-    machine:
-      image: circleci/classic:201711-01
-    working_directory: /tmp/data
-    environment:
-      - DATADIR: '/tmp/data'
-      - OUTDIR: '/tmp/outputs'
-    steps:
-      - run:
-          name: Install parallel gzip
-          command: |
-            sudo apt-get update && sudo apt-get install -y pigz
-      - restore_cache:
-          keys:
-            - docker-v2-{{ .Branch }}-{{ .Revision }}
-            - docker-v2-{{ .Branch }}-
-            - docker-v2-master-
-            - docker-v2-
+          key: my_cache
           paths:
-            - /tmp/cache/docker.tar.gz
-      - restore_cache:
-          keys:
-            - data-v3-{{ .Revision }}
-            - data-v3-
+            - "~/docker"
+            - "~/data"
 
-      # Load Docker
+      # print version
+      - run: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset bids/${CIRCLE_PROJECT_REPONAME,,} --version
+      # participant level tests for single session dataset
       - run:
-          name: Load Docker
-          no_output_timeout: 30m
-          command: |
-            docker info
-            set +o pipefail
-            pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
-            docker images
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+          no_output_timeout: 24h
       - run:
-          name: make output directory
-          command: mkdir -p ${OUTDIR}
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
+          no_output_timeout: 24h
+      # group level test for single session dataset
+      - run:
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+          no_output_timeout: 24h
+      # participant level tests for a longitudinal dataset
+      - run:
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+          no_output_timeout: 24h
+      - run:
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
+          no_output_timeout: 24h
+      # group level test for a longitudinal dataset
+      - run:
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+          no_output_timeout: 24h
 
-      # Test 1: ds114_test1
-      - run:
-          name: Test 1 ds114_test1 - CSE
-          command: |
-            docker run --rm -ti -v ${DATADIR}/ds114_test1:/data \
-            -v ${OUTDIR}/ds114_test1/:/output \
-            bids/${CIRCLE_PROJECT_REPONAME}:latest \
-            /data /output participant --participant_label 01 --stages CSE
-      - run:
-          name: Test 1 ds114_test1 - BDP
-          command: |
-            docker run --rm -ti -v ${DATADIR}/ds114_test1:/data \
-            -v ${OUTDIR}/ds114_test1/:/output \
-            bids/${CIRCLE_PROJECT_REPONAME}:latest \
-            /data /output participant --participant_label 01 --stages BDP
+      - store_artifacts:
+          path: "~/output1"
+      - store_artifacts:
+          path: "~/output2"
 
-   deploy:
-    machine:
-      image: circleci/classic:201711-01
-    steps:
-      - run:
-          name: Install parallel gzip
-          command: |
-            sudo apt-get update && sudo apt-get install -y pigz
-      - restore_cache:
-          keys:
-            - docker-v2-{{ .Branch }}-{{ .Revision }}
-            - docker-v2-{{ .Branch }}-
-            - docker-v2-master-
-            - docker-v2-
+      - persist_to_workspace:
+          root: ~/docker
           paths:
-            - /tmp/cache/docker.tar.gz
+            - image.tar
+ 
+  deployment:
+    docker:
+      - image: circleci/buildpack-deps:stretch
 
-      # Load Docker
-      - run:
-          name: Load Docker
-          no_output_timeout: 30m
-          command: |
-            docker info
-            set +o pipefail
-            pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
-            docker images
-      - run:
-          name: Deploy to Docker Hub
-          no_output_timeout: 40m
-          command: |
-            if [[ -n "$DOCKER_PASS" ]]; then
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker tag bids/${CIRCLE_PROJECT_REPONAME} bids/${CIRCLE_PROJECT_REPONAME}:unstable
-              docker push bids/${CIRCLE_PROJECT_REPONAME}:unstable
-              if [[ -n "$CIRCLE_TAG" ]]; then
-                docker push bids/${CIRCLE_PROJECT_REPONAME}:latest
-                docker tag bids/${CIRCLE_PROJECT_REPONAME} bids/${CIRCLE_PROJECT_REPONAME}:$CIRCLE_TAG
-                docker push bids/${CIRCLE_PROJECT_REPONAME}:$CIRCLE_TAG
-              fi
-            fi
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run: docker load -i /tmp/workspace/image.tar
+#      - run:
+#          command: if [[ -n "$DOCKER_PASS" ]]; then docker login -u $DOCKER_USER -p $DOCKER_PASS && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest; fi
+#          no_output_timeout: 24h
+#      - run:
+#          command: if [[ -n "$DOCKER_PASS" ]]; then docker login -u $DOCKER_USER -p $DOCKER_PASS && docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG && docker push bids/${CIRCLE_PROJECT_REPONAME,,}:$CIRCLE_TAG; fi
+#          no_output_timeout: 24h
+
 workflows:
   version: 2
-  build_test_deploy:
+  build-test-deploy:
     jobs:
-      - get_data:
-          filters:
-            tags:
-              only: /.*/
       - build:
           filters:
             tags:
               only: /.*/
-      - test:
+      - deployment:
           requires:
-            - get_data
             - build
           filters:
-            tags:
-              only: /.*/
-      - deploy:
-          requires:
-            - test
-          filters:
             branches:
-              only: master
+              ignore: /.*/
             tags:
               only: /.*/
