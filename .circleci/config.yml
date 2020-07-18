@@ -31,26 +31,26 @@ jobs:
       - run: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset bids/${CIRCLE_PROJECT_REPONAME,,} --version
       # participant level tests for single session dataset
       - run:
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 --singleThread
           no_output_timeout: 24h
       - run:
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02 --singleThread
           no_output_timeout: 24h
       # group level test for single session dataset
-      - run:
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
-          no_output_timeout: 24h
+#      - run:
+#          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group --singleThread
+#          no_output_timeout: 24h
       # participant level tests for a longitudinal dataset
       - run:
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 --singleThread
           no_output_timeout: 24h
       - run:
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02
+          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02 --singleThread
           no_output_timeout: 24h
       # group level test for a longitudinal dataset
-      - run:
-          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
-          no_output_timeout: 24h
+#      - run:
+#          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
+#          no_output_timeout: 24h
 
       - store_artifacts:
           path: "~/output1"
