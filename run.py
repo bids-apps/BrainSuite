@@ -12,6 +12,7 @@ from subprocess import Popen, PIPE
 from bids.grabbids import BIDSLayout
 # from bin.bfp_group_compare import bfp_group_compare
 from builtins import str
+import shutil
 
 from bin.brainsuiteWorkflowNoQC import runWorkflow
 from bin.readPreprocSpec import preProcSpec
@@ -140,7 +141,7 @@ if args.analysis_level == "participant":
         thread = preprocspecs.singleThread
         if preprocspecs.cache:
             cacheset = True
-        configini = '{0}/config.ini'.format(args.bids_dir)
+        configini = '/config.ini'
     else:
         configini = '/config.ini'
 
@@ -308,7 +309,7 @@ if args.analysis_level == "participant":
                                 TR=args.TR
                             )
                             subprocess.call(cmd, shell=True)
-        os.remove(mcrCache)
+        # shutil.rmtree(mcrCache)
 
 if args.analysis_level == "group":
 

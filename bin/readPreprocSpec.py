@@ -99,12 +99,12 @@ class preProcSpec(object):
         config.set('main', 'scbPath', str(self.scbpath))
         config.set('main', 'T1mask', str(self.T1mask))
 
-        with open('{0}/config.ini'.format(self.bids_dir), 'wb') as configfile:
+        with open('/config.ini', 'w') as configfile:
             config.write(configfile)
 
-        with open('{0}/config.ini'.format(self.bids_dir), 'r') as fin:
+        with open('/config.ini', 'r') as fin:
             data = fin.read().splitlines(True)
-        with open('{0}/config.ini'.format(self.bids_dir), 'w') as fout:
+        with open('config.ini', 'w') as fout:
             fout.writelines(data[1:])
 
 

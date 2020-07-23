@@ -1,7 +1,7 @@
 {
 	"BrainSuite": {
-		"Stuctural": {
-			"atlas": "BCI",
+		"Structural": {
+			"atlas": "BSA",
 			"singleThread": "OFF",
 			"cacheFolder": "/tmp"
 		},
