@@ -191,7 +191,7 @@ COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 COPY . /BrainSuite
 
 RUN chmod +x /BrainSuite/run.py
-
+RUN chmod a+x /bfp/*
 
 ENTRYPOINT ["/BrainSuite/run.py"]
 
