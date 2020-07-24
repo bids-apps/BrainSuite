@@ -308,7 +308,7 @@ if args.analysis_level == "participant":
                                 TR=args.TR
                             )
                             subprocess.call(cmd, shell=True)
-        os.remove(mcrCache)
+        # os.remove(mcrCache)
 
 if args.analysis_level == "group":
 
