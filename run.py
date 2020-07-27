@@ -310,6 +310,7 @@ if args.analysis_level == "participant":
                             )
                             subprocess.call(cmd, shell=True)
         # shutil.rmtree(mcrCache)
+        # os.remove(mcrCache)
 
 if args.analysis_level == "group":
 
