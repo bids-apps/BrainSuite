@@ -7,9 +7,12 @@ jobs:
 
     steps:
       - checkout
+#      - restore_cache:
+#          keys:
+#            - my_cache
       - restore_cache:
-          keys:
-            - my_cache
+           keys:
+            - v_0-image_cache-{{ checksum "Dockerfile" }}
 
       - run: if [[ ! -d ~/data/ds114_test1 ]]; then wget -c -O ${HOME}/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data; fi
       - run: if [[ ! -d ~/data/ds114_test2 ]]; then wget -c -O ${HOME}/ds114_test2.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/data; fi
@@ -22,31 +25,60 @@ jobs:
       - run: mkdir -p ${HOME}/outputs
 
       - save_cache:
-          key: my_cache
+#          key: my_cache
+          key: v_0-image_cache-{{ checksum "Dockerfile" }}-{{ .Revision }}-{{ epoch }}
           paths:
             - "~/docker"
             - "~/data"
-
+  test:
+    machine:
+      image: circleci/classic:latest
+    steps:
+      - checkout
+      - restore_cache:
+         key: v_0-image_cache-{{ checksum "Dockerfile" }}-{{ .Revision }}
+      - restore_cache:
+         key: v_0-test_data
+      - run:
+          name: get data
+          command:    |
+            if [[ ! -d ~/data/ds114_test1 ]]; then wget -c -O ${HOME}/ds114_test1.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e54a326c613b01d7d3ed90" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data; fi
+            if [[ ! -d ~/data/ds114_test2 ]]; then wget -c -O ${HOME}/ds114_test2.tar "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162" && mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/data; fi
+      - save_cache:
+         key: v_0-test_data
+         paths:
+          - ~/data
+      - run:
+          name: load image
+          command: docker load -i ~/docker/image.tar
+      - run:
+          name: print version
+          command: |
+            docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset bids/${CIRCLE_PROJECT_REPONAME,,} --version
       # print version
-      - run: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset bids/${CIRCLE_PROJECT_REPONAME,,} --version
+#      - run: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset bids/${CIRCLE_PROJECT_REPONAME,,} --version
       # participant level tests for single session dataset
       - run:
+          name: test 1
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 --singleThread # --stages CSE
-          no_output_timeout: 24h
+          no_output_timeout: 12h
       - run:
+          name: test 1
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02 --singleThread # --stages CSE
-          no_output_timeout: 24h
+          no_output_timeout: 12h
       # group level test for single session dataset
 #      - run:
 #          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test1:/bids_dataset -v ${HOME}/outputs1:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group --singleThread
 #          no_output_timeout: 24h
       # participant level tests for a longitudinal dataset
       - run:
+          name: test 3
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 01 --singleThread # --stages CSE
-          no_output_timeout: 24h
+          no_output_timeout: 12h
       - run:
+          name: test 4
           command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs participant --participant_label 02 --singleThread # --stages CSE
-          no_output_timeout: 24h
+          no_output_timeout: 12h
       # group level test for a longitudinal dataset
 #      - run:
 #          command: docker run -ti --rm --read-only -v /tmp:/tmp -v /var/tmp:/var/tmp -v ${HOME}/data/ds114_test2:/bids_dataset -v ${HOME}/outputs2:/outputs bids/${CIRCLE_PROJECT_REPONAME,,} /bids_dataset /outputs group
@@ -86,11 +118,19 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - deployment:
+      - test:
           requires:
             - build
           filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /.*/
+            branches:
+              only: /.*/
+#      - deployment:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              ignore: /.*/
+#            tags:
+#              only: /.*/
