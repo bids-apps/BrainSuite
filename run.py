@@ -135,15 +135,15 @@ if args.analysis_level == "participant":
 
     cacheset =False
     if args.preprocspec:
-        preprocspecs = preProcSpec(args.preprocspec, args.bids_dir)
+        preprocspecs = preProcSpec(args.preprocspec, args.bids_dir, args.output_dir)
         atlas = atlases[str(preprocspecs.atlas)]
         cache = preprocspecs.cache
         thread = preprocspecs.singleThread
         if preprocspecs.cache:
             cacheset = True
-        configini = '/config.ini'
+        configini = '{0}/config.ini'.format(args.output_dir)
     else:
-        configini = '/config.ini'
+        configini = '{0}/config.ini'.format(args.output_dir)
 
     print('\nWill run: {0}'.format(args.stages))
     for subject_label in subjects_to_analyze:

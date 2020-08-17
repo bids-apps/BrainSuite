@@ -9,7 +9,7 @@ from io import StringIO
 
 class preProcSpec(object):
 
-    def __init__(self, preprocfile, bids_dir):
+    def __init__(self, preprocfile, bids_dir, outputdir):
         self.atlas = 'BCI'
         self.singleThread = 'OFF'
         self.cache = '/tmp'
@@ -27,6 +27,7 @@ class preProcSpec(object):
         self.t1space = 1
         self.fslrigid = 0
         self.bids_dir = bids_dir
+        self.outputdir = outputdir
 
         self.read_success = True
         self.read_preprocfile(preprocfile)
@@ -99,12 +100,12 @@ class preProcSpec(object):
         config.set('main', 'scbPath', str(self.scbpath))
         config.set('main', 'T1mask', str(self.T1mask))
 
-        with open('/config.ini', 'w') as configfile:
+        with open('{0}/config.ini'.format(self.outputdir), 'w') as configfile:
             config.write(configfile)
 
-        with open('/config.ini', 'r') as fin:
+        with open('{0}/config.ini'.format(self.outputdir), 'r') as fin:
             data = fin.read().splitlines(True)
-        with open('config.ini', 'w') as fout:
+        with open('{0}/config.ini'.format(self.outputdir), 'w') as fout:
             fout.writelines(data[1:])
 
 

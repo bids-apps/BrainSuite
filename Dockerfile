@@ -50,12 +50,12 @@ RUN curl -fsSL -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py
     bash miniconda.sh -b -p /usr/local/miniconda && \
     rm miniconda.sh && \
     conda config --add channels conda-forge && \
-    conda install -y mkl=2020.0 mkl-service=2.3.0 numpy=1.18.1 nibabel=3.0.2 pandas=1.0.3 six=1.14.0 setuptools=45.2.0 && sync && \
+    conda install -y  numpy=1.18.1 nibabel=3.0.2 setuptools=45.2.0 && sync && \
     conda clean -tipsy && sync && \
     /usr/local/miniconda/bin/pip install --no-cache-dir pybids==0.6.5 && \
     /usr/local/miniconda/bin/pip install --no-cache-dir grabbit
 RUN conda install -y -c anaconda statsmodels
-
+#mkl=2020.0 mkl-service=2.3.0 six=1.14.0 pandas=1.0.3
 # MATLAB MCR
 RUN mkdir mcr_install && \
     cd mcr_install && \
@@ -116,9 +116,9 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/a
     apt-get update && apt-get install -y --allow-unauthenticated r-base
 
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp.tar.gz | tar xvz
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver2p30.tar.gz | tar xvz
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver3p02.tar.gz | tar xvz
 #RUN rm /bfp_ver2p30.tar.gz
-RUN rm -rf bfp_ver2p30/supp_data && mv bfp_ver2p30/* bfp
+RUN rm -rf bfp_ver3p02/supp_data && mv bfp_ver3p02/* bfp
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
 
