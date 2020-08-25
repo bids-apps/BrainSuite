@@ -176,6 +176,10 @@ if args.analysis_level == "participant":
                 outputdir = os.path.join(args.output_dir, subjectID, 'anat') # str(args.output_dir + os.sep + subjectID + os.sep + 'anat')
                 if not cacheset:
                     cache = outputdir
+                elif cacheset:
+                    cache = cache + '/sub-' + subject_label
+                    if not os.path.exists(cache):
+                        os.makedirs(cache)
                 if not os.path.exists(outputdir):
                     os.makedirs(outputdir)
                 if (len(dwis) > 0):
@@ -247,6 +251,10 @@ if args.analysis_level == "participant":
             outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
             if not cacheset:
                 cache = outputdir
+            elif cacheset:
+                cache = cache + '/sub-' + subject_label
+                if not os.path.exists(cache):
+                    os.makedirs(cache)
             if not os.path.exists(outputdir):
                 os.makedirs(outputdir)
             if (len(dwis) > 0):
