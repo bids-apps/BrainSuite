@@ -19,8 +19,8 @@
 		"maskfile": "",
 		"atlas": "",
 		"roimeas": "",
-		"dbmmeas": "" },
-        "out_dir": "/output/stats",
+		"dbmmeas": "" ,
+	  	"out_dir": "/output/stats"},
 
 	"Functional":{
         "tsv_fname": "/data/participants.tsv",

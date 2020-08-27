@@ -67,7 +67,7 @@ class bssrSpec(object):
             return
 
         # self.session = specs['level']
-        self.tsv = os.path.join(self.outputdir, specs['BrainSuite']['tsv_name'])
+        self.tsv = os.path.join(self.outputdir, specs['BrainSuite']['Structural']['tsv_fname'])
         self.test = specs['BrainSuite']['Structural']['test']
         # self.full_model = specs['full_model']
         # self.null_model = specs['null_model']
