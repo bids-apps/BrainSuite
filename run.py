@@ -143,6 +143,7 @@ if args.analysis_level == "participant":
             cacheset = True
         configini = '{0}/config.ini'.format(args.output_dir)
     else:
+        shutil.copyfile('/config.ini', '{0}/config.ini'.format(args.output_dir))
         configini = '{0}/config.ini'.format(args.output_dir)
 
     print('\nWill run: {0}'.format(args.stages))
@@ -334,18 +335,18 @@ if args.analysis_level == "group":
         if args.rmarkdown:
             run_rmarkdown(args.rmarkdown)
         else:
-            specs = bssrSpec(args.modelspec, args.output_dir)
+            specs = bssrSpec(args.modelspec, args.output_dir, args.bids_dir)
             specs.read_modelfile(args.modelspec)
             bss_data = load_bss_data(specs)
             bss_model = run_model(specs, bss_data)
             save_bss(bss_data, bss_model, specs.out_dir)
     if 'FUNC' in analyses:
-        specs = bssrSpec(args.modelspec, args.output_dir)
+        specs = bssrSpec(args.modelspec, args.output_dir, args.bids_dir)
         specs.read_bfp_modelfile(args.modelspec)
         ## convert tsv to csv
         basename = specs.tsv_fname.split(".")[0]
         cmd = "sed 's/\t/,/g' {0}.tsv > {0}.csv".format(basename)
-        print(cmd)
+        # print(cmd)
         subprocess.call(cmd, shell=True)
         exec(open("{BFPpath}/src/stats/bfp_run_stat.py".format(
             BFPpath=os.environ['BFP'])).read())

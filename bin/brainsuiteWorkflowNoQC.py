@@ -36,8 +36,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
     brainsuite_workflow.base_dir = CACHE_DIRECTORY
 
     # brainsuite_workflow.base_dir = "/tmp"
-    # t1 = INPUT_MRI_FILE.split("/")[-1].replace("_T1w", '')
-    t1 = INPUT_MRI_FILE
+    t1 = INPUT_MRI_FILE.split("/")[-1].replace("_T1w", '')
+    # t1 = INPUT_MRI_FILE
     # copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
     try:
         copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
@@ -136,7 +136,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
         if 'BDP' in keyword_parameters:
             INPUT_DWI_BASE = keyword_parameters['BDP']
             bdpObj = pe.Node(interface=bs.BDP(), name='BDP')
-            bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID +'_T1w'
+            bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID # +'_T1w'
 
             # bdp inputs that will be created. We delay execution of BDP until all CSE and datasink are done
             bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
@@ -159,7 +159,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
         if 'SVREG' in keyword_parameters:
             svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
-            svregInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            svregInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID # + '_T1w'
 
             # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
             svregObj.inputs.subjectFilePrefix = svregInputBase
@@ -179,7 +179,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             brainsuite_workflow.connect(svregObj, 'outputLabelFile', ds2, '@')
 
             thickPVCObj = pe.Node(interface=bs.ThicknessPVC(), name='ThickPVC')
-            thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID # + '_T1w'
             thickPVCObj.inputs.subjectFilePrefix = thickPVCInputBase
 
             brainsuite_workflow.connect(ds2, 'out_file', thickPVCObj, 'dataSinkDelay')
@@ -220,8 +220,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
                 atlasFilePrefix = keyword_parameters['ATLAS']
 
             ######## Apply Map ########
-            applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w'
-            applyMapInputBaseSVReg = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID #+ '_T1w'
+            applyMapInputBaseSVReg = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID #+ '_T1w'
             applyMapMapFile = applyMapInputBaseSVReg + '.svreg.inv.map.nii.gz'
             applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
 
@@ -285,7 +285,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             ####### Smooth Vol #######
             smoothKernel = 3.0
             bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
-            smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w' + '.dwi.RAS.correct.atlas.'
+            smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID  + '.dwi.RAS.correct.atlas.' #+ '_T1w'
 
             smoothVolFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FA')
             smoothVolFAObj.inputs.inFile = smoothVolInputBase + 'FA.nii.gz'
@@ -330,11 +330,11 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             smoothVolFRT_GFAObj.inputs.outFile = smoothVolInputBase + 'FRT_GFA.smooth{0}mm.nii.gz'.format(str(smoothKernel))
 
             smoothVolJacObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_MAP')
-            smoothVolJacObj.inputs.inFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w' + '.svreg.inv.jacobian.nii.gz'
+            smoothVolJacObj.inputs.inFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID  + '.svreg.inv.jacobian.nii.gz' #+ '_T1w'
             smoothVolJacObj.inputs.stdx = smoothKernel
             smoothVolJacObj.inputs.stdy = smoothKernel
             smoothVolJacObj.inputs.stdz = smoothKernel
-            smoothVolJacObj.inputs.outFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w' + '.svreg.inv.jacobian.smooth{0}mm.nii.gz'.format(str(smoothKernel))
+            smoothVolJacObj.inputs.outFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID  + '.svreg.inv.jacobian.smooth{0}mm.nii.gz'.format(str(smoothKernel)) #+ '_T1w'
 
             brainsuite_workflow.connect(ds4, 'out_file', smoothVolFAObj, 'dataSinkDelay')
             brainsuite_workflow.connect(ds4, 'out_file', smoothVolMDObj, 'dataSinkDelay')

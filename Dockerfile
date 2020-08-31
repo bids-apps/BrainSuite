@@ -115,8 +115,8 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/a
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
     apt-get update && apt-get install -y --allow-unauthenticated r-base
 
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp.tar.gz | tar xvz
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver3p02.tar.gz | tar xvz
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp.tar.gz | tar xvz
 #RUN rm /bfp_ver2p30.tar.gz
 RUN rm -rf bfp_ver3p02/supp_data && mv bfp_ver3p02/* bfp
 ENV BFP=/bfp
