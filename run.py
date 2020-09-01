@@ -335,13 +335,13 @@ if args.analysis_level == "group":
         if args.rmarkdown:
             run_rmarkdown(args.rmarkdown)
         else:
-            specs = bssrSpec(args.modelspec, args.output_dir, args.bids_dir)
+            specs = bssrSpec(args.modelspec, args.output_dir)
             specs.read_modelfile(args.modelspec)
             bss_data = load_bss_data(specs)
             bss_model = run_model(specs, bss_data)
             save_bss(bss_data, bss_model, specs.out_dir)
     if 'FUNC' in analyses:
-        specs = bssrSpec(args.modelspec, args.output_dir, args.bids_dir)
+        specs = bssrSpec(args.modelspec, args.output_dir)
         specs.read_bfp_modelfile(args.modelspec)
         ## convert tsv to csv
         basename = specs.tsv_fname.split(".")[0]

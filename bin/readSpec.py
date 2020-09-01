@@ -8,9 +8,8 @@ import configparser
 
 class bssrSpec(object):
 
-    def __init__(self, modelfile, outputdir, datadir):
+    def __init__(self, modelfile, outputdir):
         self.outputdir = outputdir
-        self.datadir = datadir
         # self.session = ''
         self.tsv = ''
         self.subjects = []
@@ -149,7 +148,7 @@ class bssrSpec(object):
         config = configparser.ConfigParser()
         config.read('/bfp_config_stats.ini')
         config.set('inputs', 'file_ext', str(self.file_ext))
-        config.set('inputs', 'data_dir', str(self.datadir))
+        config.set('inputs', 'data_dir', str(self.outputdir))
         config.set('inputs', 'lentime', str(self.lentime))
         config.set('inputs', 'matchT', str(self.matchT))
         config.set('inputs', 'stat_test', str(self.stat_test))
