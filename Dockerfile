@@ -166,9 +166,10 @@ RUN conda install -c r r-stringi
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py && \
     python install_dep.py
 
+RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.3.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
     python install_bssr.py
-RUN rm /bssr_0.2.2.tar.gz
+RUN rm /bssr_0.2.3.tar.gz && rm /bssr_0.2.2.tar.gz
 
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     apt-key add /usr/local/etc/neurodebian.gpg && \
@@ -179,6 +180,11 @@ RUN apt-get update && \
                     fsl-core=5.0.9-5~nd16.04+1 \
                     fsl-mni152-templates=5.0.7-2 \
                     afni=16.2.07~dfsg.1-5~nd16.04+1
+
+RUN cd / && wget http://brainsuite.org/atlasdata/USCBrain.zip && \
+    unzip USCBrain.zip && rm -rf /opt/BrainSuite19b/svreg/USCBrain && \
+    mv /USCBrain /opt/BrainSuite19b/svreg/ && \
+    rm /USCBrain.zip
 
 COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
 COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/

@@ -47,7 +47,7 @@ BFPpath= os.environ['BFP'] + '/bfp.sh'
 __version__ = open('/BrainSuite/version').read()
 BrainsuiteVersion = os.environ['BrainSuiteVersion']
 
-parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI)'.format(BrainsuiteVersion))
+parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI, rs-fMRI)'.format(BrainsuiteVersion))
 parser.add_argument('bids_dir', help='The directory with the input dataset '
                     'formatted according to the BIDS standard.')
 parser.add_argument('output_dir', help='The directory where the output files '
@@ -83,7 +83,7 @@ parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing pa
                     required=False)
 parser.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
                                         'group analysis stage.'
-                                      'Path to Rmarkdown file that contains bssr analysis commands. ',
+                                      'Path to R Markdown file that contains bssr analysis commands. ',
                     required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
 parser.add_argument('--cache', help='Nipype cache output folder', required=False)
@@ -116,7 +116,7 @@ else:
 
 atlases = { 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
             'BSA' : '/opt/BrainSuite{0}/svreg/BrainSuiteAtlas1/mri'.format(BrainsuiteVersion),
-            'USCBrain' : '/opt/BrainSuite{0}/svreg/USCBrain/BCI-DNI_brain'.format(BrainsuiteVersion)}
+            'USCBrain' : '/opt/BrainSuite{0}/svreg/USCBrain/USCBrain'.format(BrainsuiteVersion)}
 atlas = atlases[str(args.atlas)]
 
 if args.cache:

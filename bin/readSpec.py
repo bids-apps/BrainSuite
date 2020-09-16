@@ -159,7 +159,7 @@ class bssrSpec(object):
         config.set('outputs', 'save_figures', str(self.save_figures))
         config.set('outputs', 'sig_alpha', str(self.sig_alpha))
         config.set('parameters', 'atlas_groupsync', str(self.atlas_groupsync))
-        config.set('outputs', 'atlas_fname', str(self.atlas_fname))
+        config.set('parameters', 'atlas_fname', str(self.atlas_fname))
         config.set('outputs', 'test_all', str(self.test_all))
         config.set('demographics', 'csv_fname', str(self.tsv_fname.split('.')[0]+'.csv'))
         config.set('demographics', 'colvar_main', str(self.colvar_main))
