@@ -153,8 +153,6 @@ RUN conda install -y -c conda-forge rpy2
 RUN conda install libgcc
 RUN conda install -y -c conda-forge tqdm nilearn
 
-RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.2.tar.gz
-
 RUN wget https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz && \
     R CMD INSTALL nloptr_1.2.1.tar.gz && \
     rm nloptr_1.2.1.tar.gz
@@ -166,10 +164,10 @@ RUN conda install -c r r-stringi
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py && \
     python install_dep.py
 
-RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.3.tar.gz
+RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.4.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
     python install_bssr.py
-RUN rm /bssr_0.2.3.tar.gz && rm /bssr_0.2.2.tar.gz
+RUN rm /bssr_0.2.4.tar.gz
 
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     apt-key add /usr/local/etc/neurodebian.gpg && \

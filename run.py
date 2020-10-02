@@ -201,6 +201,11 @@ if args.analysis_level == "participant":
                             if 'SVREG' in stages:
                                 runWorkflow(subjectID, t1ws[i], outputdir, SVREG=True, SingleThread=thread,
                                             ATLAS=str(atlas), CACHE=cache)
+                            try:
+                                cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
+                                subprocess.call(cmd, shell=True)
+                            except:
+                                pass
                 else:
                     for t1 in t1ws:
                         if 'ALL' in stages:
@@ -226,21 +231,24 @@ if args.analysis_level == "participant":
                                 #              funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
                                 #                  '_bold')]
                                 taskname = funcs[i].split("task-")[1].split("_")[0]
-                                sess_input = "task-" + taskname
-                                # bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
-                                #     args.TR, cache)
-                                cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
-                                          BFPpath=BFPpath,
-                                          configini= configini,
-                                          t1=t1,
-                                          func=funcs[i],
-                                          studydir=args.output_dir,
-                                          subjID=subjectID,
-                                          sess=sess_input,
-                                          TR=args.TR
-                                      )
-                                print(cmd)
-                                subprocess.call(cmd, shell=True)
+                                if taskname == 'rest':
+                                    sess_input = "task-" + taskname
+                                    # bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
+                                    #     args.TR, cache)
+                                    cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
+                                              BFPpath=BFPpath,
+                                              configini= configini,
+                                              t1=t1,
+                                              func=funcs[i],
+                                              studydir=args.output_dir,
+                                              subjID=subjectID,
+                                              sess=sess_input,
+                                              TR=args.TR
+                                          )
+                                    print(cmd)
+                                    subprocess.call(cmd, shell=True)
+                                else:
+                                    print('BFP was not run because no resting-state fMRI data were found.')
         else:
 
             t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -276,6 +284,11 @@ if args.analysis_level == "participant":
                         if 'SVREG' in stages:
                             runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
                                         SVREG=True, SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
+                        try:
+                            cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, 'sub-%s' % subject_label, 'dwi'))
+                            subprocess.call(cmd, shell=True)
+                        except:
+                            pass
             else:
                 for t1 in t1ws:
                     if 'ALL' in stages:
@@ -304,20 +317,23 @@ if args.analysis_level == "participant":
                             #              funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
                             #                  '_bold')]
                             taskname = funcs[i].split("task-")[1].split("_")[0]
-                            sess_input = "task-" + taskname
-                            # bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
-                            #     args.TR, cache)
-                            cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
-                                BFPpath=BFPpath,
-                                configini=configini,
-                                t1=t1,
-                                func=funcs[i],
-                                studydir=args.output_dir,
-                                subjID='sub-%s' % subject_label,
-                                sess=sess_input,
-                                TR=args.TR
-                            )
-                            subprocess.call(cmd, shell=True)
+                            if taskname == 'rest':
+                                sess_input = "task-" + taskname
+                                # bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
+                                #     args.TR, cache)
+                                cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
+                                    BFPpath=BFPpath,
+                                    configini=configini,
+                                    t1=t1,
+                                    func=funcs[i],
+                                    studydir=args.output_dir,
+                                    subjID='sub-%s' % subject_label,
+                                    sess=sess_input,
+                                    TR=args.TR
+                                )
+                                subprocess.call(cmd, shell=True)
+                            else:
+                                print('BFP was not run because no resting-state fMRI data were found.')
         # shutil.rmtree(mcrCache)
         # os.remove(mcrCache)
 

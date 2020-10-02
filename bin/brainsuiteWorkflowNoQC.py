@@ -142,20 +142,20 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             bdpObj = pe.Node(interface=bs.BDP(), name='BDP')
             bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID +'_T1w'
 
-            bfc = bdpInputBase + '.bfc.nii.gz'
-            bfc_bdp = bdpInputBase.replace('_T1w', '_dwi') + '.bfc.nii.gz'
+            # bfc = bdpInputBase + '.bfc.nii.gz'
+            # bfc_bdp = bdpInputBase.replace('_T1w', '_dwi') + '.bfc.nii.gz'
 
-            try:
-                os.symlink(bfc, bfc_bdp)
-            except OSError as e:
-                if e.errno == errno.EEXIST:
-                    print("Symlink already exists. Moving on")
-                else:
-                    raise
+            # try:
+            #     os.symlink(bfc, bfc_bdp)
+            # except OSError as e:
+            #     if e.errno == errno.EEXIST:
+            #         print("Symlink already exists. Moving on")
+            #     else:
+            #         raise
 
             # bdp inputs that will be created. We delay execution of BDP until all CSE and datasink are done
-            # bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
-            bdpObj.inputs.bfcFile = bfc_bdp # + '.bfc.nii.gz'
+            bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
+            # bdpObj.inputs.bfcFile = bfc_bdp # + '.bfc.nii.gz'
             bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
             dwiabspath = os.path.abspath(os.path.dirname(INPUT_DWI_BASE + '.nii.gz'))
             bdpObj.inputs.BVecBValPair = [keyword_parameters['BVEC'], keyword_parameters['BVAL']]
@@ -207,6 +207,11 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', ds3, '@1')
 
 
+            generateXls = pe.Node(interface=bs.GenerateXls(), name='GenXls')
+            generateXls.inputs.subjectFilePrefix = thickPVCInputBase
+            brainsuite_workflow.connect(ds3, 'out_file', generateXls, 'dataSinkDelay')
+
+
             #### smooth surface
             smoothsurf = 2.0
 
@@ -236,7 +241,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
                 atlasFilePrefix = keyword_parameters['ATLAS']
 
             ######## Apply Map ########
-            applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_dwi'
+            applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w' # '_dwi'
             applyMapInputBaseSVReg = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
             applyMapMapFile = applyMapInputBaseSVReg + '.svreg.inv.map.nii.gz'
             applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
@@ -301,7 +306,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             ####### Smooth Vol #######
             smoothKernel = 3.0
             bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
-            smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID  + '_dwi' + '.dwi.RAS.correct.atlas.'
+            smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID  + '_T1w' + '.dwi.RAS.correct.atlas.'
 
             smoothVolFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FA')
             smoothVolFAObj.inputs.inFile = smoothVolInputBase + 'FA.nii.gz'

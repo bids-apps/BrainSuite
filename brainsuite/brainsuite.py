@@ -1808,6 +1808,45 @@ class SVRegSmoothVol(CommandLine):
     def _list_outputs(self):
         return l_outputs(self)
 
+
+class GenerateXlsInputSpec(CommandLineInputSpec):
+    subjectFilePrefix = traits.Str(
+        argstr='%s', mandatory=True,
+        desc='Absolute path and filename prefix of the subject data'
+    )
+    dataSinkDelay = traits.List(
+        str,
+        argstr='%s',
+        desc='Connect datasink out_file to dataSinkDelay to delay execution of '
+             'generate_xls until dataSink has finished sinking ThicknessPVC outputs.'
+    )
+
+class GenerateXlsOutputSpec(TraitedSpec):
+    roiwisestats = File(desc='path/name of ROIwise stats file.')
+
+class GenerateXls(CommandLine):
+
+    input_spec = GenerateXlsInputSpec
+    output_spec = GenerateXlsOutputSpec
+    _cmd = 'generate_stats_xls.sh'
+
+    def _gen_filename(self, name):
+        return getFileName(self.inputs.subjectFilePrefix, '')
+        return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if name == 'subjectFilePrefix':
+            return spec.argstr % os.path.expanduser(value)
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(GenerateXls, self)._format_arg(name, spec, value)
+
+
+
 # used to generate file names for outputs
 # removes pathway and extension of inputName, returns concatenation of:
 # inputName and suffix

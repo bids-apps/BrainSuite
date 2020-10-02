@@ -36,14 +36,16 @@ def load_bss_data(specs):
         bss_data = bssr.load_bss_data(type='cbm', subjdir= specs.outputdir, csv=specs.tsv, hemi=specs.hemi,
                                       smooth=OPT)
     elif specs.measure == "tbm":
-        bss_data = bssr.load_bss_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=OPT)
+        bss_data = bssr.load_bss_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=OPT,
+                                      maskfile=specs.maskfile, exclude_col=specs.exclude_col)
 
     elif specs.measure == "dbm":
         bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=OPT,
-                                      measure=specs.dbmmeas)
+                                      measure=specs.dbmmeas, maskfile=specs.maskfile, exclude_col=specs.exclude_col)
     elif specs.measure == "roi":
         rois = ro.vectors.IntVector(specs.roi)
-        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiids=rois, roimeas=specs.roimeas)
+        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiids=rois,
+                                      roimeas=specs.roimeas)
 
     else:
         sys.stdout.write("This imaging measure it not supported yet.")
@@ -63,7 +65,8 @@ def run_model(specs, bss_data):
         bss_model = bssr.bss_corr(corr_var=specs.corr_var, bss_data=bss_data, mult_comp=specs.mult_comp)
 
     elif specs.test == 'ttest':
-        bss_model = bssr.bss_ttest(group_var=specs.group_var, bss_data=bss_data, paired=specs.paired, mult_comp=specs.mult_comp)
+        bss_model = bssr.bss_ttest(group_var=specs.group_var, bss_data=bss_data, paired=specs.paired,
+                                   mult_comp=specs.mult_comp)
 
     else:
         sys.stdout.write("Specified test is not a valid type.\n")
