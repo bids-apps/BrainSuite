@@ -312,7 +312,7 @@ class CerebroInputSpec(CommandLineInputSpec):
     verbosity = traits.Int(desc='verbosity level (0=silent)', argstr='-v %d')
     linearConvergence = traits.Float(
         desc='linear convergence', argstr='--linconv %f')
-    warpLabel = traits.Int(
+    warpLevel = traits.Int(
         desc='warp order (2,3,4,5,6,7,8)', argstr='--warplevel %d')
     warpConvergence = traits.Float(
         desc='warp convergence', argstr='--warpconv %f')
@@ -1177,6 +1177,12 @@ class BDPInputSpec(CommandLineInputSpec):
         argstr='--3dshore --diffusion_time_ms %f',
         desc='Estimates ODFs using 3Dshore. Pass in diffusion time, in ms'
     )
+    estimateODF_GQI = traits.Bool(
+        argstr='--gqi',
+        desc='Estimates ODFs using the GQI method. The outputs are saved in a '
+             'separate directory with name "GQI" and the ODFs can be visualized by '
+             'loading the saved ".odf" file in BrainSuite.'
+    )
     odfLambta = traits.Bool(
         argstr='--odf-lambda <L>',
         desc='Sets the regularization parameter, lambda, of the Laplace-Beltrami '
@@ -1845,7 +1851,145 @@ class GenerateXls(CommandLine):
 
         return super(GenerateXls, self)._format_arg(name, spec, value)
 
+class VolblendInputSpec(CommandLineInputSpec):
+    inFile = File(argstr='-i %s', mandatory=True, desc='Input file.')
+    outFile = File(argstr='-o %s', mandatory=True, desc='Output file.')
+    Overlay = File(argstr='-r %s', mandatory=False, desc='Overlay image file name.')
+    OverlayAlpha = traits.Int(argstr='--alpha %d', mandatory=False, desc='Overlay alpha (0-255) [default: 128]')
+    maskFile = File(argstr='-m %s', mandatory=False, desc='Mask filename.')
+    colorMap = traits.Str(argstr='-c %s', mandatory=False, desc='blue, blue, bone, cool, copper, green, grey, hot, hsv, '
+                                                                'inverse, jet, pink, prism, red [default: grey]')
+    labelFile = File(argstr='-l %s', mandatory=False, desc='Label filename.')
+    labelAlpha = traits.Int(argstr='--labelalpha %d', mandatory=False, desc='Label alpha (0-255) [default: 64]')
+    labelDesc = File(argstr='-x %s', mandatory=False, desc='Label description xml file.')
+    scaling = traits.Float(argstr='-s %f', mandatory=False, desc='scaling value for image (0==autoscale) [default: 0]')
+    view = traits.Int(argstr='--view %d', mandatory=False, desc='1=axial, 2=coronal, 3=sagittal [default: 1]')
+    Slice = traits.Int(argstr='--slice %d', mandatory=False, desc='slice number (0-indexed, -1 uses center slice) '
+                                                                  '[default: -1]')
+    flip =traits.Bool(argstr='--flip', mandatory=False, desc='flip image U/D.')
+    flop = traits.Bool(argstr='--flop', mandatory=False, desc='flip image L/R.')
+    dataSinkDelay = traits.List(
+        str,
+        argstr='%s',
+        desc='Connect datasink outfile to dataSinkDelay to delay execution of '
+             'qcState until dataSink has finished sinking volblend outputs.'
+    )
 
+class VolblendOutputSpec(TraitedSpec):
+    outFile = File(desc='Output file.')
+
+class Volblend(CommandLine):
+
+    input_spec = VolblendInputSpec
+    output_spec = VolblendOutputSpec
+    _cmd = 'volblend'
+
+    def _gen_filename(self, name):
+        return getFileName(self.inputs.outFile, '')
+        return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if name == 'inFile':
+            return spec.argstr % os.path.expanduser(value)
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(Volblend, self)._format_arg(name, spec, value)
+
+class DfsRenderInputSpec(CommandLineInputSpec):
+    OutFile = File(argstr= '-o %s', mandatory=True, desc = 'Output file. Must be a png.')
+    Ant = traits.Bool(argstr = '--ant', mandatory = False, desc = 'coronal view (anterior)')
+    Pos = traits.Bool(argstr = '--pos', mandatory = False, desc = 'coronal view (posterior)')
+    Sup = traits.Bool(argstr = '--sup', mandatory = False, desc = 'axial view (superior)')
+    Inf = traits.Bool(argstr = '--inf', mandatory = False, desc = 'axial view (inferior)')
+    Left = traits.Bool(argstr = '--left', mandatory = False, desc = 'sagittal view (left)')
+    Right = traits.Bool(argstr = '--right', mandatory = False, desc = 'sagittal view (right)')
+    BGcolor = traits.Str(argstr = '--bg %s', mandatory = False, desc = 'background color (rgb) [default: 0 0 0]')
+    Shiny = traits.Int(argstr = '--shiny %d', mandatory=False, desc='shininess exponent(1: shiny, 128: less shiny) [default: 0]')
+    FiberWidth = traits.Int(argstr='--fiberwidth %d', mandatory=False, desc='fiber line width (0..10) [default: 1]')
+    Xwidth = traits.Int(argstr='-x %d', mandatory=False, desc='width in pixels [default: 512]')
+    Ywidth = traits.Int(argstr='-y %d', mandatory=False, desc='height in pixels [default: 512]')
+    Surfaces = traits.Str(argstr='-s %s', mandatory=False, desc='surface1 [... surfaceN]')
+    SolidSurfaces = traits.Str(argstr='--solidcolor %s', mandatory=False,
+     desc='surfaceIndex1 [ ... surfaceIndexN] (render these surfaces in grey)')
+    Alpha = traits.Float(argstr='--alpha %f', mandatory=False, desc='translucency value, 0-1 [default: 0.5]')
+    TransSurfaces = traits.Str(argstr='--translucent %s', mandatory=False, desc='surfaceIndex1 [ ... alphaValueN]')
+    WireSurfaces = traits.Str(argstr='--wire %s', mandatory=False,
+     desc='surfaceIndex1 [ ... surfaceIndexN] (use wireframe for these surfaces)')
+    Zoom = traits.Int(argstr='--zoom %f', mandatory=False, desc='zoom factor [default: 1]')
+    xRot = traits.Int(argstr='--xrot %d', mandatory=False, desc='x rotation angle [default: 0]')
+    yRot = traits.Int(argstr='--yrot %d', mandatory=False, desc='y rotation angle [default: 0]')
+    zRot = traits.Int(argstr='--zrot %d', mandatory=False, desc='z rotation angle [default: 0]')
+    Position = traits.Int(argstr='-p %d %d %d', mandatory=False, desc='position (if no-center is selected) [default: 0 0 0]')
+    track = File(argstr='-t %s', mandatory=False, desc='track file (.dft or .trk)')
+    Tubes = traits.Bool(argstr='--tubes', mandatory=False, desc='render fibers as tubes')
+    colorByAngle = traits.Bool(argstr='--colorbyangle', mandatory=False, desc='color by angle along track')
+    TubeRadius = traits.Int(argstr='--tuberadius %f', mandatory=False, desc='radius of fiber tubes (mm) [default: 0.2]')
+    Panels = traits.Int(argstr='--panels %d', mandatory=False, desc='number of panels for tubes [default: 10]')
+    TubeJoin = traits.Bool(argstr='--joins', mandatory=False, desc='show joins of tubes (better, slower rendering)')
+    Grey = traits.Bool(argstr='--no-color', mandatory=False, desc='render surfaces in greyscale')
+    NoCenter = traits.Bool(argstr='--nocenter', mandatory=False, desc='do not center based on first surface')
+    xClip = traits.Int(argstr='--clip-x %d', mandatory=False, desc='x-clipping [0=off, 1=positive, 2=negative] [default: 0]')
+    yClip = traits.Int(argstr='--clip-y %d', mandatory=False, desc='y-clipping [0=off, 1=positive, 2=negative] [default: 0]')
+    zClip = traits.Int(argstr='--clip-z %d', mandatory=False, desc='z-clipping [0=off, 1=positive, 2=negative] [default: 0]')
+    clipPoint = traits.Int(argstr='--clippoint %d %d %d', mandatory=False,
+     desc='clip point (if 0,0,0, then use volume center) [default: 0 0 0]')
+    CenterVol = File(argstr='--vol %s', mandatory=False, desc='center based on volume')
+    dataSinkDelay = traits.List(
+        str,
+        argstr='%s',
+        desc='Connect datasink outfile to dataSinkDelay to delay execution of '
+             'qcState until dataSink has finished sinking dfsrender outputs.'
+    )
+
+class DfsRenderOutputSpec(TraitedSpec):
+    outFile = File(desc='Output file. Must be a png.')
+
+class DfsRender(CommandLine):
+
+    input_spec = DfsRenderInputSpec
+    output_spec = DfsRenderOutputSpec
+    _cmd = 'dfsrender'
+
+    def _gen_filename(self, name):
+        return getFileName(self.inputs.OutFile, '')
+        return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
+            return spec.argstr % os.path.expanduser(value)
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(DfsRender, self)._format_arg(name, spec, value)
+
+class QCStateInputSpec(CommandLineInputSpec):
+    filename = traits.Str(mandatory=True, argstr='%s', position=0, desc='Basename.')
+    stagenum = traits.Int(mandatory=True, argstr='%d', position=1, desc='Stage number.')
+    Run = traits.Str(argstr='%s', position=2, desc='dummy arg.')
+
+class QCState(CommandLine):
+
+    input_spec = QCStateInputSpec
+    _cmd = 'qcState.sh'
+
+    def _gen_filename(self, name):
+        return getFileName(self.inputs.filename, '.state')
+        return None
+
+    # def _list_outputs(self):
+    #     return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if (name == 'filename') or (name == 'Run') :
+            return spec.argstr % os.path.expanduser(value)
+        return super(QCState, self)._format_arg(name, spec, value)
 
 # used to generate file names for outputs
 # removes pathway and extension of inputName, returns concatenation of:

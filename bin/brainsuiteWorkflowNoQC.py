@@ -22,47 +22,102 @@ import errno
 BRAINSUITE_VERSION= os.environ['BrainSuiteVersion']
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
 ATLAS_LABEL_SUFFIX = 'brainsuite.icbm452.v15a.label.img'
-
+WORKFLOW_NAME = 'BrainSuite'
 BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite{0}/atlas/".format(BRAINSUITE_VERSION)
 
-
-def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_parameters):
-    # layout = BIDSLayout(BIDS_DIRECTORY)
-
-    # WORKFLOW_NAME = SUBJECT_ID + "_cse"
-    WORKFLOW_NAME = 'BrainSuite'
-
-    brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
-    CACHE_DIRECTORY = keyword_parameters['CACHE']
-    brainsuite_workflow.base_dir = CACHE_DIRECTORY
-
-    # brainsuite_workflow.base_dir = "/tmp"
-    t1 = INPUT_MRI_FILE.split("/")[-1] #.replace("_T1w", '')
-    # t1 = INPUT_MRI_FILE
-    # copyfile(INPUT_MRI_FILE, os.path.join("/tmp", t1))
-    try:
-        copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            print("No need to copy T1w file into cache directory. Moving on.")
+class subjLevelProcessing(object):
+    def __init__(self,STAGES, specs=None, **keyword_parameters):
+        self.specs = specs
+        self.stages = STAGES
+        # svreg
+        if keyword_parameters['ATLAS']:
+            self.atlas = keyword_parameters['ATLAS']
         else:
-            raise
+            self.atlas = 'BCI'
+        self.singleThread = False
+        if 'SingleThread' in keyword_parameters:
+            if keyword_parameters['SingleThread'] is True:
+                self.singleThread = True
 
-    bseObj = pe.Node(interface=bs.Bse(), name='BSE')
-    ds0 = pe.Node(io.DataSink(), name='DATASINK')
-    ds0.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+        self.cachedir = keyword_parameters['CACHE']
 
-    # ====BSE Inputs and Parameters====
-    bseObj.inputs.inputMRIFile = os.path.join(CACHE_DIRECTORY, t1)
-    bseObj.inputs.diffusionIterations = 3
-    bseObj.inputs.diffusionConstant = 25  # -d
-    bseObj.inputs.edgeDetectionConstant = 0.64  # -s
-    bseObj.inputs.autoParameters = True
+        #bse
+        self.autoParameters = specs.autoParameters
+        self.diffusionIterations = specs.diffusionIterations
+        self.diffusionConstant = specs.diffusionConstant
+        self.edgeDetectionConstant = specs.edgeDetectionConstant
+        # bfc
+        self.iterativeMode = specs.iterativeMode
+        # pvc
+        self.spatialPrior = specs.spatialPrior
+        # cerebro
+        self.costFunction = specs.costFunction
+        self.useCentroids = specs.useCentroids
+        self.linearConvergence = specs.linearConvergence
+        self.warpConvergence = specs.warpConvergence
+        self.warpLevel = specs.warpLevel
+        # inner cortical mask
+        self.tissueFractionThreshold = specs.tissueFractionThreshold
 
-    if "BSEONLY" in keyword_parameters:
-        brainsuite_workflow.connect(bseObj, 'outputMRIVolume', ds0, '@')
+        # bdp
+        self.skipDistortionCorr = specs.skipDistortionCorr
+        self.phaseEncodingDirection = specs.phaseEncodingDirection
+        self.estimateODF_3DShore = specs.estimateODF_3DShore
+        self.estimateODF_GQI = specs.estimateODF_GQI
+        self.generateStats = specs.generateStats
+        self.forcePartialROIStats = specs.forcePartialROIStats
 
-    if not "BSEONLY" in keyword_parameters:
+        self.echoSpacing = specs.echoSpacing
+        self.fieldmapCorrection = specs.fieldmapCorrection
+        self.diffusion_time_ms = specs.diffusion_time_ms
+
+        # svreg
+        atlases = {'BCI': '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION),
+                   'BSA': '/opt/BrainSuite{0}/svreg/BrainSuiteAtlas1/mri'.format(BRAINSUITE_VERSION),
+                   'USCBrain': '/opt/BrainSuite{0}/svreg/USCBrain/USCBrain'.format(BRAINSUITE_VERSION)}
+        self.atlas = atlases[str(specs.atlas)]
+        self.singleThread = specs.singleThread
+
+        # smoothing
+        self.smoothvol = specs.smoothvol
+        self.smoothsurf = specs.smoothsurf
+
+        self.cachedir = specs.cache
+
+        if 'BDP' in STAGES:
+            self.bdpfiles = keyword_parameters['BDP']
+            self.BVecBValPair = [keyword_parameters['BVEC'], keyword_parameters['BVAL']]
+
+    def runWorkflow(self, SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY):
+        STAGES = self.stages
+        brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
+        CACHE_DIRECTORY = self.cachedir
+        if self.specs.read_file:
+            CACHE_DIRECTORY = self.cachedir+ '/sub-' + SUBJECT_ID
+            if not os.path.exists(CACHE_DIRECTORY):
+                os.makedirs(CACHE_DIRECTORY)
+        brainsuite_workflow.base_dir = CACHE_DIRECTORY
+
+        t1 = INPUT_MRI_FILE.split("/")[-1]
+
+        try:
+            copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                print("No need to copy T1w file into cache directory. Moving on.")
+            else:
+                raise
+
+        bseObj = pe.Node(interface=bs.Bse(), name='BSE')
+
+        # ====BSE Inputs and Parameters====
+        bseObj.inputs.inputMRIFile = os.path.join(CACHE_DIRECTORY, t1)
+        bseObj.inputs.diffusionIterations = self.diffusionIterations
+        bseObj.inputs.diffusionConstant = self.diffusionConstant  # -d
+        bseObj.inputs.edgeDetectionConstant = self.edgeDetectionConstant  # -s
+        bseObj.inputs.autoParameters = self.autoParameters
+
+
         bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
         pvcObj = pe.Node(interface=bs.Pvc(), name='PVC')
         cerebroObj = pe.Node(interface=bs.Cerebro(), name='CEREBRO')
@@ -81,16 +136,23 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
         # ====Parameters====
         # Provided atlas files
+        bfcObj.inputs.iterativeMode = self.iterativeMode
         cerebroObj.inputs.inputAtlasMRIFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_MRI_SUFFIX)
         cerebroObj.inputs.inputAtlasLabelFile = (BRAINSUITE_ATLAS_DIRECTORY + ATLAS_LABEL_SUFFIX)
-        # cerebroObj.inputs.useCentroids = False
+        pvcObj.inputs.spatialPrior = self.spatialPrior
+        cerebroObj.inputs.useCentroids = self.useCentroids
+        cerebroObj.inputs.costFunction = self.costFunction
+        cerebroObj.inputs.linearConvergence = self.linearConvergence
+        cerebroObj.inputs.warpConvergence = self.warpConvergence
+        cerebroObj.inputs.warpLevel = self.warpLevel
+        cortexObj.inputs.tissueFractionThreshold = self.tissueFractionThreshold
         pialmeshObj.inputs.tissueThreshold = 1.05
         tcaObj.inputs.minCorrectionSize = 2500
         tcaObj.inputs.foregroundDelta = 20
 
         # ====Connect====
-
-        brainsuite_workflow.connect(bseObj, 'outputMRIVolume', bfcObj, 'inputMRIFile')
+        if 'noBSE' not in STAGES:
+            brainsuite_workflow.connect(bseObj, 'outputMRIVolume', bfcObj, 'inputMRIFile')
         brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', pvcObj, 'inputMRIFile')
         brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', cortexObj, 'inputTissueFractionFile')
 
@@ -117,8 +179,9 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
         ds.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
 
         # **DataSink connections**
-        brainsuite_workflow.connect(bseObj, 'outputMRIVolume', ds, '@')
-        brainsuite_workflow.connect(bseObj, 'outputMaskFile', ds, '@1')
+        if 'noBSE' not in STAGES:
+            brainsuite_workflow.connect(bseObj, 'outputMRIVolume', ds, '@')
+            brainsuite_workflow.connect(bseObj, 'outputMaskFile', ds, '@1')
         brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', ds, '@2')
         brainsuite_workflow.connect(pvcObj, 'outputLabelFile', ds, '@3')
         brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', ds, '@4')
@@ -137,58 +200,133 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
         brainsuite_workflow.connect(hemisplitObj, 'outputLeftPialHemisphere', ds, '@17')
         brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', ds, '@18')
 
-        if 'BDP' in keyword_parameters:
-            INPUT_DWI_BASE = keyword_parameters['BDP']
+        if 'QC' in STAGES:
+            WEBPATH = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID)
+            if not os.path.exists(WEBPATH):
+                os.makedirs(WEBPATH)
+
+            origT1 = os.path.join(CACHE_DIRECTORY, t1)
+            bseMask = bseObj.outputs.outputMaskFile
+            bfc = bfcObj.inputs.inputMRIFile
+            pvclabel = pvcObj.outputs.outputLabelFile
+            cerebro = cerebroObj.outputs.outputCerebrumMaskFile
+            inner = cortexObj.outputs.outputCerebrumMask
+            scrub = scrubmaskObj.outputs.outputMaskFile
+            tca = tcaObj.outputs.outputMaskFile
+            dewisp = dewispObj.outputs.outputMaskFile
+            dfs = dfsObj.outputs.outputSurfaceFile
+            pialmesh = pialmeshObj.outputs.outputSurfaceFile
+            # hemisplit =
+
+            volbendbseObj = pe.Node(interface=bs.Volblend(), name='volblendbse')
+            volbendbseObj.inputs.inFile = origT1
+            volbendbseObj.inputs.outFile = '{0}/bse.png'.format(WEBPATH)
+            volbendbseObj.inputs.maskFile = bseMask
+
+            volbendbfcObj = pe.Node(interface=bs.Volblend(), name='volblendbfc')
+            volbendpvcObj = pe.Node(interface=bs.Volblend(), name='volblendpvc')
+            volbendcerebroObj = pe.Node(interface=bs.Volblend(), name='volblendcerebro')
+            volbendcortexObj = pe.Node(interface=bs.Volblend(), name='volblendcortex')
+            volbendscrubmaskObj = pe.Node(interface=bs.Volblend(), name='volblendscrubmask')
+            volbendtcaObj = pe.Node(interface=bs.Volblend(), name='volblendtca')
+            volbenddewispObj = pe.Node(interface=bs.Volblend(), name='volblenddewisp')
+            dfsrenderdfsObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfs')
+            dfsrenderpialmeshObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderpialmesh')
+            dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
+
+
+            qcstatevolbendbseObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbseObj')
+            qcstatevolbendbseObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendbseObj.inputs.stagenum = 1
+
+            qcstatevolbendbfcObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbfcObj')
+            qcstatevolbendpvcObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendpvcObj')
+            qcstatevolbendcerebroObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendcerebroObj')
+            qcstatevolbendcortexObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendcortexObj')
+            qcstatevolbendscrubmaskObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendscrubmaskObj')
+            qcstatevolbendtcaObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendtcaObj')
+            qcstatevolbenddewispObj = pe.Node(interface=bs.QCState(), name='qcstatevolbenddewispObj')
+            qcstatedfsrenderdfsObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderdfsObj')
+            qcstatedfsrenderpialmeshObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderpialmeshObj')
+            qcstatedfsrenderhemisplitObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderhemisplitObj')
+
+            # Connect
+            brainsuite_workflow.connect(bseObj, 'outputMRIVolume', volbendbseObj, 'inFile')
+            brainsuite_workflow.connect(volbendbseObj, 'outFile', qcstatevolbendbseObj, 'Run')
+
+            #TODO: if index.html does not exist in QC folder, then run watch.sh
+
+            # brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendbfcObj, 'inFile')
+            # brainsuite_workflow.connect(volbendbfcObj, 'outFile', qcstatevolbendbfcObj, 'filename')
+            #
+            # brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', volbendpvcObj, 'inFile')
+            # brainsuite_workflow.connect(volbendpvcObj, 'outFile', qcstatevolbendpvcObj, 'filename')
+            #
+            # brainsuite_workflow.connect(cerebroObj, 'outputLabelVolumeFile', volbendcerebroObj, 'inFile')
+            # brainsuite_workflow.connect(volbendcerebroObj, 'outFile', qcstatevolbendcerebroObj, 'filename')
+            #
+            # brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', volbendcortexObj, 'inFile')
+            # brainsuite_workflow.connect(volbendcortexObj, 'outFile', qcstatevolbendcortexObj, 'filename')
+            # 
+            # brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', volbendscrubmaskObj, 'inFile')
+            # brainsuite_workflow.connect(volbendscrubmaskObj, 'outFile', qcstatevolbendscrubmaskObj, 'filename')
+            #
+            # brainsuite_workflow.connect(tcaObj, 'outputMaskFile', volbendtcaObj, 'inFile')
+            # brainsuite_workflow.connect(volbendtcaObj, 'outFile', qcstatevolbendtcaObj, 'filename')
+            #
+            # brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispObj, 'inFile')
+            # brainsuite_workflow.connect(volbenddewispObj, 'outFile', qcstatevolbenddewispObj, 'filename')
+            #
+            # brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsObj, 'Surfaces')
+            # brainsuite_workflow.connect(dfsrenderdfsObj, 'outFile', qcstatedfsrenderdfsObj, 'filename')
+            #
+            # brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', dfsrenderpialmeshObj, 'Surfaces')
+            # brainsuite_workflow.connect(dfsrenderpialmeshObj, 'outFile', qcstatedfsrenderpialmeshObj, 'filename')
+            #
+            # brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', dfsrenderhemisplitObj, 'Surfaces')
+            # brainsuite_workflow.connect(dfsrenderhemisplitObj, 'outFile', qcstatedfsrenderhemisplitObj, 'filename')
+
+        if 'BDP' in STAGES:
+            INPUT_DWI_BASE = self.bdpfiles
             bdpObj = pe.Node(interface=bs.BDP(), name='BDP')
             bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID +'_T1w'
 
-            # bfc = bdpInputBase + '.bfc.nii.gz'
-            # bfc_bdp = bdpInputBase.replace('_T1w', '_dwi') + '.bfc.nii.gz'
-
-            # try:
-            #     os.symlink(bfc, bfc_bdp)
-            # except OSError as e:
-            #     if e.errno == errno.EEXIST:
-            #         print("Symlink already exists. Moving on")
-            #     else:
-            #         raise
-
             # bdp inputs that will be created. We delay execution of BDP until all CSE and datasink are done
             bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
-            # bdpObj.inputs.bfcFile = bfc_bdp # + '.bfc.nii.gz'
             bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
-            dwiabspath = os.path.abspath(os.path.dirname(INPUT_DWI_BASE + '.nii.gz'))
-            bdpObj.inputs.BVecBValPair = [keyword_parameters['BVEC'], keyword_parameters['BVAL']]
+            bdpObj.inputs.BVecBValPair = self.BVecBValPair
 
             bdpObj.inputs.estimateTensors = True
             bdpObj.inputs.estimateODF_FRACT = True
             bdpObj.inputs.estimateODF_FRT = True
+            bdpObj.inputs.skipDistortionCorr = self.skipDistortionCorr
 
             bdpsubdir = '/../dwi'
             bdpObj.inputs.outputSubdir = bdpsubdir
 
             brainsuite_workflow.connect(ds, 'out_file', bdpObj, 'dataSinkDelay')
-            if 'SVREG' in keyword_parameters:
+            if 'SVREG' in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
                 ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
                 brainsuite_workflow.connect(bdpObj, 'tensor_coord', ds2, '@0')
 
-        if 'SVREG' in keyword_parameters:
+        if 'SVREG' in STAGES:
             svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
             svregInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
 
             # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
             svregObj.inputs.subjectFilePrefix = svregInputBase
-            svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
-            if 'ATLAS' in keyword_parameters:
-                svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
-            if 'SingleThread' in keyword_parameters:
-                if 'ON' in keyword_parameters['SingleThread']:
-                    svregObj.inputs.useSingleThreading = True
+            svregObj.inputs.atlasFilePrefix = self.atlas
+            # svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
+            # if 'ATLAS' in keyword_parameters:
+            #     svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
+            # if 'SingleThread' in keyword_parameters:
+            #     if 'ON' in keyword_parameters['SingleThread']:
+            svregObj.inputs.useSingleThreading = self.singleThread
 
             brainsuite_workflow.connect(ds, 'out_file', svregObj, 'dataSinkDelay')
 
-            if not 'BDP' in keyword_parameters:
+            if not 'BDP' in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
                 ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
 
@@ -213,7 +351,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
 
             #### smooth surface
-            smoothsurf = 2.0
+            smoothsurf = self.smoothsurf
 
             smoothSurfInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + 'atlas.pvc-thickness_0-6mm'
 
@@ -234,11 +372,9 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
             ## TODO: place svreg.inv.map smoothing here ##
 
-        if 'SVREG' in keyword_parameters and 'BDP' in keyword_parameters:
+        if 'SVREG' in STAGES and 'BDP' in STAGES:
             bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
-            atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
-            if 'ATLAS' in keyword_parameters:
-                atlasFilePrefix = keyword_parameters['ATLAS']
+            atlasFilePrefix = self.atlas
 
             ######## Apply Map ########
             applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w' # '_dwi'
@@ -304,7 +440,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
 
 
             ####### Smooth Vol #######
-            smoothKernel = 3.0
+            smoothKernel = self.smoothvol
             bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
             smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID  + '_T1w' + '.dwi.RAS.correct.atlas.'
 
@@ -366,8 +502,8 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, **keyword_p
             brainsuite_workflow.connect(ds4, 'out_file', smoothVolJacObj, 'dataSinkDelay')
 
 
-    brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
+        brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
 
-    # Print message when all processing is complete.
-    print('Processing for subject %s has completed. Nipype workflow is located at: %s' % (
-    SUBJECT_ID, WORKFLOW_BASE_DIRECTORY))
+        # Print message when all processing is complete.
+        print('Structural processing for subject %s has completed. Nipype workflow is located at: %s' % (
+        SUBJECT_ID, WORKFLOW_BASE_DIRECTORY))

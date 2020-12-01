@@ -14,11 +14,12 @@ from bids.grabbids import BIDSLayout
 from builtins import str
 import shutil
 
-from bin.brainsuiteWorkflowNoQC import runWorkflow
+from bin.brainsuiteWorkflowNoQC import subjLevelProcessing
 from bin.readPreprocSpec import preProcSpec
 from bin.readSpec import bssrSpec
 from bin.runBssr import *
 from run_rmarkdown import run_rmarkdown
+from bin.runWorkflow import runWorkflow
 
 ########################################################################
 ### Authored by https://github.com/BIDS-Apps/HCPPipelines/blob/master/run.py
@@ -66,7 +67,7 @@ parser.add_argument('--participant_label', help='The label of the participant th
                    'participants can be specified with a space separated list.',
                    nargs="+")
 parser.add_argument('--stages', help='Processing stage to be run. Space delimited list.', nargs="+",
-                    choices=['CSE', 'SVREG', 'BDP', 'BFP', 'ALL'], default='ALL')
+                    choices=['CSE', 'SVREG', 'BDP', 'BFP', 'QC', 'ALL'], default='ALL')
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
                                     'Default atlas: BCI-DNI. Options: BSA, BCI, USCBrain.',
                     choices=['BSA', 'BCI', 'USCBrain'], default='BCI', required=False)
@@ -87,7 +88,10 @@ parser.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file tha
                     required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
 parser.add_argument('--cache', help='Nipype cache output folder', required=False)
-parser.add_argument('--TR', help='Repetition time of MRI', default='2')
+parser.add_argument('--TR', help='Repetition time of MRI', default=0)
+parser.add_argument('--skipBSE', help='Skips BSE stage when running CSE. Please make sure '
+                                      'there are sub-ID_T1w.mask.nii.gz files in the subject folders.',
+                    action='store_true', required=False)
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite{0} Pipelines BIDS App version {1}'.format(BrainsuiteVersion, __version__))
 
@@ -110,32 +114,28 @@ else:
     subjects_to_analyze = [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
 
 if args.singleThread:
-    thread= str('ON')
+    thread= True
 else:
-    thread= str('OFF')
+    thread=False
 
 atlases = { 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
             'BSA' : '/opt/BrainSuite{0}/svreg/BrainSuiteAtlas1/mri'.format(BrainsuiteVersion),
             'USCBrain' : '/opt/BrainSuite{0}/svreg/USCBrain/USCBrain'.format(BrainsuiteVersion)}
 atlas = atlases[str(args.atlas)]
 
-if args.cache:
-    cache = args.cache
 
 if args.analysis_level == "participant":
-    # check stages argument info
-    if all(stage in args.stages for stage in ['CSE', 'SVREG', 'BDP', 'BFP']):
-        stages = 'ALL'
-    elif 'CSE' in args.stages and 'BDP' in args.stages:
-        stages = 'BDP'
-    elif 'CSE' in args.stages and 'SVREG' in args.stages:
-        stages = 'SVREG'
+    if args.stages == 'ALL':
+        stages = ['CSE', 'SVREG', 'BDP', 'BFP', 'QC']
+    elif args.skipBSE:
+        stages = args.stages.append('noBSE')
     else:
         stages = args.stages
 
     cacheset =False
+    preprocspecs = preProcSpec(args.bids_dir, args.output_dir)
     if args.preprocspec:
-        preprocspecs = preProcSpec(args.preprocspec, args.bids_dir, args.output_dir)
+        preprocspecs.read_preprocfile(args.preprocspec)
         atlas = atlases[str(preprocspecs.atlas)]
         cache = preprocspecs.cache
         thread = preprocspecs.singleThread
@@ -159,7 +159,6 @@ if args.analysis_level == "participant":
 
         if len(sessions) > 0:
             for ses in range(0, len(sessions)):
-                # layout._get_nearest_helper(dwi, 'bval', type='dwi')
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
                                                        type='T1w', session=sessions[ses],
                                                        extensions=["nii.gz", "nii"])]
@@ -174,81 +173,79 @@ if args.analysis_level == "participant":
 
 
                 subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
-                outputdir = os.path.join(args.output_dir, subjectID, 'anat') # str(args.output_dir + os.sep + subjectID + os.sep + 'anat')
-                if not cacheset:
-                    cache = outputdir
-                elif cacheset:
-                    cache = cache + '/sub-' + subject_label
-                    if not os.path.exists(cache):
-                        os.makedirs(cache)
-                if not os.path.exists(outputdir):
-                    os.makedirs(outputdir)
-                if (len(dwis) > 0):
-                    numOfPairs = min(len(t1ws), len(dwis))
-                    for i in range(0, numOfPairs):
-                        bval = layout.get_bval(dwis[i])
-                        bvec = layout.get_bvec(dwis[i])
-                        if 'ALL' in stages:
-                            runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
-                                        BVAL=str(bval), BVEC=str(bvec), SVREG=True, SingleThread=thread,
-                                        ATLAS=str(atlas), CACHE=cache)
-                        else:
-                            if 'CSE' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, CACHE=cache)
-                            if 'BDP' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, BDP=dwis[i].split('.')[0],
-                                            BVAL=str(bval), BVEC=str(bvec), CACHE=cache)
-                            if 'SVREG' in stages:
-                                runWorkflow(subjectID, t1ws[i], outputdir, SVREG=True, SingleThread=thread,
-                                            ATLAS=str(atlas), CACHE=cache)
-                            try:
-                                cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
-                                subprocess.call(cmd, shell=True)
-                            except:
-                                pass
-                else:
-                    for t1 in t1ws:
-                        if 'ALL' in stages:
-                            runWorkflow(subjectID, t1, outputdir, SVREG=True,
-                                        SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                        else:
-                            if 'CSE' in stages:
-                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
-                            if 'SVREG' in stages:
-                                runWorkflow(subjectID, t1, outputdir, SVREG=True,
-                                            SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                            if 'BDP' in stages:
-                                print('\nNo DWI data found. Running CSE only.')
-                                runWorkflow(subjectID, t1, outputdir, CACHE=cache)
+                outputdir = os.path.join(args.output_dir, subjectID, 'anat')
+                # if not cacheset:
+                #     cache = outputdir
+                # elif cacheset:
+                #     cache = cache + '/' + subjectID
+                #     if not os.path.exists(cache):
+                #         os.makedirs(cache)
+                # if not os.path.exists(outputdir):
+                #     os.makedirs(outputdir)
 
-                if 'BFP' in stages or 'ALL' in stages:
-                    for t1 in t1ws:
-                        if (len(funcs) < 1):
-                            print("No fMRI files found for subject %s!" % subject_label)
-                        else:
-                            for i in range(0, len(funcs)):
-                                # sess_input = funcs[i][
-                                #              funcs[i].index(subjectID + '_') + len(subjectID + '_'): funcs[i].index(
-                                #                  '_bold')]
-                                taskname = funcs[i].split("task-")[1].split("_")[0]
-                                if taskname == 'rest':
-                                    sess_input = "task-" + taskname
-                                    # bfp('/config.ini', t1, funcs[i], args.output_dir, subjectID, sess_input,
-                                    #     args.TR, cache)
-                                    cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
-                                              BFPpath=BFPpath,
-                                              configini= configini,
-                                              t1=t1,
-                                              func=funcs[i],
-                                              studydir=args.output_dir,
-                                              subjID=subjectID,
-                                              sess=sess_input,
-                                              TR=args.TR
-                                          )
-                                    print(cmd)
-                                    subprocess.call(cmd, shell=True)
-                                else:
-                                    print('BFP was not run because no resting-state fMRI data were found.')
+                session = sessions[ses]
+
+                #TODO: Runtime error catch and qcState.sh $WEBPATH/subjectID 404
+                try:
+                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
+                            dwis, funcs, subject_label, BFPpath, configini, args, session)
+                except RuntimeError as err:
+                    if 'QC' in stages:
+                        WEBPATH = os.path.join(outputdir, 'QC', subjectID, subjectID)
+                        cmd= '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
+                        subprocess.call(cmd, shell=True)
+                #
+                # if 'BDP' not in stages:
+                #     T1nums = len(t1ws)
+                #     for i in range(0, T1nums):
+                #         process = subjLevelProcessing(stages, specs=preprocspecs, CACHE=cache, SingleThread=thread,
+                #                             ATLAS=str(atlas))
+                #         process.runWorkflow(subjectID, t1ws[i], outputdir)
+                # else:
+                #     numOfPairs = min(len(t1ws), len(dwis))
+                #     for i in range(0, numOfPairs):
+                #         bval = layout.get_bval(dwis[i])
+                #         bvec = layout.get_bvec(dwis[i])
+                #         process = subjLevelProcessing(stages, specs=preprocspecs, BDP=dwis[i].split('.')[0],
+                #                         BVAL=str(bval), BVEC=str(bvec), CACHE=cache, SingleThread=thread,
+                #                                       ATLAS=str(atlas))
+                #
+                #         process.runWorkflow(subjectID, t1ws[i], outputdir)
+                #
+                #     try:
+                #         cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
+                #         subprocess.call(cmd, shell=True)
+                #     except:
+                #         pass
+                #
+                # if 'BFP' in stages:
+                #     for t1 in t1ws:
+                #         if (len(funcs) < 1):
+                #             print("No fMRI files found for subject %s!" % subject_label)
+                #         else:
+                #             for i in range(0, len(funcs)):
+                #                 taskname = funcs[i].split("task-")[1].split("_")[0]
+                #
+                #                 if taskname in preprocspecs.taskname:
+                #                     sess_input = "task-" + taskname
+                #                     cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
+                #                         BFPpath=BFPpath,
+                #                         configini=configini,
+                #                         t1=t1,
+                #                         func=funcs[i],
+                #                         studydir=args.output_dir,
+                #                         subjID=subjectID,
+                #                         sess=sess_input,
+                #                         TR=args.TR
+                #                     )
+                #                     print(cmd)
+                #                     # subprocess.call(cmd, shell=True)
+                #                     run(cmd)
+                #
+                #                 else:
+                #                     print('BFP was not run on {0} fmri data because the '
+                #                           'task name was not found in the specs.'.format(taskname))
+
         else:
 
             t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -257,85 +254,85 @@ if args.analysis_level == "participant":
 
             dwis = [f.filename for f in layout.get(subject=subject_label,
                                                    type='dwi', extensions=["nii.gz", "nii"])]
-            outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
-            if not cacheset:
-                cache = outputdir
-            elif cacheset:
-                cache = cache + '/sub-' + subject_label
-                if not os.path.exists(cache):
-                    os.makedirs(cache)
-            if not os.path.exists(outputdir):
-                os.makedirs(outputdir)
-            if (len(dwis) > 0):
-                numOfPairs = min(len(t1ws), len(dwis))
-                for i in range(0, numOfPairs):
-                    bval = layout.get_bval(dwis[i])
-                    bvec = layout.get_bvec(dwis[i])
-                    if 'ALL' in stages:
-                        runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
-                                    BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), SVREG=True,
-                                    SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                    else:
-                        if 'CSE' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir, CACHE=cache)
-                        if 'BDP' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
-                                        BDP=dwis[i].split('.')[0], BVAL=str(bval), BVEC=str(bvec), CACHE=cache)
-                        if 'SVREG' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir,
-                                        SVREG=True, SingleThread=thread, ATLAS=str(atlas), CACHE=cache)
-                        try:
-                            cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, 'sub-%s' % subject_label, 'dwi'))
-                            subprocess.call(cmd, shell=True)
-                        except:
-                            pass
-            else:
-                for t1 in t1ws:
-                    if 'ALL' in stages:
-                        runWorkflow('sub-%s' % subject_label, t1, outputdir, SVREG=True,
-                                    SingleThread=thread, ATLAS=(atlas), CACHE=cache)
-                    else:
-                        if 'CSE' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
-                        if 'SVREG' in stages:
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, SVREG=True,
-                                        SingleThread=thread, ATLAS=(atlas), CACHE=cache)
-                        if 'BDP' in stages:
-                            print('\nNo DWI data found. Running CSE only.')
-                            runWorkflow('sub-%s' % subject_label, t1, outputdir, CACHE=cache)
 
-            if 'BFP' in stages or 'ALL' in stages:
-                for t1 in t1ws:
-                    funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                            type='bold',
-                                                            extensions=["nii.gz", "nii"])]
-                    if (len(funcs) < 1):
-                        print("No fMRI files found for subject %s!" % subject_label)
-                    else:
-                        for i in range(0, len(funcs)):
-                            # sess_input = funcs[i][
-                            #              funcs[i].index('sub-%s' % subject_label + '_') + len('sub-%s' % subject_label + '_'): funcs[i].index(
-                            #                  '_bold')]
-                            taskname = funcs[i].split("task-")[1].split("_")[0]
-                            if taskname == 'rest':
-                                sess_input = "task-" + taskname
-                                # bfp('/config.ini', t1, funcs[i], args.output_dir, 'sub-%s' % subject_label, sess_input,
-                                #     args.TR, cache)
-                                cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR}'.format(
-                                    BFPpath=BFPpath,
-                                    configini=configini,
-                                    t1=t1,
-                                    func=funcs[i],
-                                    studydir=args.output_dir,
-                                    subjID='sub-%s' % subject_label,
-                                    sess=sess_input,
-                                    TR=args.TR
-                                )
-                                subprocess.call(cmd, shell=True)
-                            else:
-                                print('BFP was not run because no resting-state fMRI data were found.')
-        # shutil.rmtree(mcrCache)
-        # os.remove(mcrCache)
+            funcs = [f.filename for f in layout.get(subject=subject_label,
+                                                    type='bold',
+                                                    extensions=["nii.gz", "nii"])]
+
+            outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
+            # if not cacheset:
+            #     cache = outputdir
+            # elif cacheset:
+            #     cache = cache + '/sub-' + subject_label
+            #     if not os.path.exists(cache):
+            #         os.makedirs(cache)
+            # if not os.path.exists(outputdir):
+            #     os.makedirs(outputdir)
+
+            subjectID = 'sub-%s' % subject_label
+            session = ''
+            try:
+                runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
+                        dwis, funcs, subject_label, BFPpath, configini, args, session)
+            except RuntimeError as err:
+                if 'QC' in stages:
+                    WEBPATH = os.path.join(outputdir, 'QC', subjectID, subjectID)
+                    cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
+                    subprocess.call(cmd, shell=True)
+
+            # if 'BDP' not in stages:
+            #     T1nums = len(t1ws)
+            #     for i in range(0, T1nums):
+            #         process = subjLevelProcessing(stages, specs=preprocspecs, CACHE=cache, SingleThread=thread,
+            #                                       ATLAS=str(atlas))
+            #         process.runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir)
+            # else:
+            #     numOfPairs = min(len(t1ws), len(dwis))
+            #     for i in range(0, numOfPairs):
+            #         bval = layout.get_bval(dwis[i])
+            #         bvec = layout.get_bvec(dwis[i])
+            #         process = subjLevelProcessing(stages, specs=preprocspecs, BDP=dwis[i].split('.')[0],
+            #                                       BVAL=str(bval), BVEC=str(bvec), CACHE=cache, SingleThread=thread,
+            #                                       ATLAS=str(atlas))
+            #
+            #         process.runWorkflow('sub-%s' % subject_label, t1ws[i], outputdir)
+            #
+            #     try:
+            #         cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, 'sub-%s' % subject_label, 'dwi'))
+            #         subprocess.call(cmd, shell=True)
+            #     except:
+            #         pass
+            #
+            # if 'BFP' in stages:
+            #     for t1 in t1ws:
+            #         funcs = [f.filename for f in layout.get(subject=subject_label,
+            #                                                 type='bold',
+            #                                                 extensions=["nii.gz", "nii"])]
+            #         if (len(funcs) < 1):
+            #             print("No fMRI files found for subject %s!" % subject_label)
+            #         else:
+            #             for i in range(0, len(funcs)):
+            #                 taskname = funcs[i].split("task-")[1].split("_")[0]
+            #
+            #                 if taskname in preprocspecs.taskname:
+            #                     sess_input = "task-" + taskname
+            #                     cmd = '{BFPpath} {configini} {t1} {func} {studydir} {subjID} {sess} {TR} '.format(
+            #                         BFPpath=BFPpath,
+            #                         configini=configini,
+            #                         t1=t1,
+            #                         func=funcs[i],
+            #                         studydir=args.output_dir,
+            #                         subjID='sub-%s' % subject_label,
+            #                         sess=sess_input,
+            #                         TR=args.TR
+            #                     )
+            #                     print(cmd)
+            #                     # subprocess.call(cmd, shell=True)
+            #                     run(cmd)
+            #                 else:
+            #                     print('BFP was not run on {0} fmri data because the '
+            #                           'task name was not found in the specs.'.format(taskname))
+
 
 if args.analysis_level == "group":
 

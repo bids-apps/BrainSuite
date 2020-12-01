@@ -144,6 +144,9 @@ class bssrSpec(object):
         self.colvar_reg2 = specs['BrainSuite']['Functional']['colvar_reg2']
         self.colvar_exclude = specs['BrainSuite']['Functional']['colvar_exclude']
         self.colvar_atlas = specs['BrainSuite']['Functional']['colvar_atlas']
+        self.pw_pairs = specs['BrainSuite']['Functional']['pw_pairs']
+        self.pw_fdr = specs['BrainSuite']['Functional']['pw_fdr']
+        self.pw_perm =specs['BrainSuite']['Functional']['pw_perm']
 
 
         # self.resultdir = specs['BrainSuite']['results']
@@ -154,6 +157,9 @@ class bssrSpec(object):
         config.set('inputs', 'lentime', str(self.lentime))
         config.set('inputs', 'matchT', str(self.matchT))
         config.set('inputs', 'stat_test', str(self.stat_test))
+        config.set('pairwise testing', 'pw_pairs', str(self.pw_pairs))
+        config.set('pairwise testing', 'pw_fdr', str(self.pw_fdr))
+        config.set('pairwise testing', 'pw_perm', str(self.pw_perm))
         config.set('outputs', 'out_dir', str(self.bfp_out_dir))
         config.set('outputs', 'outname', str(self.outname))
         config.set('outputs', 'smooth_iter', str(self.smooth_iter))

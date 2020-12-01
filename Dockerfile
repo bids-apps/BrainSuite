@@ -116,7 +116,7 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/a
     apt-get update && apt-get install -y --allow-unauthenticated r-base
 
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver3p02.tar.gz | tar xvz
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp.tar.gz | tar xvz
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_111120.tar.gz | tar xvz
 #RUN rm /bfp_ver2p30.tar.gz
 RUN rm -rf bfp_ver3p02/supp_data && mv bfp_ver3p02/* bfp
 ENV BFP=/bfp
@@ -183,6 +183,14 @@ RUN cd / && wget http://brainsuite.org/atlasdata/USCBrain.zip && \
     unzip USCBrain.zip && rm -rf /opt/BrainSuite19b/svreg/USCBrain && \
     mv /USCBrain /opt/BrainSuite19b/svreg/ && \
     rm /USCBrain.zip
+
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
+    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
+    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
+    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
+
+COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
+RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh
 
 COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
 COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/

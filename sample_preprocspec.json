@@ -1,12 +1,41 @@
 {
 	"BrainSuite": {
 		"Structural": {
+			"autoParameters": 0,
+			"diffusionIterations": 3,
+			"diffusionConstant": 25,
+			"edgeDetectionConstant": 0.64,
+			"skipBSE": 0,
+			"iterativeMode": 0,
+			"spatialPrior": 0.1,
+			"costFunction": 2,
+			"useCentroids": 0,
+			"linearConvergence": 0.1,
+			"warpConvergence": 100,
+			"warpLevel": 5,
+			"tissueFractionThreshold": 50.0,
 			"atlas": "BSA",
-			"singleThread": "OFF",
+			"singleThread": 0,
 			"cacheFolder": "/tmp"
 		},
+		"Diffusion": {
+			"skipDistortionCorr": 0,
+			"phaseEncodingDirection": "y",
+			"echoSpacing": "",
+			"fieldmapCorrection": "",
+			"estimateODF_3DShore": 0,
+			"diffusion_time_ms": "",
+			"estimateODF_GQI": 0,
+			"generateStats": 0,
+			"forcePartialROIStats": 0
+		},
+		"PostProc": {
+			"smoothSurf": 2.0,
+			"smoothVol": 3.0
+		},
 		"Functional": {
-			"TR": 2,
+			"task-name": ["rest"],
+			"TR": 0,
 			"EnabletNLMPdfFiltering": 1,
 			"fpr": 0.001,
 			"FSLOUTPUTTYPE": "NIFTI_GZ",

@@ -24,10 +24,13 @@
 
 	"Functional":{
         "tsv_fname": "/data/participants.tsv",
-		"file_ext": "_rest_bold.32k.GOrd.filt.mat",
+		"file_ext": "-rest_bold.32k.GOrd.filt.mat",
 		"lentime": 240,
 		"matchT": "False",
 		"stat_test": "atlas-linear" ,
+		"pw_pairs": 2000,
+		"pw_fdr": 0,
+		"pw_perm": 2000,
 		"outname": "BFPtest",
         "sig_alpha" : 0.05,
 		"smooth_iter": 100,
