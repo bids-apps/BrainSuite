@@ -24,6 +24,8 @@ ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
 ATLAS_LABEL_SUFFIX = 'brainsuite.icbm452.v15a.label.img'
 WORKFLOW_NAME = 'BrainSuite'
 BRAINSUITE_ATLAS_DIRECTORY = "/opt/BrainSuite{0}/atlas/".format(BRAINSUITE_VERSION)
+BRAINSUITE_LABEL_DIRECTORY = "/opt/BrainSuite{0}/labeldesc/".format(BRAINSUITE_VERSION)
+LABEL_SUFFIX = 'brainsuite_labeldescriptions_30March2018.xml'
 
 class subjLevelProcessing(object):
     def __init__(self,STAGES, specs=None, **keyword_parameters):
@@ -205,6 +207,8 @@ class subjLevelProcessing(object):
             if not os.path.exists(WEBPATH):
                 os.makedirs(WEBPATH)
 
+            labeldesc = BRAINSUITE_LABEL_DIRECTORY + LABEL_SUFFIX
+
             origT1 = os.path.join(CACHE_DIRECTORY, t1)
             bseMask = bseObj.outputs.outputMaskFile
             bfc = bfcObj.inputs.inputMRIFile
@@ -222,33 +226,111 @@ class subjLevelProcessing(object):
             volbendbseObj.inputs.inFile = origT1
             volbendbseObj.inputs.outFile = '{0}/bse.png'.format(WEBPATH)
             volbendbseObj.inputs.maskFile = bseMask
+            volbendbseObj.inputs.view = 3 # sagittal
 
             volbendbfcObj = pe.Node(interface=bs.Volblend(), name='volblendbfc')
-            volbendpvcObj = pe.Node(interface=bs.Volblend(), name='volblendpvc')
-            volbendcerebroObj = pe.Node(interface=bs.Volblend(), name='volblendcerebro')
-            volbendcortexObj = pe.Node(interface=bs.Volblend(), name='volblendcortex')
-            volbendscrubmaskObj = pe.Node(interface=bs.Volblend(), name='volblendscrubmask')
-            volbendtcaObj = pe.Node(interface=bs.Volblend(), name='volblendtca')
-            volbenddewispObj = pe.Node(interface=bs.Volblend(), name='volblenddewisp')
-            dfsrenderdfsObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfs')
-            dfsrenderpialmeshObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderpialmesh')
-            dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
+            volbendbfcObj.inputs.inFile = bfc
+            volbendbfcObj.inputs.outFile = '{0}/bfc.png'.format(WEBPATH)
+            volbendbfcObj.inputs.view = 1
 
+            volbendpvcObj = pe.Node(interface=bs.Volblend(), name='volblendpvc')
+            volbendpvcObj.inputs.inFile = bfc
+            volbendpvcObj.inputs.outFile = '{0}/pvc.png'.format(WEBPATH)
+            volbendpvcObj.inputs.labelFile = pvclabel
+            volbendpvcObj.inputs.labelDesc = labeldesc
+            volbendpvcObj.inputs.view = 2 # coronal
+
+            volbendcerebroObj = pe.Node(interface=bs.Volblend(), name='volblendcerebro')
+            volbendcerebroObj.inputs.inFile = bfc
+            volbendcerebroObj.inputs.outFile = '{0}/cerebro.png'.format(WEBPATH)
+            volbendcerebroObj.inputs.maskFile = cerebro
+            volbendcerebroObj.inputs.view = 1
+
+            volbendcortexObj = pe.Node(interface=bs.Volblend(), name='volblendcortex')
+            volbendcortexObj.inputs.inFile = bfc
+            volbendcortexObj.inputs.outFile = '{0}/cortex.png'.format(WEBPATH)
+            volbendcortexObj.inputs.maskFile = inner
+            volbendcortexObj.inputs.view = 2
+
+            volbendscrubmaskObj = pe.Node(interface=bs.Volblend(), name='volblendscrubmask')
+            volbendscrubmaskObj.inputs.inFile = bfc
+            volbendscrubmaskObj.inputs.outFile = '{0}/scrub.png'.format(WEBPATH)
+            volbendscrubmaskObj.inputs.maskFile = scrub
+            volbendscrubmaskObj.inputs.view =2
+
+            volbendtcaObj = pe.Node(interface=bs.Volblend(), name='volblendtca')
+            volbendtcaObj.inputs.inFile = bfc
+            volbendtcaObj.inputs.outFile = '{0}/tca.png'.format(WEBPATH)
+            volbendtcaObj.inputs.maskFile = tca
+            volbendtcaObj.inputs.view = 2
+
+            volbenddewispObj = pe.Node(interface=bs.Volblend(), name='volblenddewisp')
+            volbenddewispObj.inputs.inFile = bfc
+            volbenddewispObj.inputs.outFile = '{0}/dewisp.png'.format(WEBPATH)
+            volbenddewispObj.inputs.maskFile = dewisp
+            volbenddewispObj.inputs.view = 2
+
+            dfsrenderdfsObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfs')
+            dfsrenderdfsObj.inputs.Surfaces = dfs
+            dfsrenderdfsObj.inputs.OutFile = '{0}/dfs.png'.format(WEBPATH)
+            dfsrenderdfsObj.inputs.Sup = True
+            dfsrenderdfsObj.inputs.Zoom = 0.6
+
+            dfsrenderpialmeshObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderpialmesh')
+            dfsrenderpialmeshObj.inputs.Surfaces = pialmesh
+            dfsrenderpialmeshObj.inputs.OutFile = '{0}/pialmesh.png'.format(WEBPATH)
+            dfsrenderpialmeshObj.inputs.Sup = True
+            dfsrenderpialmeshObj.inputs.Zoom = 0.6
+
+            # dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
+            # dfsrenderhemisplitObj.inputs.Surfaces = hemi
+            # dfsrenderhemisplitObj.inputs.OutFile = '{0}/hemisplit.png'.format(WEBPATH)
+            # dfsrenderhemisplitObj.inputs.Sup = True
+            # dfsrenderhemisplitObj.inputs.Zoom = 0.6
 
             qcstatevolbendbseObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbseObj')
             qcstatevolbendbseObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
             qcstatevolbendbseObj.inputs.stagenum = 1
 
             qcstatevolbendbfcObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbfcObj')
+            qcstatevolbendbfcObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendbfcObj.inputs.stagenum = 2
+
             qcstatevolbendpvcObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendpvcObj')
+            qcstatevolbendpvcObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendpvcObj.inputs.stagenum = 3
+
             qcstatevolbendcerebroObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendcerebroObj')
+            qcstatevolbendcerebroObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendcerebroObj.inputs.stagenum = 4
+
             qcstatevolbendcortexObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendcortexObj')
+            qcstatevolbendcortexObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendcortexObj.inputs.stagenum = 5
+
             qcstatevolbendscrubmaskObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendscrubmaskObj')
+            qcstatevolbendscrubmaskObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendscrubmaskObj.inputs.stagenum = 6
+
             qcstatevolbendtcaObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendtcaObj')
+            qcstatevolbendtcaObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbendtcaObj.inputs.stagenum = 7
+
             qcstatevolbenddewispObj = pe.Node(interface=bs.QCState(), name='qcstatevolbenddewispObj')
+            qcstatevolbenddewispObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatevolbenddewispObj.inputs.stagenum = 8
+
             qcstatedfsrenderdfsObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderdfsObj')
+            qcstatedfsrenderdfsObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatedfsrenderdfsObj.inputs.stagenum = 9
+
             qcstatedfsrenderpialmeshObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderpialmeshObj')
-            qcstatedfsrenderhemisplitObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderhemisplitObj')
+            qcstatedfsrenderpialmeshObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            qcstatedfsrenderpialmeshObj.inputs.stagenum = 10
+
+            # qcstatedfsrenderhemisplitObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderhemisplitObj')
+            # qcstatedfsrenderhemisplitObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+            # qcstatedfsrenderhemisplitObj.inputs.stagenum = 11
 
             # Connect
             brainsuite_workflow.connect(bseObj, 'outputMRIVolume', volbendbseObj, 'inFile')
@@ -256,33 +338,33 @@ class subjLevelProcessing(object):
 
             #TODO: if index.html does not exist in QC folder, then run watch.sh
 
-            # brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendbfcObj, 'inFile')
-            # brainsuite_workflow.connect(volbendbfcObj, 'outFile', qcstatevolbendbfcObj, 'filename')
-            #
-            # brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', volbendpvcObj, 'inFile')
-            # brainsuite_workflow.connect(volbendpvcObj, 'outFile', qcstatevolbendpvcObj, 'filename')
-            #
-            # brainsuite_workflow.connect(cerebroObj, 'outputLabelVolumeFile', volbendcerebroObj, 'inFile')
-            # brainsuite_workflow.connect(volbendcerebroObj, 'outFile', qcstatevolbendcerebroObj, 'filename')
-            #
-            # brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', volbendcortexObj, 'inFile')
-            # brainsuite_workflow.connect(volbendcortexObj, 'outFile', qcstatevolbendcortexObj, 'filename')
-            # 
-            # brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', volbendscrubmaskObj, 'inFile')
-            # brainsuite_workflow.connect(volbendscrubmaskObj, 'outFile', qcstatevolbendscrubmaskObj, 'filename')
-            #
-            # brainsuite_workflow.connect(tcaObj, 'outputMaskFile', volbendtcaObj, 'inFile')
-            # brainsuite_workflow.connect(volbendtcaObj, 'outFile', qcstatevolbendtcaObj, 'filename')
-            #
-            # brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispObj, 'inFile')
-            # brainsuite_workflow.connect(volbenddewispObj, 'outFile', qcstatevolbenddewispObj, 'filename')
-            #
-            # brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsObj, 'Surfaces')
-            # brainsuite_workflow.connect(dfsrenderdfsObj, 'outFile', qcstatedfsrenderdfsObj, 'filename')
-            #
-            # brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', dfsrenderpialmeshObj, 'Surfaces')
-            # brainsuite_workflow.connect(dfsrenderpialmeshObj, 'outFile', qcstatedfsrenderpialmeshObj, 'filename')
-            #
+            brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendbfcObj, 'inFile')
+            brainsuite_workflow.connect(volbendbfcObj, 'outFile', qcstatevolbendbfcObj, 'filename')
+
+            brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', volbendpvcObj, 'inFile')
+            brainsuite_workflow.connect(volbendpvcObj, 'outFile', qcstatevolbendpvcObj, 'filename')
+
+            brainsuite_workflow.connect(cerebroObj, 'outputLabelVolumeFile', volbendcerebroObj, 'inFile')
+            brainsuite_workflow.connect(volbendcerebroObj, 'outFile', qcstatevolbendcerebroObj, 'filename')
+
+            brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', volbendcortexObj, 'inFile')
+            brainsuite_workflow.connect(volbendcortexObj, 'outFile', qcstatevolbendcortexObj, 'filename')
+
+            brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', volbendscrubmaskObj, 'inFile')
+            brainsuite_workflow.connect(volbendscrubmaskObj, 'outFile', qcstatevolbendscrubmaskObj, 'filename')
+
+            brainsuite_workflow.connect(tcaObj, 'outputMaskFile', volbendtcaObj, 'inFile')
+            brainsuite_workflow.connect(volbendtcaObj, 'outFile', qcstatevolbendtcaObj, 'filename')
+
+            brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispObj, 'inFile')
+            brainsuite_workflow.connect(volbenddewispObj, 'outFile', qcstatevolbenddewispObj, 'filename')
+
+            brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsObj, 'Surfaces')
+            brainsuite_workflow.connect(dfsrenderdfsObj, 'outFile', qcstatedfsrenderdfsObj, 'filename')
+
+            brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', dfsrenderpialmeshObj, 'Surfaces')
+            brainsuite_workflow.connect(dfsrenderpialmeshObj, 'outFile', qcstatedfsrenderpialmeshObj, 'filename')
+
             # brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', dfsrenderhemisplitObj, 'Surfaces')
             # brainsuite_workflow.connect(dfsrenderhemisplitObj, 'outFile', qcstatedfsrenderhemisplitObj, 'filename')
 

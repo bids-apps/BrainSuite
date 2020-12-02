@@ -37,7 +37,7 @@ echo "<td><a href=$i/$i.inner.cortex.svreg.pos.png><img src=$i/$i.inner.cortex.s
 echo "</tr>"
 
 echo "<tr>"
-echo "<td><a href=$i/$i.pvc.left.png ><img src=$i/$i.pvc.left.cropped.png></a></td>"
+echo "<td><a href=$i/$i.pvc.left.png ><img src=$i/$i.pvc.left.cropped.png width="250" height="250"></a></td>"
 echo "<td><a href=$i/$i.pvc.right.png><img src=$i/$i.pvc.right.cropped.png></a></td>"
 echo "<td><a href=$i/$i.pvc.inf.png  ><img src=$i/$i.pvc.inf.cropped.png></a></td>"
 echo "<td><a href=$i/$i.pvc.sup.png  ><img src=$i/$i.pvc.sup.cropped.png></a></td>"

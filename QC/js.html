@@ -48,8 +48,54 @@ document.body.appendChild(link); // Required for FF
 link.click();
 }
 
+</script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+
+<script>
+
+var endvar = 0;
+var jsonPath="brainsuite_state.json";
+
+startTimer();
+
+function startTimer() {
+    var foo = setInterval(scanJSON, 10000);
+    var n = endvar.toString();
+    if (endvar > 0 ) {
+        clearInterval(foo);
+        console.log('hello');
+    }
+    else {
+  // window .location.reload();
+        console.log('world');
+    }
+}
+
+function scanJSON(){
+    $.ajax({
+        cache: false,
+        url: jsonPath,
+        dataType: "json",
+        success: function(json){
+            if (json){
+                endvar = json.end;
+                console.log("no error");
+                var endvarstr = endvar.toString();
+                console.log(endvarstr);
+                window .location.reload();
+            }
+            else {
+            console.log('error reading json');
+            }
+            }
+        });
+
+}
 
 </script>
+
 <p class="bottom-three">
    <button type="button" style="width:120px;height:60px;font-size : 30px;" id="save" onclick="makecsv();">Save</button>
 </p>

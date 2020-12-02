@@ -189,6 +189,10 @@ if args.analysis_level == "participant":
                 try:
                     runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
                             dwis, funcs, subject_label, BFPpath, configini, args, session)
+                    if 'QC' in stages:
+                        WEBPATH = os.path.join(outputdir, 'QC', subjectID, subjectID)
+                        cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
+                        subprocess.call(cmd, shell=True)
                 except RuntimeError as err:
                     if 'QC' in stages:
                         WEBPATH = os.path.join(outputdir, 'QC', subjectID, subjectID)
@@ -274,6 +278,10 @@ if args.analysis_level == "participant":
             try:
                 runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
                         dwis, funcs, subject_label, BFPpath, configini, args, session)
+                if 'QC' in stages:
+                    WEBPATH = os.path.join(outputdir, 'QC', subjectID, subjectID)
+                    cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
+                    subprocess.call(cmd, shell=True)
             except RuntimeError as err:
                 if 'QC' in stages:
                     WEBPATH = os.path.join(outputdir, 'QC', subjectID, subjectID)
