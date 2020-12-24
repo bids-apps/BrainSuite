@@ -3,7 +3,7 @@ from bin.brainsuiteWorkflowNoQC import subjLevelProcessing
 import os
 
 def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout, dwis, funcs,
-                subject_label, BFPpath, configini, args, session):
+            subject_label, BFPpath, configini, args):
     if not cacheset:
         cache = outputdir
     else:
@@ -13,11 +13,28 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, 
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
 
+    if 'QC' in stages:
+        # QCdir = os.path.join(args.QCdir, 'QC')
+        if args.QCdir:
+            QCdir = os.path.join(args.QCdir, 'QC')
+            WEBDIRsub = os.path.join(args.QCdir, 'QC', subjectID)
+            WEBPATH = os.path.join(args.QCdir, 'QC', subjectID, subjectID)
+        else:
+            QCdir = os.path.join(args.output_dir, 'QC')
+            WEBDIRsub = os.path.join(args.output_dir, 'QC', subjectID)
+            WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+        if not os.path.exists(WEBDIRsub):
+            os.makedirs(WEBDIRsub)
+        cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 0)
+        subprocess.call(cmd, shell=True)
+    else:
+        QCdir = None
+
     if 'BDP' not in stages:
         T1nums = len(t1ws)
         for i in range(0, T1nums):
             process = subjLevelProcessing(stages, specs=preprocspecs, CACHE=cache, SingleThread=thread,
-                                          ATLAS=str(atlas))
+                                          ATLAS=str(atlas), QCDIR=QCdir)
             process.runWorkflow(subjectID, t1ws[i], outputdir)
     else:
         numOfPairs = min(len(t1ws), len(dwis))
@@ -26,7 +43,7 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, 
             bvec = layout.get_bvec(dwis[i])
             process = subjLevelProcessing(stages, specs=preprocspecs, BDP=dwis[i].split('.')[0],
                                           BVAL=str(bval), BVEC=str(bvec), CACHE=cache, SingleThread=thread,
-                                          ATLAS=str(atlas))
+                                          ATLAS=str(atlas), QCDIR=QCdir)
 
             process.runWorkflow(subjectID, t1ws[i], outputdir)
 

@@ -39,6 +39,9 @@ class preProcSpec(object):
         self.shape = 0
         self.t1space = 1
         self.fslrigid = 0
+        self.bpoption = 1
+        self.rundetrend = 1
+        self.runnsr = 1
         self.bids_dir = bids_dir
         self.outputdir = outputdir
 
@@ -157,7 +160,7 @@ class preProcSpec(object):
         self.shape = specs['BrainSuite']['Functional']['EnableShapeMeasures']
         self.t1space = specs['BrainSuite']['Functional']['T1SpaceProcessing']
         self.fslrigid = specs['BrainSuite']['Functional']['FSLRigid']
-        self.simref = specs['BrainSuite']['Functional']['SimRef']
+        self.bpoption = specs['BrainSuite']['Functional']['BPoption']
         self.rundetrend = specs['BrainSuite']['Functional']['RunDetrend']
         self.runnsr = specs['BrainSuite']['Functional']['RunNSR']
         self.scbpath = specs['BrainSuite']['Functional']['scbPath']

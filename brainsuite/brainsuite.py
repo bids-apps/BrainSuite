@@ -65,6 +65,7 @@ class BseOutputSpec(TraitedSpec):
     outputEdgeMap = File(desc='path/name of edge map output')
     outputDetailedBrainMask = File(desc='path/name of detailed brain mask')
     outputCortexFile = File(desc='path/name of cortex file')
+    inputMRIFile = File(desc='input MRI volume')
 
 
 class Bse(CommandLine):
@@ -1661,6 +1662,72 @@ class ThicknessPVC(CommandLine):
 
         return super(ThicknessPVC, self)._format_arg(name, spec, value)
 
+class Thickness2AtlasInputSpec(CommandLineInputSpec):
+    subjectFilePrefix = traits.Str(
+        argstr='%s', mandatory=True,
+        desc='Absolute path and filename prefix of the subject data'
+    )
+    dataSinkDelay = traits.List(
+        str, argstr='%s',
+        desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
+             'until dataSink has finished sinking CSE outputs.'
+             'For use with parallel processing workflows including Brainsuites Cortical '
+             'Surface Extraction sequence (SVReg requires certain files from Brainsuite '
+             'CSE, which must all be in the pathway specified by subjectFilePrefix. see '
+             'http://brainsuite.org/processing/svreg/usage/ for list of required inputs '
+    )
+
+class Thickness2AtlasOutputSpec(TraitedSpec):
+    atlasSurfLeftFile = File(desc='path/name of atlas-registered surface file containing left cortical thickness data')
+    atlasSurfRightFile = File(desc='path/name of atlas-registered surface file containing right cortical thickness data')
+
+
+class Thickness2Atlas(CommandLine):
+
+    """
+    ThicknessPVC computes cortical thickness using partial tissue fractions.
+    This thickness measure is then transferred to the atlas surface to
+    facilitate population studies. It also stores the computed thickness into
+    separate hemisphere files and subject thickness mapped to the atlas
+    hemisphere surfaces. ThicknessPVC is not run through the main SVReg
+    sequence, and should be used after executing the BrainSuite and SVReg
+    sequence.
+    For more informaction, please see:
+
+    http://brainsuite.org/processing/svreg/svreg_modules/
+
+    Examples
+    --------
+
+    >>> from nipype.interfaces import brainsuite
+    >>> Thickness2Atlas = brainsuite.Thickness2Atlas()
+    >>> Thickness2Atlas.inputs.subjectFilePrefix = 'home/user/btestsubject/testsubject'
+    >>> results = Thickness2Atlas.run() #doctest: +SKIP
+
+    """
+
+    input_spec = Thickness2AtlasInputSpec
+    output_spec = Thickness2AtlasOutputSpec
+    _cmd = 'svreg_thickness2atlas.sh'
+
+    def _gen_filename(self, name):
+        if name == 'atlasSurfLeftFile':
+            return 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs'
+        if name == 'atlasSurfRightFile':
+            return 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'
+        return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if name == 'subjectFilePrefix':
+            return spec.argstr % os.path.expanduser(value)
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(Thickness2Atlas, self)._format_arg(name, spec, value)
+
 class SVRegSmoothSurfInputSpec(CommandLineInputSpec):
     inputSurface = File(mandatory=True, argstr='%s', position=0, desc='input surface file')
     funcFile = File(mandatory=True, argstr='%s', position=1, desc='surface file with function to be smoothed in .attributes field')
@@ -1868,8 +1935,7 @@ class VolblendInputSpec(CommandLineInputSpec):
                                                                   '[default: -1]')
     flip =traits.Bool(argstr='--flip', mandatory=False, desc='flip image U/D.')
     flop = traits.Bool(argstr='--flop', mandatory=False, desc='flip image L/R.')
-    dataSinkDelay = traits.List(
-        str,
+    dataSinkDelay = File(
         argstr='%s',
         desc='Connect datasink outfile to dataSinkDelay to delay execution of '
              'qcState until dataSink has finished sinking volblend outputs.'
@@ -1919,7 +1985,7 @@ class DfsRenderInputSpec(CommandLineInputSpec):
     TransSurfaces = traits.Str(argstr='--translucent %s', mandatory=False, desc='surfaceIndex1 [ ... alphaValueN]')
     WireSurfaces = traits.Str(argstr='--wire %s', mandatory=False,
      desc='surfaceIndex1 [ ... surfaceIndexN] (use wireframe for these surfaces)')
-    Zoom = traits.Int(argstr='--zoom %f', mandatory=False, desc='zoom factor [default: 1]')
+    Zoom = traits.Float(argstr='--zoom %f', mandatory=False, desc='zoom factor [default: 1]')
     xRot = traits.Int(argstr='--xrot %d', mandatory=False, desc='x rotation angle [default: 0]')
     yRot = traits.Int(argstr='--yrot %d', mandatory=False, desc='y rotation angle [default: 0]')
     zRot = traits.Int(argstr='--zrot %d', mandatory=False, desc='z rotation angle [default: 0]')

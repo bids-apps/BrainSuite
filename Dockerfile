@@ -115,10 +115,10 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/a
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
     apt-get update && apt-get install -y --allow-unauthenticated r-base
 
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver3p02.tar.gz | tar xvz
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_111120.tar.gz | tar xvz
+RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver4p01/bfp_ver4p01.tar.gz | tar xvz
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_122220.tar.gz | tar xvz
 #RUN rm /bfp_ver2p30.tar.gz
-RUN rm -rf bfp_ver3p02/supp_data && mv bfp_ver3p02/* bfp
+RUN rm -rf bfp_ver4p01/supp_data && mv bfp_ver4p01/* bfp
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
 
@@ -161,6 +161,11 @@ RUN wget https://cran.r-project.org/src/contrib/Archive/foreign/foreign_0.8-71.t
     rm foreign_0.8-71.tar.gz
 
 RUN conda install -c r r-stringi
+RUN wget https://github.com/gagolews/stringi/archive/master.zip -O stringi.zip && \
+    unzip stringi.zip && \
+    sed -i '/\/icu..\/data/d' stringi-master/.Rbuildignore && \
+    R CMD build stringi-master
+RUN R CMD INSTALL --configure-args='--disable-pkg-config' stringi_1.5.4.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py && \
     python install_dep.py
 
@@ -179,10 +184,10 @@ RUN apt-get update && \
                     fsl-mni152-templates=5.0.7-2 \
                     afni=16.2.07~dfsg.1-5~nd16.04+1
 
-RUN cd / && wget http://brainsuite.org/atlasdata/USCBrain.zip && \
-    unzip USCBrain.zip && rm -rf /opt/BrainSuite19b/svreg/USCBrain && \
-    mv /USCBrain /opt/BrainSuite19b/svreg/ && \
-    rm /USCBrain.zip
+#RUN cd / && wget http://brainsuite.org/atlasdata/USCBrain.zip && \
+#    unzip USCBrain.zip && rm -rf /opt/BrainSuite19b/svreg/USCBrain && \
+#    mv /USCBrain /opt/BrainSuite19b/svreg/ && \
+#    rm /USCBrain.zip
 
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
     wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
@@ -201,6 +206,7 @@ COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 #COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
 
 COPY . /BrainSuite
+RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
 
 RUN chmod +x /BrainSuite/run.py
 RUN chmod a+x /bfp/*
