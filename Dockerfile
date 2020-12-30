@@ -166,6 +166,7 @@ RUN wget https://github.com/gagolews/stringi/archive/master.zip -O stringi.zip &
     sed -i '/\/icu..\/data/d' stringi-master/.Rbuildignore && \
     R CMD build stringi-master
 RUN R CMD INSTALL --configure-args='--disable-pkg-config' stringi_1.5.4.tar.gz
+RUN apt-get install -y libnlopt-dev
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py && \
     python install_dep.py
 
