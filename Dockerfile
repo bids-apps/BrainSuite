@@ -113,7 +113,7 @@ RUN install -d /opt/conda/var/lib/dbus/
 RUN apt-get install -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
     gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
-    apt-get update && apt-get install -y --allow-unauthenticated r-base
+    apt-get update && apt-get install -y --allow-unauthenticated r-base r-base-dev
 
 RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver4p01/bfp_ver4p01.tar.gz | tar xvz
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_122220.tar.gz | tar xvz
@@ -167,8 +167,14 @@ RUN wget https://github.com/gagolews/stringi/archive/master.zip -O stringi.zip &
     R CMD build stringi-master
 RUN R CMD INSTALL --configure-args='--disable-pkg-config' stringi_1.5.4.tar.gz
 RUN apt-get install -y libnlopt-dev
-RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py && \
-    python install_dep.py
+RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep2.py
+RUN python install_dep2.py
+
+RUN wget https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.2-18.tar.gz && \
+    R CMD INSTALL Matrix_1.2-18.tar.gz
+
+RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep3.py
+RUN python install_dep3.py
 
 RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.4.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
@@ -204,7 +210,7 @@ COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 COPY ./bfp_sample_config_preproc.ini /config.ini
 COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 
-#COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
+##COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
 
 COPY . /BrainSuite
 RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
