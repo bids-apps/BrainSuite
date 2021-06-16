@@ -65,10 +65,7 @@ RUN mkdir mcr_install && \
     cd / && \
     rm -rf mcr_install
 
-#RUN apt-get update
-#RUN apt-get install -y --no-install-recommends python-six python-nibabel python-setuptools
-#RUN pip install pybids==0.6.5
-#RUN pip install grabbit #==0.1.2
+RUN cd /
 #RUN conda install -y -c anaconda statsmodels
 ENV PYTHONPATH=""
 
@@ -80,7 +77,7 @@ RUN git clone https://github.com/nipy/nipype && \
     python setup.py develop
 
 # BrainSuite
-ENV BrainSuiteVersion=19b
+ENV BrainSuiteVersion="21a"
 RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
     tar -xzf /BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
     mv /BrainSuite${BrainSuiteVersion} /opt && \
@@ -165,7 +162,7 @@ RUN wget https://github.com/gagolews/stringi/archive/master.zip -O stringi.zip &
     unzip stringi.zip && \
     sed -i '/\/icu..\/data/d' stringi-master/.Rbuildignore && \
     R CMD build stringi-master
-RUN R CMD INSTALL --configure-args='--disable-pkg-config' stringi_1.5.4.tar.gz
+#RUN R CMD INSTALL --configure-args='--disable-pkg-config' stringi_1.5.4.tar.gz
 RUN apt-get install -y libnlopt-dev
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep2.py
 RUN python install_dep2.py
@@ -176,10 +173,10 @@ RUN wget https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.2-18.tar
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep3.py
 RUN python install_dep3.py
 
-RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.2.4.tar.gz
+RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/05/bssr_0.2.9.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
     python install_bssr.py
-RUN rm /bssr_0.2.4.tar.gz
+RUN rm /bssr_0.2.9.tar.gz
 
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     apt-key add /usr/local/etc/neurodebian.gpg && \
@@ -214,6 +211,8 @@ COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 
 COPY . /BrainSuite
 RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ && chmod -R ugo+rx *
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
 
 RUN chmod +x /BrainSuite/run.py
 RUN chmod a+x /bfp/*

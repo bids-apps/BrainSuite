@@ -14,6 +14,7 @@
 		"paired": "",
 		"smooth": 2.0,
 		"mult_comp": "fdr",
+		  "niter": 5000,
 		"roiid": [102],
 		"hemi": "left",
 		"maskfile": "",

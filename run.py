@@ -122,10 +122,15 @@ if args.singleThread:
 else:
     thread=False
 
+if args.skipBSE:
+    stages = args.stages.append('noBSE')
 if args.stages == 'ALL':
     stages = ['CSE', 'SVREG', 'BDP', 'BFP'] # ,'QC'
-elif args.skipBSE:
-    stages = args.stages.append('noBSE')
+elif args.stages == 'BFP':
+    stages = ['CSE', 'SVREG', 'BFP']
+# elif ('BFP' in args.stages) & (not 'SVREG' in args.stages):
+#     args.stages = ['SVREG', 'BFP']
+#     stages = args.stages
 else:
     stages = args.stages
 
@@ -157,6 +162,8 @@ atlases = { 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'
             'USCBrain' : '/opt/BrainSuite{0}/svreg/USCBrain/USCBrain'.format(BrainsuiteVersion)}
 atlas = atlases[str(args.atlas)]
 
+if 'BFP' in stages:
+    assert args.atlas != 'BSA'
 
 if (args.analysis_level == "participant") and runProcessing:
 

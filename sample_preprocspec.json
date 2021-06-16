@@ -25,9 +25,7 @@
 			"fieldmapCorrection": "",
 			"estimateODF_3DShore": 0,
 			"diffusion_time_ms": "",
-			"estimateODF_GQI": 0,
-			"generateStats": 0,
-			"forcePartialROIStats": 0
+			"estimateODF_GQI": 0
 		},
 		"PostProc": {
 			"smoothSurf": 2.0,

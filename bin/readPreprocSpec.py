@@ -125,8 +125,6 @@ class preProcSpec(object):
         self.phaseEncodingDirection = specs['BrainSuite']['Diffusion']['phaseEncodingDirection']
         self.estimateODF_3DShore = bool(specs['BrainSuite']['Diffusion']['estimateODF_3DShore'])
         self.estimateODF_GQI = bool(specs['BrainSuite']['Diffusion']['estimateODF_GQI'])
-        self.generateStats = bool(specs['BrainSuite']['Diffusion']['generateStats'])
-        self.forcePartialROIStats = bool(specs['BrainSuite']['Diffusion']['forcePartialROIStats'])
 
         self.echoSpacing = undefined if (specs['BrainSuite']['Diffusion']['echoSpacing'] == '' ) \
             else specs['BrainSuite']['Diffusion']['echoSpacing']
@@ -165,6 +163,7 @@ class preProcSpec(object):
         self.runnsr = specs['BrainSuite']['Functional']['RunNSR']
         self.scbpath = specs['BrainSuite']['Functional']['scbPath']
         self.T1mask = specs['BrainSuite']['Functional']['T1mask']
+        self.simref = specs['BrainSuite']['Functional']['SimRef']
 
         ini_str = u'[main]\n' + open('/config.ini', 'r').read()
         ini_fp = StringIO(ini_str)

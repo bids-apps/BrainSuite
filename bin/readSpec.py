@@ -23,7 +23,7 @@ class bssrSpec(object):
         self.main_effect = ''
         self.corr_var = ''
         self.group_var =''
-        self.paired = ''
+        self.paired = False
         self.mult_comp = ''
         self.roi = []
         self.smooth = ''
@@ -74,13 +74,17 @@ class bssrSpec(object):
         # self.null_model = specs['null_model']
 
         self.mult_comp = specs['BrainSuite']['Structural']['mult_comp']
+        self.niter = specs['BrainSuite']['Structural']['niter']
         self.measure = specs['BrainSuite']['Structural']['measure']
         self.main_effect = specs['BrainSuite']['Structural']['main_effect']
         # self.covariates = ['"' + item + '"' for item in specs['BrainSuite']['covariates']]
         self.corr_var = specs['BrainSuite']['Structural']['corr_var']
         self.covariates = specs['BrainSuite']['Structural']['covariates']
         self.group_var = specs['BrainSuite']['Structural']['group_var']
-        self.paired = specs['BrainSuite']['Structural']['paired']
+        if specs['BrainSuite']['Structural']['paired'] == "True":
+            self.paired = True
+        else:
+            self.paired= False
         self.smooth = specs['BrainSuite']['Structural']['smooth']
         # self.roi = ['"' + str(item) + '"' for item in specs['BrainSuite']['roiid']]
         self.roi = specs['BrainSuite']['Structural']['roiid'] # bssr roi read in list
