@@ -45,6 +45,7 @@ class bssrSpec(object):
         self.sig_alpha = 0.05
         self.matcht = True
         self.exclude_col = ''
+        self.pvalue = ''
 
         self.read_success = True
         # self.read_modelfile(modelfile)
@@ -95,6 +96,7 @@ class bssrSpec(object):
         self.dbmmeas = specs['BrainSuite']['Structural']['dbmmeas']
         self.out_dir = specs['BrainSuite']['Structural']['out_dir']
         self.exclude_col = specs['BrainSuite']['Structural']['exclude_col']
+        self.pvalue = specs['BrainSuite']['Structural']['pvalue']
 
         ## make bfp stats separate
         # self.bfptest = specs['BrainSuite']['Functional']['test']

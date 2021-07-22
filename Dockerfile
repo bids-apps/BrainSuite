@@ -173,10 +173,11 @@ RUN wget https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.2-18.tar
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep3.py
 RUN python install_dep3.py
 
-RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/05/bssr_0.2.9.tar.gz
+#RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/05/bssr_0.2.9.tar.gz
+RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.3.1.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
     python install_bssr.py
-RUN rm /bssr_0.2.9.tar.gz
+RUN rm /bssr_0.3.1.tar.gz
 
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     apt-key add /usr/local/etc/neurodebian.gpg && \
@@ -193,10 +194,10 @@ RUN apt-get update && \
 #    mv /USCBrain /opt/BrainSuite19b/svreg/ && \
 #    rm /USCBrain.zip
 
-RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
-    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
-    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
-    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
+#RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
+#    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
+#    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
+#    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
 
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh

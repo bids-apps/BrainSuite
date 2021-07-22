@@ -130,6 +130,8 @@ Sample JSON file is provided with the source code (BrainSuite/sample_modelspec.j
 * **paired** : (Only for Paired t-test) Group variable. ** Not implemented yet.
 * **smooth** : Smoothing level for cbm, tbm, and dbm.
 * **mult_comp** : Multiple comparison correction method. Options: fdr, perm. Default is fdr. perm method is the t-max permutation test method.
+* **niter** : Number of iterations for the permutation method.
+* **pvalue** : Method for computing p-values. Options: parametric, perm. The parametric method is the classical p-value method. The permutation method refers to the Freedman-Lane method.
 * **roiid** : ROI ID for roi analysis.
 * **hemi** : Hemisphere for cbm. Options: left, right.
 * **maskfile** : Mask file for tbm and dbm.
@@ -211,8 +213,6 @@ To turn on an option, please use (1), to turn off (0).
 * **estimateODF_3DShore** : Estimates ODFs using the 3DSHORE basis representation.
 * **diffusion_time_ms** : Sets the diffusion time parameter required for estimating ERFO, 3DSHORE and GQI ODFs.
 * **estimateODF_GQI** : Estimates ODFs using the GQI method.
-* **generateStats** : Generate ROI-wise statistics of estimated diffusion tensor parameters.
-* **forcePartialROIStats** : When turned on, number of missing voxels are also reported for each ROI in statistics files.
 
 ##### Post-processing #####
 * **smoothSurf** : Smoothing level for surface output data.
