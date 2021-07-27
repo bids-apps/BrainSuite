@@ -1,5 +1,5 @@
 # BrainSuite BIDS-App 
-This is the BIDS-App version of BrainSuite18a (http://brainsuite.org/). This BIDS-App version of BrainSuite provides a portable, streamlined method of performing primary BrainSuite analysis workflows.
+This is the BIDS-App version of BrainSuite21a (http://brainsuite.org/). This BIDS-App version of BrainSuite provides a portable, streamlined method of performing primary BrainSuite analysis workflows.
 
 ## Description
 BrainSuite is an open-source collection of software for processing structural, diffusion, and functional MRI.
@@ -35,7 +35,7 @@ usage: run.py [-h]
               [--TR TR] [--skipBSE] [-v]
               bids_dir output_dir {participant,group}
 
-BrainSuite19b BIDS-App (T1w, dMRI, rs-fMRI)
+BrainSuite21a BIDS-App (T1w, dMRI, rs-fMRI)
 
 positional arguments:
   bids_dir              The directory with the input dataset formatted
