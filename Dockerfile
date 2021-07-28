@@ -54,7 +54,7 @@ RUN curl -fsSL -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py
     conda clean -tipsy && sync && \
     /usr/local/miniconda/bin/pip install --no-cache-dir pybids==0.6.5 && \
     /usr/local/miniconda/bin/pip install --no-cache-dir grabbit && \
-    /usr/local/miniconda/bin/pip install --no-cache-dir pandas
+    /usr/local/miniconda/bin/pip install --no-cache-dir duecredit
 RUN conda install -y -c anaconda statsmodels
 #mkl=2020.0 mkl-service=2.3.0 six=1.14.0 pandas=1.0.3
 # MATLAB MCR
