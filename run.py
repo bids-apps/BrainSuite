@@ -71,11 +71,11 @@ parser.add_argument('--stages', help='Processing stage to be run. Space delimite
                     nargs="+",
                     choices=['CSE', 'SVREG', 'BDP', 'BFP', 'ALL'], default='ALL') #'QC', 'WEBSERVER',
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
-                                    'Default atlas: BCI-DNI. Options: BSA, BCI, USCBrain.',
-                    choices=['BSA', 'BCI', 'USCBrain'], default='BCI', required=False)
+                                    'Default atlas: BCI-DNI. Options: BSA, BCI-DNI, USCBrain.',
+                    choices=['BSA', 'BCI-DNI', 'USCBrain'], default='BCI-DNI', required=False)
 parser.add_argument('--analysistype', help='Group analysis type: structural (T1 or DWI)'
-                                           'or functional (fMRI). Options: anat, func, all.',
-                    choices=['ANAT', 'FUNC', 'ALL'], default='ALL')
+                                           'or functional (fMRI). Options: STRUCT, FUNC, ALL.',
+                    choices=['STRUCT', 'FUNC', 'ALL'], default='ALL')
 parser.add_argument('--modelspec', help='Optional. Only for group analysis level.'
                                       'Path to JSON file that contains statistical model'
                                         'specifications. ',
@@ -85,10 +85,15 @@ parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing pa
                                         'specifications. ',
                     required=False)
 parser.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
-                                        'group analysis stage.'
+                                        'group analysis stage. If this argument is specified, BrainSuite '
+                                        'BIDS-App will run this Rmarkdown instead of using the content '
+                                        'found in modelspec.json.'
                                       'Path to R Markdown file that contains bssr analysis commands. ',
                     required=False)
-parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.', action='store_true', required=False)
+parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.'
+                                           'This option can be useful when machines run into issues '
+                                           'with the parallel processing tool from Matlab (Parpool).',
+                    action='store_true', required=False)
 parser.add_argument('--cache', help='Nipype cache output folder', required=False)
 parser.add_argument('--TR', help='Repetition time of MRI', default=0)
 parser.add_argument('--skipBSE', help='Skips BSE stage when running CSE. Please make sure '
@@ -157,7 +162,8 @@ if 'WEBSERVER' in stages:
     cmd = '/BrainSuite/QC/watch.sh {0} {1}'.format(WEBDIR, args.output_dir)
     subprocess.call(cmd, shell=True)
 
-atlases = { 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
+atlases = { 'BCI-DNI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
+            'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
             'BSA' : '/opt/BrainSuite{0}/svreg/BrainSuiteAtlas1/mri'.format(BrainsuiteVersion),
             'USCBrain' : '/opt/BrainSuite{0}/svreg/USCBrain/USCBrain'.format(BrainsuiteVersion)}
 atlas = atlases[str(args.atlas)]
@@ -274,12 +280,12 @@ if args.analysis_level == "group":
     analyses = []
 
     if args.analysistype == "ALL":
-        analyses.append('ANAT')
+        analyses.append('STRUCT')
         analyses.append('FUNC')
     else:
         analyses.append(args.analysistype)
 
-    if 'ANAT' in analyses:
+    if 'STRUCT' in analyses:
         if args.rmarkdown:
             run_rmarkdown(args.rmarkdown)
         else:

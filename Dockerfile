@@ -199,6 +199,8 @@ RUN apt-get update && \
 #    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
 #    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
 #    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
+RUN pip uninstall -y pandas && \
+    pip install pandas==1.1.5
 
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh

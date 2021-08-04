@@ -1,38 +1,71 @@
 # BrainSuite BIDS-App 
-This is the BIDS-App version of BrainSuite21a (http://brainsuite.org/). This BIDS-App version of BrainSuite provides a portable, streamlined method of performing primary BrainSuite analysis workflows.
+## Overview
+BrainSuite BIDS-App provides a portable, streamlined method for performing BrainSuite (http://brainsuite.org) analysis workflows for processing and analyzing anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](http://brainsuite.org/brainsuite21a).
 
 ## Description
-BrainSuite is an open-source collection of software for processing structural, diffusion, and functional MRI.
-These stages include: 
-* Extraction of cortical surface models from T1-weighted (T1w) MRI ([CSE](http://brainsuite.org/processing/surfaceextraction/)).
-* Surface-constrained volumetric registration ([SVReg](http://brainsuite.org/processing/svreg/)) to produce atlas-labeled subject data.
-* Processing of diffusion weighted imaging (DWI) to correct image distortion, co-registering the DWI to the T1w scan, and fitting diffusion models to the DWI data ([BDP](http://brainsuite.org/processing/diffusion/)).
-* Processing of 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite ([BFP](https://github.com/ajoshiusc/bfp)).
-* Group-level statistical analysis of structural data using BrainSuite Statistics Toolbox in R ([bssr](http://brainsuite.org/bssr/)).
-* Group-level statistical analysis of fMRI data using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), a tool that temporally aligns spatially registered fMRI datasets for direct timeseries comparisons between subjects.
+BrainSuite is an open-source collection of software for processing MRI data. The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
+
+### Subject-Level Analysis
+The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP comprise:
+* Cortical surface extraction ([CSE](http://brainsuite.org/processing/surfaceextraction/)).
+* Cortical thickness estimation based on partial volume estimates and the anisotropic diffusion equation ().
+* Surface-constrained volumetric registration ([SVReg](http://brainsuite.org/processing/svreg/)) to generate a mapping to a labeled reference atlas and label the cortical surface and brain volume.
+* Mapping of cortical thickness estimates to the atlas space
+* Computation of subject-level statistics (e.g., mean GM volume within ROIs, cortical thickness within surface ROIs)
+
+The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffusion/)) performs several steps to process diffusion MRI. these include:
+* Processing of diffusion weighted imaging (DWI) to correct image distortion (based on either field maps or nonlinear registration to a corresponding T1-weighted MRI)
+* Coregistration of the DWI to the T1w scan
+* Fitting of diffusion tensor models to the DWI data
+* Fitting of orientation distribution functions to the DWI data (using FRT, FRACT, GQI, 3D-SHORE, or ERFO as appropriate)
+* Computation of diffusion indices (FA, MD, AxD, RD, GFA)
+
+The BrainSuite Functional Pipeline ([BFP](https://github.com/ajoshiusc/bfp)) processes rResting and task fMRI data.
+*** We need a brainsuite.org link for BFP ***
+* BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite.
+* add more about BFP
+
+### Group-level Statistical Analysis
+* Group-level statistical analysis of structural data is performed using the BrainSuite Statistics Toolbox in R ([bssr](http://brainsuite.org/bssr/)). Bssr supports the following analyses:
+  * tensor based morphometry (TBM) analysis of voxel-wise magnitudes of the 3D deformation fields of MRI images registered to the atlas
+  * cortical surface analysis of the vertex-wise thickness in the atlas space
+  * diffusion parameter maps analysis (e.g., fractional anisotropy, mean diffusivity, radial diffusivity)
+  * region of interest (ROI)-based analysis of average gray matter thickness, surface area, and gray matter volume within cortical ROIs
+* Group-level statistical analysis of fMRI data is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), a tool that temporally aligns spatially registered fMRI datasets for direct timeseries comparisons between subjects.
+  * say
+  * more
+  * about bfp
 
 ## Usage
 ### Data input requirements
-This App requires at least one T1w image. If no corresponding DWI data is found, the App will only run CSE and SVReg on the T1w(s). If there are corresponding DWI data (DWI image data, bval file, and bvec file), the App will grab the nearest DWI data (i.e. within sub-ID/ directory or sub-ID/ses directory) and will perform CSE, SVReg, and BDP. 
+This App requires at least one T1w image. If no corresponding DWI data is found, the App will only run CSE and SVReg on the T1w(s). If there are corresponding DWI data (DWI image data, bval file, and bvec file), the App will grab the nearest DWI data (i.e. within sub-ID/ directory or sub-ID/ses directory) and will perform CSE, SVReg, and BDP.
 
-If there are unequal number of T1w data and DWI data, the App will process the T1w and DWI data in pairs until there are no matched pairs left. The pairs will be matched according to the run numbers (i.e. run-01). 
+If there are unequal number of T1w data and DWI data, the App will process the T1w and DWI data in pairs until there are no matched pairs left. The pairs will be matched according to the run numbers (i.e. run-01).
 
 * **Required**: T1w image (BIDS/NIFTI format).
 * (Optional): DWI image, fMRI image (BIDS/NIFTI format).
 
-### Pre-requisites 
-* Make sure the imaging data are formatted and organized with respect to the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
+### Pre-requisites
+* Imaging data must be formatted and organized according to the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
 * If you have not yet installed Docker, install Docker from [here](https://docs.docker.com/install/).
+* (Optional but may be required for multi-user computers). Install [Singularity](https://sylabs.io/guides/3.5/user-guide/quick_start.html). This will allow you to run the Singularity version of the BIDS-App. Then, convert the Docker image to Singularity image:
+```
+docker run -v /var/run/docker.sock:/var/run/docker.sock \
+-v /tmp/test:/output \
+--privileged -t --rm \
+quay.io/singularity/docker2singularity \
+yeunkim/brainsuitebidsapp:stable
+```
 
 ### Command line arguments
 ```
 usage: run.py [-h]
               [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
               [--stages {CSE,SVREG,BDP,BFP,ALL} [{CSE,SVREG,BDP,BFP,ALL} ...]]
-              [--atlas {BSA,BCI,USCBrain}] [--analysistype {ANAT,FUNC,ALL}]
-              [--modelspec MODELSPEC] [--preprocspec PREPROCSPEC]
-              [--rmarkdown RMARKDOWN] [--singleThread] [--cache CACHE]
-              [--TR TR] [--skipBSE] [-v]
+              [--atlas {BSA,BCI-DNI,USCBrain}]
+              [--analysistype {STRUCT,FUNC,ALL}] [--modelspec MODELSPEC]
+              [--preprocspec PREPROCSPEC] [--rmarkdown RMARKDOWN]
+              [--singleThread] [--cache CACHE] [--TR TR] [--skipBSE] [-v]
               bids_dir output_dir {participant,group}
 
 BrainSuite21a BIDS-App (T1w, dMRI, rs-fMRI)
@@ -61,12 +94,13 @@ optional arguments:
   --stages {CSE,SVREG,BDP,BFP,ALL} [{CSE,SVREG,BDP,BFP,ALL} ...]
                         Processing stage to be run. Space delimited list.
                         Default is ALL
-  --atlas {BSA,BCI,USCBrain}
+  --atlas {BSA,BCI-DNI,USCBrain}
                         Atlas that is to be used for labeling in SVReg.
-                        Default atlas: BCI-DNI. Options: BSA, BCI, USCBrain.
-  --analysistype {ANAT,FUNC,ALL}
+                        Default atlas: BCI-DNI. Options: BSA, BCI-DNI,
+                        USCBrain.
+  --analysistype {STRUCT,FUNC,ALL}
                         Group analysis type: structural (T1 or DWI)or
-                        functional (fMRI). Options: anat, func, all.
+                        functional (fMRI). Options: STRUCT, FUNC, ALL.
   --modelspec MODELSPEC
                         Optional. Only for group analysis level.Path to JSON
                         file that contains statistical modelspecifications.
@@ -75,9 +109,14 @@ optional arguments:
                         JSON file that contains preprocessingspecifications.
   --rmarkdown RMARKDOWN
                         Optional. Executable Rmarkdown file that uses bssr
-                        forgroup analysis stage.Path to R Markdown file that
-                        contains bssr analysis commands.
-  --singleThread        Turns on single-thread mode for SVReg.
+                        forgroup analysis stage. If this argument is
+                        specified, BrainSuite BIDS-App will run this Rmarkdown
+                        instead of using the content found in
+                        modelspec.json.Path to R Markdown file that contains
+                        bssr analysis commands.
+  --singleThread        Turns on single-thread mode for SVReg.This option can
+                        be useful when machines run into issues with the
+                        parallel processing tool from Matlab (Parpool).
   --cache CACHE         Nipype cache output folder
   --TR TR               Repetition time of MRI
   --skipBSE             Skips BSE stage when running CSE. Please make sure
@@ -85,7 +124,6 @@ optional arguments:
                         folders.
   -v, --version         show program's version number and exit
 ```
-
 ### Participant level usage ###
 To run it in participant level mode:
 ```bash
