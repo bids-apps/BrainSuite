@@ -7,6 +7,7 @@ BrainSuite is an open-source collection of software for processing MRI data. The
 
 ### Subject-Level Analysis
 The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP comprise:
+
 * Cortical surface extraction ([CSE](http://brainsuite.org/processing/surfaceextraction/)).
 * Cortical thickness estimation based on partial volume estimates and the anisotropic diffusion equation ().
 * Surface-constrained volumetric registration ([SVReg](http://brainsuite.org/processing/svreg/)) to generate a mapping to a labeled reference atlas and label the cortical surface and brain volume.
@@ -14,6 +15,7 @@ The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to gene
 * Computation of subject-level statistics (e.g., mean GM volume within ROIs, cortical thickness within surface ROIs)
 
 The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffusion/)) performs several steps to process diffusion MRI. these include:
+
 * Processing of diffusion weighted imaging (DWI) to correct image distortion (based on either field maps or nonlinear registration to a corresponding T1-weighted MRI)
 * Coregistration of the DWI to the T1w scan
 * Fitting of diffusion tensor models to the DWI data
@@ -22,19 +24,20 @@ The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffus
 
 The BrainSuite Functional Pipeline ([BFP](https://github.com/ajoshiusc/bfp)) processes rResting and task fMRI data.
 *** We need a brainsuite.org link for BFP ***
+
 * BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite.
 * add more about BFP
 
 ### Group-level Statistical Analysis
 * Group-level statistical analysis of structural data is performed using the BrainSuite Statistics Toolbox in R ([bssr](http://brainsuite.org/bssr/)). Bssr supports the following analyses:
-  * tensor based morphometry (TBM) analysis of voxel-wise magnitudes of the 3D deformation fields of MRI images registered to the atlas
-  * cortical surface analysis of the vertex-wise thickness in the atlas space
-  * diffusion parameter maps analysis (e.g., fractional anisotropy, mean diffusivity, radial diffusivity)
-  * region of interest (ROI)-based analysis of average gray matter thickness, surface area, and gray matter volume within cortical ROIs
+    * tensor based morphometry (TBM) analysis of voxel-wise magnitudes of the 3D deformation fields of MRI images registered to the atlas
+    * cortical surface analysis of the vertex-wise thickness in the atlas space
+    * diffusion parameter maps analysis (e.g., fractional anisotropy, mean diffusivity, radial diffusivity)
+    * region of interest (ROI)-based analysis of average gray matter thickness, surface area, and gray matter volume within cortical ROIs
 * Group-level statistical analysis of fMRI data is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), a tool that temporally aligns spatially registered fMRI datasets for direct timeseries comparisons between subjects.
-  * say
-  * more
-  * about bfp
+    * say
+    * more
+    * about bfp
 
 ## Usage
 ### Data input requirements

@@ -151,9 +151,10 @@ RUN conda install -y -c conda-forge rpy2
 RUN conda install libgcc
 RUN conda install -y -c conda-forge tqdm nilearn
 
-RUN wget https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz && \
-    R CMD INSTALL nloptr_1.2.1.tar.gz && \
-    rm nloptr_1.2.1.tar.gz
+RUN apt-get install -y libnlopt-dev
+#RUN wget https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz && \
+#    R CMD INSTALL nloptr_1.2.1.tar.gz && \
+#    rm nloptr_1.2.1.tar.gz
 RUN wget https://cran.r-project.org/src/contrib/Archive/foreign/foreign_0.8-71.tar.gz && \
     R CMD INSTALL foreign_0.8-71.tar.gz && \
     rm foreign_0.8-71.tar.gz
