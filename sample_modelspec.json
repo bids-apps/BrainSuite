@@ -26,7 +26,7 @@
 
 	"Functional":{
         "tsv_fname": "/data/participants.tsv",
-		"file_ext": "-rest_bold.32k.GOrd.filt.mat",
+		"file_ext": "_task-rest_bold.32k.GOrd.filt.mat",
 		"lentime": 240,
 		"matchT": "False",
 		"stat_test": "atlas-linear" ,

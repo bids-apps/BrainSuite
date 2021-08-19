@@ -121,40 +121,15 @@ ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
 
 
-#ENV INIFile=/config.ini
-##RUN echo [main] >> $INIFile && \
-#RUN echo AFNIPATH=/usr/lib/afni >> $INIFile && \
-#    echo BFPPATH=${BFP} >> $INIFile && \
-#    echo BrainSuitePath=/opt/BrainSuite${BrainSuiteVersion} >> $INIFile && \
-#    echo LD_LIBRARY_PATH=/usr/lib/fsl/5.0 >> $INIFile && \
-#    echo CONTINUERUN=1 >> $INIFile && \
-#    echo MultiThreading=1 >> $INIFile && \
-#    echo EnabletNLMPdfFiltering=1 >> $INIFile && \
-#    echo fpr=0.001 >> $INIFile && \
-#    echo FSLOUTPUTTYPE=NIFTI_GZ >> $INIFile && \
-#    echo FSLPATH=/usr/share/fsl/5.0 >> $INIFile && \
-#    echo FWHM=6 >> $INIFile && \
-#    echo HIGHPASS=0.005 >> $INIFile && \
-#    echo LOWPASS=0.1 >> $INIFile && \
-#    echo memory=16 >> $INIFile && \
-#    echo scbPath=/bfp/SCB.mat >> $INIFile && \
-#    echo EnableShapeMeasures=0 >> $INIFile && \
-#    echo T1SpaceProcessing=1 >> $INIFile && \
-#    echo FSLRigid=0 >> $INIFile && \
-#    echo T1mask=1 >> $INIFile && \
-#    echo SimRef=1 >> $INIFile && \
-#    echo RunDetrend=1 >> $INIFile && \
-#    echo RunNSR=1 >> $INIFile
-
 
 RUN conda install -y -c conda-forge rpy2
 RUN conda install libgcc
 RUN conda install -y -c conda-forge tqdm nilearn
 
-RUN apt-get install -y libnlopt-dev
-#RUN wget https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz && \
-#    R CMD INSTALL nloptr_1.2.1.tar.gz && \
-#    rm nloptr_1.2.1.tar.gz
+#RUN apt-get install -y libnlopt-dev
+RUN wget https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz && \
+    R CMD INSTALL nloptr_1.2.1.tar.gz && \
+    rm nloptr_1.2.1.tar.gz
 RUN wget https://cran.r-project.org/src/contrib/Archive/foreign/foreign_0.8-71.tar.gz && \
     R CMD INSTALL foreign_0.8-71.tar.gz && \
     rm foreign_0.8-71.tar.gz
@@ -175,8 +150,8 @@ RUN wget https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.2-18.tar
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep3.py
 RUN python install_dep3.py
 
-#RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/05/bssr_0.2.9.tar.gz
-RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.3.1.tar.gz
+RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/08/bssr_0.3.1.tar.gz
+#RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.3.1.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
     python install_bssr.py
 RUN rm /bssr_0.3.1.tar.gz
@@ -202,6 +177,7 @@ RUN apt-get update && \
 #    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
 RUN pip uninstall -y pandas && \
     pip install pandas==1.1.5
+RUN conda install -y -c anaconda basemap
 
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh
@@ -217,6 +193,7 @@ COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 COPY . /BrainSuite
 RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ && chmod -R ugo+rx *
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
 
 RUN chmod +x /BrainSuite/run.py
