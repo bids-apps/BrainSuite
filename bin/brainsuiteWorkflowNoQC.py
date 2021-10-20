@@ -32,7 +32,6 @@ class subjLevelProcessing(object):
         self.specs = specs
         self.stages = STAGES
 
-
         #bse
         self.autoParameters = specs.autoParameters
         self.diffusionIterations = specs.diffusionIterations
@@ -62,6 +61,8 @@ class subjLevelProcessing(object):
         self.echoSpacing = specs.echoSpacing
         self.fieldmapCorrection = specs.fieldmapCorrection
         self.diffusion_time_ms = specs.diffusion_time_ms
+
+        self.bdponly = False
 
         # svreg
         atlases = {'BCI': '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION),
@@ -97,6 +98,9 @@ class subjLevelProcessing(object):
 
     def runWorkflow(self, SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BFP):
         STAGES = self.stages
+        anat = WORKFLOW_BASE_DIRECTORY + '/anat/'
+        dwi = WORKFLOW_BASE_DIRECTORY + '/dwi/'
+        func = WORKFLOW_BASE_DIRECTORY + '/func/'
         brainsuite_workflow = pe.Workflow(name=WORKFLOW_NAME)
         CACHE_DIRECTORY = self.cachedir
         if self.specs.read_file:
@@ -106,8 +110,12 @@ class subjLevelProcessing(object):
         brainsuite_workflow.base_dir = CACHE_DIRECTORY
 
         t1 = INPUT_MRI_FILE.split("/")[-1]
+        t1 = SUBJECT_ID + '_T1w.' + '.'.join(t1.split('.')[1:])
+        # TODO: check logic
+        SUBJECT_ID = t1.split('.')[0].split('_T1w')[0]
 
         try:
+            #TODO: copy and change file name
             copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
         except OSError as e:
             if e.errno == errno.EEXIST:
@@ -116,6 +124,8 @@ class subjLevelProcessing(object):
                 raise
 
         if 'CSE' in STAGES:
+            if not os.path.exists(anat):
+                os.makedirs(anat)
 
             bseObj = pe.Node(interface=bs.Bse(), name='BSE')
 
@@ -185,7 +195,7 @@ class subjLevelProcessing(object):
             brainsuite_workflow.connect(cerebroObj, 'outputLabelVolumeFile', hemisplitObj, 'inputHemisphereLabelFile')
 
             ds = pe.Node(io.DataSink(), name='DATASINK')
-            ds.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+            ds.inputs.base_directory = anat
 
             # **DataSink connections**
             if 'noBSE' not in STAGES:
@@ -210,7 +220,7 @@ class subjLevelProcessing(object):
             brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', ds, '@18')
 
             thickPVCObj = pe.Node(interface=bs.ThicknessPVC(), name='ThickPVC')
-            thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            thickPVCInputBase = anat + os.sep + SUBJECT_ID + '_T1w'
             thickPVCObj.inputs.subjectFilePrefix = thickPVCInputBase
 
             brainsuite_workflow.connect(ds, 'out_file', thickPVCObj, 'dataSinkDelay')
@@ -390,9 +400,12 @@ class subjLevelProcessing(object):
                 # brainsuite_workflow.connect(dfsrenderhemisplitObj, 'outFile', qcstatedfsrenderhemisplitObj, 'filename')
 
         if 'BDP' in STAGES:
+            if not os.path.exists(dwi):
+                os.makedirs(dwi)
+
             INPUT_DWI_BASE = self.bdpfiles
             bdpObj = pe.Node(interface=bs.BDP(), name='BDP')
-            bdpInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID +'_T1w'
+            bdpInputBase = anat + os.sep + SUBJECT_ID +'_T1w'
 
             # bdp inputs that will be created. We delay execution of BDP until all CSE and datasink are done
             bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
@@ -407,45 +420,58 @@ class subjLevelProcessing(object):
             bdpsubdir = '/../dwi'
             bdpObj.inputs.outputSubdir = bdpsubdir
 
-            brainsuite_workflow.connect(ds, 'out_file', bdpObj, 'dataSinkDelay')
+            if 'CSE' in STAGES:
+                brainsuite_workflow.connect(ds, 'out_file', bdpObj, 'dataSinkDelay')
             if 'SVREG' in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
-                ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+                ds2.inputs.base_directory = anat
                 brainsuite_workflow.connect(bdpObj, 'tensor_coord', ds2, '@0')
+            else:
+                self.bdponly = True
+                bdpObj.run()
+
 
         if 'SVREG' in STAGES:
-            ds0_thick = pe.Node(io.DataSink(), name='DATASINK0THICK')
-            brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', ds0_thick, '@')
-            brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', ds0_thick, '@1')
-            svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
-            svregInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            if 'CSE' in STAGES:
+                ds0_thick = pe.Node(io.DataSink(), name='DATASINK0THICK')
+                brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', ds0_thick, '@')
+                brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', ds0_thick, '@1')
+                svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
+                svregInputBase = anat + os.sep + SUBJECT_ID + '_T1w'
 
-            # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
-            svregObj.inputs.subjectFilePrefix = svregInputBase
-            svregObj.inputs.atlasFilePrefix = self.atlas
-            # svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
-            # if 'ATLAS' in keyword_parameters:
-            #     svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
-            # if 'SingleThread' in keyword_parameters:
-            #     if 'ON' in keyword_parameters['SingleThread']:
-            svregObj.inputs.useSingleThreading = self.singleThread
+                # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
+                svregObj.inputs.subjectFilePrefix = svregInputBase
+                svregObj.inputs.atlasFilePrefix = self.atlas
+                # svregObj.inputs.atlasFilePrefix = '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BRAINSUITE_VERSION)
+                # if 'ATLAS' in keyword_parameters:
+                #     svregObj.inputs.atlasFilePrefix = keyword_parameters['ATLAS']
+                # if 'SingleThread' in keyword_parameters:
+                #     if 'ON' in keyword_parameters['SingleThread']:
+                svregObj.inputs.useSingleThreading = self.singleThread
 
-            brainsuite_workflow.connect(ds0_thick, 'out_file', svregObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(ds0_thick, 'out_file', svregObj, 'dataSinkDelay')
+            else:
+                thickPVCInputBase = anat + os.sep + SUBJECT_ID + '_T1w'
+                svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
+                svregInputBase = anat + os.sep + SUBJECT_ID + '_T1w'
+                svregObj.inputs.subjectFilePrefix = svregInputBase
+                svregObj.inputs.atlasFilePrefix = self.atlas
+                svregObj.inputs.useSingleThreading = self.singleThread
 
             if not 'BDP' in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
-                ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+                ds2.inputs.base_directory = anat
 
             brainsuite_workflow.connect(svregObj, 'outputLabelFile', ds2, '@')
 
             thick2atlasObj = pe.Node(interface=bs.Thickness2Atlas(), name='THICK2ATLAS')
-            thick2atlasInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            thick2atlasInputBase = anat + os.sep + SUBJECT_ID + '_T1w'
             thick2atlasObj.inputs.subjectFilePrefix = thick2atlasInputBase
 
             brainsuite_workflow.connect(ds2, 'out_file', thick2atlasObj, 'dataSinkDelay')
 
             ds3 = pe.Node(io.DataSink(), name='DATASINK3')
-            ds3.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+            ds3.inputs.base_directory = anat
 
             brainsuite_workflow.connect(thick2atlasObj, 'atlasSurfLeftFile', ds3, '@')
             brainsuite_workflow.connect(thick2atlasObj, 'atlasSurfRightFile', ds3, '@1')
@@ -459,7 +485,7 @@ class subjLevelProcessing(object):
             #### smooth surface
             smoothsurf = self.smoothsurf
 
-            smoothSurfInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + 'atlas.pvc-thickness_0-6mm'
+            smoothSurfInputBase = anat + os.sep + 'atlas.pvc-thickness_0-6mm'
 
             smoothSurfLeftObj = pe.Node(interface=bs.SVRegSmoothSurf(), name='SMOOTHSURFLEFT')
             smoothSurfLeftObj.inputs.inputSurface = smoothSurfInputBase + '.left.mid.cortex.dfs'
@@ -476,11 +502,11 @@ class subjLevelProcessing(object):
             smoothKernel = self.smoothvol
 
             smoothVolJacObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_MAP')
-            smoothVolJacObj.inputs.inFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w' + '.svreg.inv.jacobian.nii.gz'
+            smoothVolJacObj.inputs.inFile = anat + os.sep + SUBJECT_ID + '_T1w' + '.svreg.inv.jacobian.nii.gz'
             smoothVolJacObj.inputs.stdx = smoothKernel
             smoothVolJacObj.inputs.stdy = smoothKernel
             smoothVolJacObj.inputs.stdz = smoothKernel
-            smoothVolJacObj.inputs.outFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w' + '.svreg.inv.jacobian.smooth{0}mm.nii.gz'.format(
+            smoothVolJacObj.inputs.outFile = anat + os.sep + SUBJECT_ID + '_T1w' + '.svreg.inv.jacobian.smooth{0}mm.nii.gz'.format(
                 str(smoothKernel))
 
             brainsuite_workflow.connect(ds3, 'out_file', smoothSurfLeftObj, 'dataSinkDelay')
@@ -490,12 +516,11 @@ class subjLevelProcessing(object):
             ## TODO: place svreg.inv.map smoothing here ##
 
         if 'SVREG' in STAGES and 'BDP' in STAGES:
-            bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
             atlasFilePrefix = self.atlas
 
             ######## Apply Map ########
-            applyMapInputBase = bdpsubdir + os.sep + SUBJECT_ID + '_T1w' # '_dwi'
-            applyMapInputBaseSVReg = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '_T1w'
+            applyMapInputBase = dwi + os.sep + SUBJECT_ID + '_T1w' # '_dwi'
+            applyMapInputBaseSVReg = anat + os.sep + SUBJECT_ID + '_T1w'
             applyMapMapFile = applyMapInputBaseSVReg + '.svreg.inv.map.nii.gz'
             applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
             
@@ -540,7 +565,7 @@ class subjLevelProcessing(object):
             applyMapFRT_GFAObj.inputs.targetFile = applyMapTargetFile
 
             ds5 = pe.Node(io.DataSink(), name='DATASINK5')
-            ds5.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+            ds5.inputs.base_directory = anat
 
             brainsuite_workflow.connect(ds2, 'out_file', applyMapFAObj, 'dataSinkDelay')
             brainsuite_workflow.connect(ds2, 'out_file', applyMapMDObj, 'dataSinkDelay')
@@ -550,7 +575,7 @@ class subjLevelProcessing(object):
             brainsuite_workflow.connect(ds2, 'out_file', applyMapFRT_GFAObj, 'dataSinkDelay')
 
             ds4 = pe.Node(io.DataSink(), name='DATASINK4')
-            ds4.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+            ds4.inputs.base_directory = anat
 
             brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', ds4, '@')
             brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', ds4, '@1')
@@ -562,8 +587,7 @@ class subjLevelProcessing(object):
 
             ####### Smooth Vol #######
             smoothKernel = self.smoothvol
-            bdpsubdir = os.path.dirname(WORKFLOW_BASE_DIRECTORY) + '/dwi'
-            smoothVolInputBase = bdpsubdir + os.sep + SUBJECT_ID  + '_T1w' + '.dwi.RAS.{0}atlas.'.format(distcorr)
+            smoothVolInputBase = dwi + os.sep + SUBJECT_ID  + '_T1w' + '.dwi.RAS.{0}atlas.'.format(distcorr)
 
             smoothVolFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FA')
             smoothVolFAObj.inputs.inFile = smoothVolInputBase + 'FA.nii.gz'
@@ -615,6 +639,8 @@ class subjLevelProcessing(object):
             brainsuite_workflow.connect(ds4, 'out_file', smoothVolFRT_GFAObj, 'dataSinkDelay')
 
         if 'BFP' in STAGES:
+            if not os.path.exists(func):
+                os.makedirs(func)
         #     BFPObj = pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(BFP['sess'][0]))
         #     BFPObj.inputs.configini = BFP['configini']
         #     BFPObj.inputs.t1file = BFP['t1']
@@ -630,24 +656,25 @@ class subjLevelProcessing(object):
             for func in range(len(BFP['sess'])):
                 BFPObjs.append(pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(BFP['sess'][func])))
                 BFPObjs[func].inputs.configini = str(BFP['configini'])
-                BFPObjs[func].inputs.t1file = BFP['t1']
+                BFPObjs[func].inputs.t1file = os.path.join(CACHE_DIRECTORY, t1)
                 BFPObjs[func].inputs.fmrifile = BFP['func'][func]
                 BFPObjs[func].inputs.studydir = BFP['studydir']
                 BFPObjs[func].inputs.subjID = BFP['subjID']
+                # fullname = BFP['func'][func].split('/')[-1].split('_bold')[0].split('task-')[-1]
                 BFPObjs[func].inputs.session = BFP['sess'][func]
                 BFPObjs[func].inputs.TR = BFP['TR']
             # print(BFPObjs[0].inputs)
             # print(BFPObjs[1].inputs)
             if 'SVREG' not in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
-                ds2.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
+                ds2.inputs.base_directory = anat
             brainsuite_workflow.connect(ds2, 'out_file', BFPObjs[0], 'dataSinkDelay')
             if len(BFP['sess']) > 1:
                 for func in range(len(BFP['func'])-1):
                     brainsuite_workflow.connect(BFPObjs[func], 'res2std', BFPObjs[int(func+1)], 'dataSinkDelay')
 
-
-        brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
+        if not self.bdponly:
+            brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
 
         # Print message when all processing is complete.
         print('Processing for subject %s has completed. Nipype workflow is located at: %s' % (

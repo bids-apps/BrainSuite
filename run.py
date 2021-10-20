@@ -78,17 +78,17 @@ parser.add_argument('--analysistype', help='Group analysis type: structural (T1 
                     choices=['STRUCT', 'FUNC', 'ALL'], default='ALL')
 parser.add_argument('--modelspec', help='Optional. Only for group analysis level.'
                                       'Path to JSON file that contains statistical model'
-                                        'specifications. ',
+                                        'specifications.',
                     required=False)
 parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing parameters.'
                                       'Path to JSON file that contains preprocessing'
-                                        'specifications. ',
+                                        'specifications.',
                     required=False)
 parser.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
                                         'group analysis stage. If this argument is specified, BrainSuite '
                                         'BIDS-App will run this Rmarkdown instead of using the content '
                                         'found in modelspec.json.'
-                                      'Path to R Markdown file that contains bssr analysis commands. ',
+                                      'Path to R Markdown file that contains bssr analysis commands.',
                     required=False)
 parser.add_argument('--singleThread', help='Turns on single-thread mode for SVReg.'
                                            'This option can be useful when machines run into issues '
@@ -99,6 +99,19 @@ parser.add_argument('--TR', help='Repetition time of MRI', default=0)
 parser.add_argument('--skipBSE', help='Skips BSE stage when running CSE. Please make sure '
                                       'there are sub-ID_T1w.mask.nii.gz files in the subject folders.',
                     action='store_true', required=False)
+parser.add_argument('--ignoreSubjectConsistency', help='Reduces down the BIDS validator log and '
+                                                       'the associated memory needs. This is often helpful for'
+                                                       'large datasets.', action='store_true', required=False)
+parser.add_argument('--bidsconfig', help='Configuration of the severity of errors for BIDS validator. '
+                                     'If no path is specified, a default path of .bids-validator-config.json'
+                                     '(relative to the input bids directory) file is used.', nargs='?', const='',
+                    required=False)
+parser.add_argument('--ignore_suffix', help='Optional. Users can define which suffix to ignore in the output '
+                                            'folder. E.g., if input T1w is sub-01_ses-A_acq-highres_run-01_T1w.nii.gz,'
+                                            'and user would like to ignore the "acq-highres" suffix portion, then user can '
+                                            'type "--ignore_suffix acq", which will render sub-01_ses-A_run-01 output '
+                                            'folders.',
+                    required=False)
 # parser.add_argument('--QCdir', help='Designate directory for QC HTML.', default=None)
 # parser.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
 parser.add_argument('-v', '--version', action='version',
@@ -106,8 +119,15 @@ parser.add_argument('-v', '--version', action='version',
 
 
 args = parser.parse_args()
-
-run("bids-validator " + args.bids_dir, cwd=args.output_dir)
+if args.ignoreSubjectConsistency == True:
+    ignoreSubjectConsistency = ' --ignoreSubjectConsistency '
+else:
+    ignoreSubjectConsistency = ''
+if args.bidsconfig:
+    bidsconfig = ' --config {0} '.format(args.bidsconfig)
+else:
+    bidsconfig = ''
+run("bids-validator " + args.bids_dir + ignoreSubjectConsistency + bidsconfig, cwd=args.output_dir)
 
 layout = BIDSLayout(args.bids_dir)
 subjects_to_analyze = []
@@ -188,7 +208,7 @@ if (args.analysis_level == "participant") and runProcessing:
         shutil.copyfile('/config.ini', '{0}/config.ini'.format(args.output_dir))
         configini = '{0}/config.ini'.format(args.output_dir)
 
-    print('\nWill run: {0}'.format(args.stages))
+    # print('\nWill run: {0}'.format(stages))
     for subject_label in subjects_to_analyze:
         mcrCache = os.path.join(args.output_dir, '.mcrCache/{0}.mcrCache'.format(subject_label))
         # mcrCache = '/.mcrCache/{0}.mcrCache'.format(subject_label)
@@ -201,21 +221,66 @@ if (args.analysis_level == "participant") and runProcessing:
 
         if len(sessions) > 0:
             for ses in range(0, len(sessions)):
+                runs = layout.get(target='run', return_type='id', session=sessions[ses],
+                              subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
+                if len(runs) > 0:
+                    for r in range(0, len(runs)):
+                        t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                               type='T1w', session=sessions[ses],
+                                                               extensions=["nii.gz", "nii"])]
+                        dwis = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                               type='dwi', session=sessions[ses],
+                                                               extensions=["nii.gz", "nii"])]
+                        funcs = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                                type='bold', session=sessions[ses],
+                                                                extensions=["nii.gz", "nii"])]
+                        runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                                    dwis, funcs, subject_label, BFPpath, configini, args)
+
+                else:
+                    t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                           type='T1w', session=sessions[ses],
+                                                           extensions=["nii.gz", "nii"])]
+                    dwis = [f.filename for f in layout.get(subject=subject_label,
+                                                           type='dwi', session=sessions[ses],
+                                                           extensions=["nii.gz", "nii"])]
+                    funcs = [f.filename for f in layout.get(subject=subject_label,
+                                                            type='bold', session=sessions[ses],
+                                                            extensions=["nii.gz", "nii"])]
+                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                            dwis, funcs, subject_label, BFPpath, configini, args)
+        else:
+            runs = layout.get(target='run', return_type='id',
+                              subject=subject_label, type='T1w', extensions=["nii.gz", "nii"])
+            if len(runs) > 0:
+                for r in range(0, len(runs)):
+                    t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                           type='T1w',
+                                                           extensions=["nii.gz", "nii"])]
+                    dwis = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                           type='dwi',
+                                                           extensions=["nii.gz", "nii"])]
+                    funcs = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                            type='bold',
+                                                            extensions=["nii.gz", "nii"])]
+                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                                dwis, funcs, subject_label, BFPpath, configini, args)
+            else:
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='T1w', session=sessions[ses],
-                                                       extensions=["nii.gz", "nii"])]
-                assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
+                                                       type='T1w', extensions=["nii.gz", "nii"])]
+                # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
 
                 dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='dwi', session=sessions[ses],
-                                                       extensions=["nii.gz", "nii"])]
+                                                       type='dwi', extensions=["nii.gz", "nii"])]
+
                 funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                        type='bold', session=sessions[ses],
+                                                        type='bold',
                                                         extensions=["nii.gz", "nii"])]
 
 
-                subjectID = 'sub-{0}_ses-{1}'.format(subject_label, sessions[ses])
-                outputdir = os.path.join(args.output_dir, subjectID, 'anat')
+                # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
+                # subjectID = t1ws[0].split('/')[-1].split('_T1w')[0]
+                # outputdir = os.path.join(args.output_dir, subjectID, 'anat')
                 # if not cacheset:
                 #     cache = outputdir
                 # elif cacheset:
@@ -225,52 +290,52 @@ if (args.analysis_level == "participant") and runProcessing:
                 # if not os.path.exists(outputdir):
                 #     os.makedirs(outputdir)
 
-                session = sessions[ses]
+                # session = sessions[ses]
 
-                try:
-                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
-                            dwis, funcs, subject_label, BFPpath, configini, args)
-                    if 'QC' in stages:
-                        WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-                        cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
-                        subprocess.call(cmd, shell=True)
-                except RuntimeError as err:
-                    if 'QC' in stages:
-                        WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-                        cmd= '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
-                        subprocess.call(cmd, shell=True)
-
-
-        else:
-
-            t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                   type='T1w', extensions=["nii.gz", "nii"])]
-            assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
-
-            dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                   type='dwi', extensions=["nii.gz", "nii"])]
-
-            funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                    type='bold',
-                                                    extensions=["nii.gz", "nii"])]
-
-            outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
-
-
-            subjectID = 'sub-%s' % subject_label
-            session = ''
-            try:
-                runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
+                # try:
+                runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
                         dwis, funcs, subject_label, BFPpath, configini, args)
-                if 'QC' in stages:
-                    WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-                    cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
-                    subprocess.call(cmd, shell=True)
-            except RuntimeError as err:
-                if 'QC' in stages:
-                    WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-                    cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
-                    subprocess.call(cmd, shell=True)
+                #     if 'QC' in stages:
+                #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+                #         cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
+                #         subprocess.call(cmd, shell=True)
+                # except RuntimeError as err:
+                #     if 'QC' in stages:
+                #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+                #         cmd= '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
+                #         subprocess.call(cmd, shell=True)
+
+
+        # else:
+        #
+        #     t1ws = [f.filename for f in layout.get(subject=subject_label,
+        #                                            type='T1w', extensions=["nii.gz", "nii"])]
+        #     # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
+        #
+        #     dwis = [f.filename for f in layout.get(subject=subject_label,
+        #                                            type='dwi', extensions=["nii.gz", "nii"])]
+        #
+        #     funcs = [f.filename for f in layout.get(subject=subject_label,
+        #                                             type='bold',
+        #                                             extensions=["nii.gz", "nii"])]
+        #     #
+            # outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
+            #
+            #
+            # subjectID = 'sub-%s' % subject_label
+            # session = ''
+            # try:
+            #     runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
+            #             dwis, funcs, subject_label, BFPpath, configini, args)
+            #     if 'QC' in stages:
+            #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+            #         cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
+            #         subprocess.call(cmd, shell=True)
+            # except RuntimeError as err:
+            #     if 'QC' in stages:
+            #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+            #         cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
+            #         subprocess.call(cmd, shell=True)
 
 
 

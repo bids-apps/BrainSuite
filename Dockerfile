@@ -150,11 +150,11 @@ RUN wget https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.2-18.tar
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep3.py
 RUN python install_dep3.py
 
-RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/08/bssr_0.3.1.tar.gz
-#RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.3.1.tar.gz
+#RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/08/bssr_0.3.1.tar.gz
+RUN cd / && wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bssr_0.3.1b.tar.gz
 RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
     python install_bssr.py
-RUN rm /bssr_0.3.1.tar.gz
+RUN rm /bssr_0.3.1b.tar.gz
 
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
     apt-key add /usr/local/etc/neurodebian.gpg && \
@@ -178,6 +178,11 @@ RUN apt-get update && \
 RUN pip uninstall -y pandas && \
     pip install pandas==1.1.5
 RUN conda install -y -c anaconda basemap
+RUN npm install -g bids-validator
+# TODO fix lines 181 to 185 (dev purposes)
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_083121c.tar.gz | tar xvz
+RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver4p01/bfp_ver4p01.tar.gz | tar xvz
+RUN rm -rf bfp_ver4p01/supp_data && mv bfp_ver4p01/* bfp
 
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh
