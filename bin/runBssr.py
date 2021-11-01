@@ -87,7 +87,7 @@ def run_model(specs, bss_data):
         elif specs.test == 'lm':
             cov = "+".join(specs.covariates)
             bss_model = bssr.bss_anova(main_effect=specs.main_effect, covariates=cov, bss_data=bss_data,
-                                       mult_comp=specs.mult_comp, niter=specs.niter, pvalue=specs.pvalue)
+                                       mult_comp=specs.mult_comp) #, niter=specs.niter, pvalue=specs.pvalue
 
         elif specs.test == 'corr':
             bss_model = bssr.bss_corr(corr_var=specs.corr_var, bss_data=bss_data, mult_comp=specs.mult_comp)

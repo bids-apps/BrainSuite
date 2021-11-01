@@ -13,11 +13,10 @@ config.update_config(cfg)
 import nipype.pipeline.engine as pe
 import nipype.interfaces.brainsuite as bs
 import nipype.interfaces.io as io
-import os
-from bids.grabbids import BIDSLayout
 from shutil import copyfile
 import os
 import errno
+from QC.makeMask import makeMask
 
 BRAINSUITE_VERSION= os.environ['BrainSuiteVersion']
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
@@ -61,6 +60,8 @@ class subjLevelProcessing(object):
         self.echoSpacing = specs.echoSpacing
         self.fieldmapCorrection = specs.fieldmapCorrection
         self.diffusion_time_ms = specs.diffusion_time_ms
+
+        self.epit1corr = specs.epit1corr
 
         self.bdponly = False
 
@@ -109,11 +110,18 @@ class subjLevelProcessing(object):
                 os.makedirs(CACHE_DIRECTORY)
         brainsuite_workflow.base_dir = CACHE_DIRECTORY
 
+        if 'QC' in self.stages:
+            WEBPATH = os.path.join(self.QCdir, SUBJECT_ID)
+            if not os.path.exists(WEBPATH):
+                os.makedirs(WEBPATH)
+
         t1 = INPUT_MRI_FILE.split("/")[-1]
         t1 = SUBJECT_ID + '_T1w.' + '.'.join(t1.split('.')[1:])
         # TODO: check logic
         SUBJECT_ID = t1.split('.')[0].split('_T1w')[0]
 
+        subjstate = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+        labeldesc = BRAINSUITE_LABEL_DIRECTORY + LABEL_SUFFIX
         try:
             #TODO: copy and change file name
             copyfile(INPUT_MRI_FILE, os.path.join(CACHE_DIRECTORY, t1))
@@ -226,23 +234,23 @@ class subjLevelProcessing(object):
             brainsuite_workflow.connect(ds, 'out_file', thickPVCObj, 'dataSinkDelay')
 
             if 'QC' in STAGES:
-                WEBPATH = os.path.join(self.QCdir, SUBJECT_ID)
-                if not os.path.exists(WEBPATH):
-                    os.makedirs(WEBPATH)
-
-                labeldesc = BRAINSUITE_LABEL_DIRECTORY + LABEL_SUFFIX
 
                 origT1 = os.path.join(CACHE_DIRECTORY, t1)
                 bseMask = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'BSE', SUBJECT_ID + '_T1w.mask.nii.gz')
-                bfc = bfcObj.inputs.inputMRIFile
+                bfc = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'BFC', SUBJECT_ID + '_T1w.bfc.nii.gz')
                 pvclabel = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'PVC', SUBJECT_ID + '_T1w.pvc.label.nii.gz')
                 cerebro = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'CEREBRO', SUBJECT_ID + '_T1w.cerebrum.mask.nii.gz')
-                inner = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'CORTEX', SUBJECT_ID + '_T1w.init.cortex.mask.nii.gz')
-                scrub = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'SCRUBMASK', SUBJECT_ID + '_T1w.cortex.scrubbed.mask.nii.gz')
-                tca = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'TCA', SUBJECT_ID + '_T1w.cortex.tca.mask.nii.gz')
+                hemilabel = os.path.join(CACHE_DIRECTORY, 'BrainSuite', 'CEREBRO',
+                                         SUBJECT_ID + '_T1w.hemi.label.nii.gz')
+                # inner = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'CORTEX', SUBJECT_ID + '_T1w.init.cortex.mask.nii.gz')
+                # scrub = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'SCRUBMASK', SUBJECT_ID + '_T1w.cortex.scrubbed.mask.nii.gz')
+                # tca = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'TCA', SUBJECT_ID + '_T1w.cortex.tca.mask.nii.gz')
                 dewisp = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'DEWISP', SUBJECT_ID + '_T1w.cortex.dewisp.mask.nii.gz')
                 dfs = dfsObj.outputs.outputSurfaceFile
-                pialmesh = pialmeshObj.outputs.outputSurfaceFile
+                Thickdfs = anat + os.sep + SUBJECT_ID + '_T1w.pvc-thickness_0-6mm.left.mid.cortex.dfs ' + \
+                           anat + os.sep + SUBJECT_ID + '_T1w.pvc-thickness_0-6mm.right.mid.cortex.dfs'
+
+                # pialmesh = pialmeshObj.outputs.outputSurfaceFile
                 # hemisplit =
 
                 volbendbseObj = pe.Node(interface=bs.Volblend(), name='volblendbse')
@@ -261,7 +269,15 @@ class subjLevelProcessing(object):
                 volbendpvcObj.inputs.outFile = '{0}/pvc.png'.format(WEBPATH)
                 volbendpvcObj.inputs.labelFile = pvclabel
                 volbendpvcObj.inputs.labelDesc = labeldesc
-                volbendpvcObj.inputs.view = 2 # coronal
+                volbendpvcObj.inputs.view = 1 # axial
+
+                volbendHemilabelObj = pe.Node(interface=bs.Volblend(), name='volblendHemilabel')
+                volbendHemilabelObj.inputs.inFile = bfc
+                volbendHemilabelObj.inputs.outFile = '{0}/hemilabel.png'.format(WEBPATH)
+                volbendHemilabelObj.inputs.maskFile = cerebro
+                volbendHemilabelObj.inputs.labelFile = hemilabel
+                volbendHemilabelObj.inputs.labelDesc = labeldesc
+                volbendHemilabelObj.inputs.view = 2
 
                 volbendcerebroObj = pe.Node(interface=bs.Volblend(), name='volblendcerebro')
                 volbendcerebroObj.inputs.inFile = bfc
@@ -269,41 +285,65 @@ class subjLevelProcessing(object):
                 volbendcerebroObj.inputs.maskFile = cerebro
                 volbendcerebroObj.inputs.view = 3
 
-                volbendcortexObj = pe.Node(interface=bs.Volblend(), name='volblendcortex')
-                volbendcortexObj.inputs.inFile = bfc
-                volbendcortexObj.inputs.outFile = '{0}/cortex.png'.format(WEBPATH)
-                volbendcortexObj.inputs.maskFile = inner
-                volbendcortexObj.inputs.view = 2
-
-                volbendscrubmaskObj = pe.Node(interface=bs.Volblend(), name='volblendscrubmask')
-                volbendscrubmaskObj.inputs.inFile = bfc
-                volbendscrubmaskObj.inputs.outFile = '{0}/scrub.png'.format(WEBPATH)
-                volbendscrubmaskObj.inputs.maskFile = scrub
-                volbendscrubmaskObj.inputs.view =2
-
-                volbendtcaObj = pe.Node(interface=bs.Volblend(), name='volblendtca')
-                volbendtcaObj.inputs.inFile = bfc
-                volbendtcaObj.inputs.outFile = '{0}/tca.png'.format(WEBPATH)
-                volbendtcaObj.inputs.maskFile = tca
-                volbendtcaObj.inputs.view = 2
-
                 volbenddewispObj = pe.Node(interface=bs.Volblend(), name='volblenddewisp')
                 volbenddewispObj.inputs.inFile = bfc
                 volbenddewispObj.inputs.outFile = '{0}/dewisp.png'.format(WEBPATH)
                 volbenddewispObj.inputs.maskFile = dewisp
-                volbenddewispObj.inputs.view = 2
+                volbenddewispObj.inputs.view = 1
 
-                dfsrenderdfsObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfs')
-                dfsrenderdfsObj.inputs.Surfaces = dfs
-                dfsrenderdfsObj.inputs.OutFile = '{0}/dfs.png'.format(WEBPATH)
-                dfsrenderdfsObj.inputs.Sup = True
-                dfsrenderdfsObj.inputs.Zoom = 0.6
+                volbenddewispCorObj = pe.Node(interface=bs.Volblend(), name='volblenddewispCor')
+                volbenddewispCorObj.inputs.inFile = bfc
+                volbenddewispCorObj.inputs.outFile = '{0}/dewispCor.png'.format(WEBPATH)
+                volbenddewispCorObj.inputs.maskFile = dewisp
+                volbenddewispCorObj.inputs.view = 2
 
-                dfsrenderpialmeshObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderpialmesh')
-                dfsrenderpialmeshObj.inputs.Surfaces = pialmesh
-                dfsrenderpialmeshObj.inputs.OutFile = '{0}/pialmesh.png'.format(WEBPATH)
-                dfsrenderpialmeshObj.inputs.Sup = True
-                dfsrenderpialmeshObj.inputs.Zoom = 0.6
+                dfsrenderdfsLeftObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsLeft')
+                dfsrenderdfsLeftObj.inputs.Surfaces = dfs
+                dfsrenderdfsLeftObj.inputs.OutFile = '{0}/dfsLeft.png'.format(WEBPATH)
+                dfsrenderdfsLeftObj.inputs.Left = True
+                dfsrenderdfsLeftObj.inputs.Zoom = 0.6
+
+                dfsrenderdfsRightObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsRight')
+                dfsrenderdfsRightObj.inputs.Surfaces = dfs
+                dfsrenderdfsRightObj.inputs.OutFile = '{0}/dfsRight.png'.format(WEBPATH)
+                dfsrenderdfsRightObj.inputs.Right = True
+                dfsrenderdfsRightObj.inputs.Zoom = 0.6
+
+                dfsrenderdfsSupObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsSup')
+                dfsrenderdfsSupObj.inputs.Surfaces = dfs
+                dfsrenderdfsSupObj.inputs.OutFile = '{0}/dfsSup.png'.format(WEBPATH)
+                dfsrenderdfsSupObj.inputs.Sup = True
+                dfsrenderdfsSupObj.inputs.Zoom = 0.6
+
+                dfsrenderdfsInfObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsInf')
+                dfsrenderdfsInfObj.inputs.Surfaces = dfs
+                dfsrenderdfsInfObj.inputs.OutFile = '{0}/dfsInf.png'.format(WEBPATH)
+                dfsrenderdfsInfObj.inputs.Inf = True
+                dfsrenderdfsInfObj.inputs.Zoom = 0.6
+
+                dfsrenderThickLeftObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickLeft')
+                dfsrenderThickLeftObj.inputs.Surfaces = Thickdfs
+                dfsrenderThickLeftObj.inputs.OutFile = '{0}/ThickdfsLeft.png'.format(WEBPATH)
+                dfsrenderThickLeftObj.inputs.Left = True
+                dfsrenderThickLeftObj.inputs.Zoom = 0.6
+
+                dfsrenderThickRightObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickRight')
+                dfsrenderThickRightObj.inputs.Surfaces = Thickdfs
+                dfsrenderThickRightObj.inputs.OutFile = '{0}/ThickdfsRight.png'.format(WEBPATH)
+                dfsrenderThickRightObj.inputs.Right = True
+                dfsrenderThickRightObj.inputs.Zoom = 0.6
+
+                dfsrenderThickSupObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickSup')
+                dfsrenderThickSupObj.inputs.Surfaces = Thickdfs
+                dfsrenderThickSupObj.inputs.OutFile = '{0}/ThickdfsSup.png'.format(WEBPATH)
+                dfsrenderThickSupObj.inputs.Sup = True
+                dfsrenderThickSupObj.inputs.Zoom = 0.6
+
+                dfsrenderThickInfObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickInf')
+                dfsrenderThickInfObj.inputs.Surfaces = Thickdfs
+                dfsrenderThickInfObj.inputs.OutFile = '{0}/ThickdfsInf.png'.format(WEBPATH)
+                dfsrenderThickInfObj.inputs.Inf = True
+                dfsrenderThickInfObj.inputs.Zoom = 0.6
 
                 # dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
                 # dfsrenderhemisplitObj.inputs.Surfaces = hemi
@@ -311,7 +351,6 @@ class subjLevelProcessing(object):
                 # dfsrenderhemisplitObj.inputs.Sup = True
                 # dfsrenderhemisplitObj.inputs.Zoom = 0.6
 
-                subjstate = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
 
                 qcstatevolbendbseObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbseObj')
                 qcstatevolbendbseObj.inputs.filename = subjstate
@@ -353,51 +392,55 @@ class subjLevelProcessing(object):
                 qcstatedfsrenderpialmeshObj.inputs.filename = subjstate
                 qcstatedfsrenderpialmeshObj.inputs.stagenum = 10
 
-                # qcstatedfsrenderhemisplitObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderhemisplitObj')
-                # qcstatedfsrenderhemisplitObj.inputs.filename = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
-                # qcstatedfsrenderhemisplitObj.inputs.stagenum = 11
+                qcstatedfsrenderhemisplitObj = pe.Node(interface=bs.QCState(), name='qcstatedfsrenderhemisplitObj')
+                qcstatedfsrenderhemisplitObj.inputs.filename = subjstate
+                qcstatedfsrenderhemisplitObj.inputs.stagenum = 11
 
                 # Connect
                 brainsuite_workflow.connect(bseObj, 'inputMRIFile', volbendbseObj, 'inFile')
-                brainsuite_workflow.connect(volbendbseObj, 'outFile', qcstatevolbendbseObj, 'Run')
-
                 #TODO: if index.html does not exist in QC folder, then run watch.sh
 
                 brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendbfcObj, 'inFile')
-                brainsuite_workflow.connect(volbendbfcObj, 'outFile', qcstatevolbendbfcObj, 'Run')
 
                 brainsuite_workflow.connect(pvcObj, 'outputLabelFile', volbendpvcObj, 'dataSinkDelay')
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendpvcObj, 'inFile')
-                brainsuite_workflow.connect(volbendpvcObj, 'outFile', qcstatevolbendpvcObj, 'Run')
+
+                brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', volbendHemilabelObj, 'dataSinkDelay')
 
                 brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', volbendcerebroObj, 'dataSinkDelay')
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendcerebroObj, 'inFile')
-                brainsuite_workflow.connect(volbendcerebroObj, 'outFile', qcstatevolbendcerebroObj, 'Run')
-
-                brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', volbendcortexObj, 'dataSinkDelay')
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendcortexObj, 'inFile')
-                brainsuite_workflow.connect(volbendcortexObj, 'outFile', qcstatevolbendcortexObj, 'Run')
-
-                brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', volbendscrubmaskObj, 'dataSinkDelay')
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendscrubmaskObj, 'inFile')
-                brainsuite_workflow.connect(volbendscrubmaskObj, 'outFile', qcstatevolbendscrubmaskObj, 'Run')
-
-                brainsuite_workflow.connect(tcaObj, 'outputMaskFile', volbendtcaObj, 'dataSinkDelay')
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendtcaObj, 'inFile')
-                brainsuite_workflow.connect(volbendtcaObj, 'outFile', qcstatevolbendtcaObj, 'Run')
 
                 brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispObj, 'dataSinkDelay')
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbenddewispObj, 'inFile')
-                brainsuite_workflow.connect(volbenddewispObj, 'outFile', qcstatevolbenddewispObj, 'Run')
 
-                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsObj, 'Surfaces')
-                brainsuite_workflow.connect(dfsrenderdfsObj, 'outFile', qcstatedfsrenderdfsObj, 'Run')
+                brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispCorObj, 'dataSinkDelay')
 
-                brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', dfsrenderpialmeshObj, 'Surfaces')
-                brainsuite_workflow.connect(dfsrenderpialmeshObj, 'outFile', qcstatedfsrenderpialmeshObj, 'Run')
+                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsLeftObj, 'Surfaces')
+                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsRightObj, 'Surfaces')
+                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsSupObj, 'Surfaces')
+                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsInfObj, 'Surfaces')
+
+                dsQCThick = pe.Node(io.DataSink(), name='DATASINK_QCTHICK')
+                brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', dsQCThick, '@1')
+                brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', dsQCThick, '@2')
+                brainsuite_workflow.connect(dsQCThick, 'out_file', dfsrenderThickLeftObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(dsQCThick, 'out_file', dfsrenderThickRightObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(dsQCThick, 'out_file', dfsrenderThickSupObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(dsQCThick, 'out_file', dfsrenderThickInfObj, 'dataSinkDelay')
+
 
                 # brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', dfsrenderhemisplitObj, 'Surfaces')
                 # brainsuite_workflow.connect(dfsrenderhemisplitObj, 'outFile', qcstatedfsrenderhemisplitObj, 'filename')
+
+                ###### Connect QC states with the steps ############
+                brainsuite_workflow.connect(bseObj, 'outputMRIVolume', qcstatevolbendbseObj, 'Run')
+                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcstatevolbendbfcObj, 'Run')
+                brainsuite_workflow.connect(pvcObj, 'outputLabelFile', qcstatevolbendpvcObj, 'Run')
+                brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', qcstatevolbendcerebroObj, 'Run')
+                brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', qcstatevolbendcortexObj, 'Run')
+                brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', qcstatevolbendscrubmaskObj, 'Run')
+                brainsuite_workflow.connect(tcaObj, 'outputMaskFile', qcstatevolbendtcaObj, 'Run')
+                brainsuite_workflow.connect(dewispObj, 'outputMaskFile', qcstatevolbenddewispObj, 'Run')
+                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', qcstatedfsrenderdfsObj, 'Run')
+                brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', qcstatedfsrenderpialmeshObj, 'Run')
+                brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', qcstatedfsrenderhemisplitObj, 'Run')
 
         if 'BDP' in STAGES:
             if not os.path.exists(dwi):
@@ -420,16 +463,111 @@ class subjLevelProcessing(object):
             bdpsubdir = '/../dwi'
             bdpObj.inputs.outputSubdir = bdpsubdir
 
-            if 'CSE' in STAGES:
+            if ('CSE' in STAGES) or ('SVREG' in STAGES):
                 brainsuite_workflow.connect(ds, 'out_file', bdpObj, 'dataSinkDelay')
-            if 'SVREG' in STAGES:
+                ds2 = pe.Node(io.DataSink(), name='DATASINK2')
+                ds2.inputs.base_directory = anat
+            else: # 'SVREG' in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
                 ds2.inputs.base_directory = anat
                 brainsuite_workflow.connect(bdpObj, 'tensor_coord', ds2, '@0')
-            else:
-                self.bdponly = True
-                bdpObj.run()
+            # else:
+            #     self.bdponly = True
+            #     bdpObj.run()
 
+            if 'QC' in STAGES:
+
+                BDPqcPrefix = dwi + SUBJECT_ID + '_T1w'
+                if self.skipDistortionCorr:
+                    FA = BDPqcPrefix + '.dwi.RAS.FA.T1_coord.nii.gz'
+                    colorFA = BDPqcPrefix + '.dwi.RAS.FA.color.T1_coord.nii.gz'
+                    mADC = BDPqcPrefix + '.dwi.RAS.mADC.T1_coord.nii.gz'
+                else:
+                    FA = BDPqcPrefix + '.dwi.RAS.correct.FA.T1_coord.nii.gz'
+                    colorFA = BDPqcPrefix + '.dwi.RAS.correct.FA.color.T1_coord.nii.gz'
+                    mADC = BDPqcPrefix + '.dwi.RAS.correct.mADC.T1_coord.nii.gz'
+                PreCorrDWI = BDPqcPrefix + '.dwi.RAS.nii.gz'
+                PostCorrDWI = BDPqcPrefix + '.dwi.RAS.correct.nii.gz'
+                bseMask = BDPqcPrefix + '.D_coord.mask.nii.gz'
+                pvcLabel = anat + SUBJECT_ID + '_T1w.pvc.label.nii.gz'
+
+                makeMaskObj = pe.Node(bs.makeMask(), name='makeMaskDWI')
+                makeMaskObj.inputs.fileNameAndROIs =' '.join([pvcLabel,"1","2","4","5","6"])
+                brainsuite_workflow.connect(bdpObj, 'dummy', makeMaskObj, "Run")
+
+                pvcMask = anat + SUBJECT_ID + '_T1w'  + '.pvc.edge.mask.nii.gz'
+
+                # FA PVC
+                volbendFApvcObj = pe.Node(interface=bs.Volblend(), name='volblendFApvc')
+                volbendFApvcObj.inputs.inFile = FA
+                volbendFApvcObj.inputs.outFile = '{0}/FApvc.png'.format(WEBPATH)
+                volbendFApvcObj.inputs.view = 1  # axial
+                volbendFApvcObj.inputs.maskFile = pvcMask
+
+                # FA axial
+                volbendFAObj = pe.Node(interface=bs.Volblend(), name='volblendFA')
+                volbendFAObj.inputs.inFile = FA
+                volbendFAObj.inputs.outFile = '{0}/FA.png'.format(WEBPATH)
+                volbendFAObj.inputs.view = 1  # axial
+
+                # color FA axial
+                volbendColorFAObj = pe.Node(interface=bs.Volblend(), name='volblendColorFA')
+                volbendColorFAObj.inputs.inFile = colorFA
+                volbendColorFAObj.inputs.outFile = '{0}/colorFA.png'.format(WEBPATH)
+                volbendColorFAObj.inputs.view = 1  # axial
+
+                # color mADC axial
+                volbendMADCObj = pe.Node(interface=bs.Volblend(), name='volblendMADC')
+                volbendMADCObj.inputs.inFile = mADC
+                volbendMADCObj.inputs.outFile = '{0}/mADC.png'.format(WEBPATH)
+                volbendMADCObj.inputs.view = 1  # axial
+
+                # precorr axial
+                volbendPreCorrDWIObj = pe.Node(interface=bs.Volblend(), name='volblendPreCorrDWI')
+                volbendPreCorrDWIObj.inputs.inFile = PreCorrDWI
+                volbendPreCorrDWIObj.inputs.outFile = '{0}/PreCorrDWI.png'.format(WEBPATH)
+                volbendPreCorrDWIObj.inputs.view = 1  # axial
+                volbendPreCorrDWIObj.inputs.maskFile = bseMask
+
+                # precorr sag
+                volbendPreCorrDWIsagObj = pe.Node(interface=bs.Volblend(), name='volblendPreCorrDWIsag')
+                volbendPreCorrDWIsagObj.inputs.inFile = PreCorrDWI
+                volbendPreCorrDWIsagObj.inputs.outFile = '{0}/PreCorrDWIsag.png'.format(WEBPATH)
+                volbendPreCorrDWIsagObj.inputs.view = 3  # axial
+                volbendPreCorrDWIsagObj.inputs.maskFile = bseMask
+
+                ### Connect rendering to bdp ####
+                brainsuite_workflow.connect(makeMaskObj, 'OutFile', volbendFApvcObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendFAObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendColorFAObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendMADCObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendPreCorrDWIObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendPreCorrDWIsagObj, 'dataSinkDelay')
+
+                if not self.skipDistortionCorr:
+                    # postcorr axial
+                    volbendPostCorrDWIObj = pe.Node(interface=bs.Volblend(), name='volblendPostCorrDWI')
+                    volbendPostCorrDWIObj.inputs.inFile = PostCorrDWI
+                    volbendPostCorrDWIObj.inputs.outFile = '{0}/PostCorrDWI.png'.format(WEBPATH)
+                    volbendPostCorrDWIObj.inputs.view = 1  # axial
+                    volbendPostCorrDWIObj.inputs.maskFile = bseMask
+
+                    # postcorr sag
+                    volbendPostCorrDWIsagObj = pe.Node(interface=bs.Volblend(), name='volblendPostCorrDWIsag')
+                    volbendPostCorrDWIsagObj.inputs.inFile = PostCorrDWI
+                    volbendPostCorrDWIsagObj.inputs.outFile = '{0}/PostCorrDWIsag.png'.format(WEBPATH)
+                    volbendPostCorrDWIsagObj.inputs.view = 3  # axial
+                    volbendPostCorrDWIsagObj.inputs.maskFile = bseMask
+
+                    brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendPostCorrDWIObj, 'dataSinkDelay')
+                    brainsuite_workflow.connect(bdpObj, 'tensor_coord', volbendPostCorrDWIsagObj, 'dataSinkDelay')
+
+                ###### Connect QC states with the steps ############
+                qcstateBDP = pe.Node(interface=bs.QCState(), name='qcstateBDP')
+                qcstateBDP.inputs.filename = subjstate
+                qcstateBDP.inputs.stagenum = 12
+
+                brainsuite_workflow.connect(bdpObj, 'tensor_coord', qcstateBDP, 'Run')
 
         if 'SVREG' in STAGES:
             if 'CSE' in STAGES:
@@ -481,6 +619,87 @@ class subjLevelProcessing(object):
             generateXls.inputs.subjectFilePrefix = thickPVCInputBase
             brainsuite_workflow.connect(ds3, 'out_file', generateXls, 'dataSinkDelay')
 
+            if 'QC' in STAGES:
+
+                svregLabel = anat + SUBJECT_ID + '_T1w.svreg.label.nii.gz'
+                SVREGdfs = anat + SUBJECT_ID + '_T1w.left.mid.cortex.svreg.dfs' + ' ' + \
+                           anat + SUBJECT_ID + '_T1w.right.mid.cortex.svreg.dfs'
+                bfc = anat + SUBJECT_ID + '_T1w.bfc.nii.gz'
+
+                volbendSVRegLabelObj = pe.Node(interface=bs.Volblend(), name='volblendSVRegLabel')
+                volbendSVRegLabelObj.inputs.inFile = bfc
+                volbendSVRegLabelObj.inputs.outFile = '{0}/svregLabel.png'.format(WEBPATH)
+                volbendSVRegLabelObj.inputs.labelFile = svregLabel
+                volbendSVRegLabelObj.inputs.labelDesc = labeldesc
+                volbendSVRegLabelObj.inputs.view = 1 # axial
+
+                volbendSVRegLabelCorObj = pe.Node(interface=bs.Volblend(), name='volblendSVRegLabelCor')
+                volbendSVRegLabelCorObj.inputs.inFile = bfc
+                volbendSVRegLabelCorObj.inputs.outFile = '{0}/svregLabelCor.png'.format(WEBPATH)
+                volbendSVRegLabelCorObj.inputs.labelFile = svregLabel
+                volbendSVRegLabelCorObj.inputs.labelDesc = labeldesc
+                volbendSVRegLabelCorObj.inputs.view = 2  # coronal
+
+                volbendSVRegLabelSagObj = pe.Node(interface=bs.Volblend(), name='volblendSVRegLabelSag')
+                volbendSVRegLabelSagObj.inputs.inFile = bfc
+                volbendSVRegLabelSagObj.inputs.outFile = '{0}/svregLabelSag.png'.format(WEBPATH)
+                volbendSVRegLabelSagObj.inputs.labelFile = svregLabel
+                volbendSVRegLabelSagObj.inputs.labelDesc = labeldesc
+                volbendSVRegLabelSagObj.inputs.view = 3  # saggittal
+
+                dfsrenderSVREGdfsLeftObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsLeft')
+                dfsrenderSVREGdfsLeftObj.inputs.Surfaces = SVREGdfs
+                dfsrenderSVREGdfsLeftObj.inputs.OutFile = '{0}/SVREGdfsLeft.png'.format(WEBPATH)
+                dfsrenderSVREGdfsLeftObj.inputs.Left = True
+                dfsrenderSVREGdfsLeftObj.inputs.Zoom = 0.6
+
+                dfsrenderSVREGdfsRightObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsRight')
+                dfsrenderSVREGdfsRightObj.inputs.Surfaces = SVREGdfs
+                dfsrenderSVREGdfsRightObj.inputs.OutFile = '{0}/SVREGdfsRight.png'.format(WEBPATH)
+                dfsrenderSVREGdfsRightObj.inputs.Right = True
+                dfsrenderSVREGdfsRightObj.inputs.Zoom = 0.6
+
+                dfsrenderSVREGdfsInfObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsInf')
+                dfsrenderSVREGdfsInfObj.inputs.Surfaces = SVREGdfs
+                dfsrenderSVREGdfsInfObj.inputs.OutFile = '{0}/SVREGdfsInf.png'.format(WEBPATH)
+                dfsrenderSVREGdfsInfObj.inputs.Inf = True
+                dfsrenderSVREGdfsInfObj.inputs.Zoom = 0.6
+
+                dfsrenderSVREGdfsSupObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsSup')
+                dfsrenderSVREGdfsSupObj.inputs.Surfaces = SVREGdfs
+                dfsrenderSVREGdfsSupObj.inputs.OutFile = '{0}/SVREGdfsSup.png'.format(WEBPATH)
+                dfsrenderSVREGdfsSupObj.inputs.Sup = True
+                dfsrenderSVREGdfsSupObj.inputs.Zoom = 0.6
+
+                dfsrenderSVREGdfsAntObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsAnt')
+                dfsrenderSVREGdfsAntObj.inputs.Surfaces = SVREGdfs
+                dfsrenderSVREGdfsAntObj.inputs.OutFile = '{0}/SVREGdfsAnt.png'.format(WEBPATH)
+                dfsrenderSVREGdfsAntObj.inputs.Ant = True
+                dfsrenderSVREGdfsAntObj.inputs.Zoom = 0.6
+
+                dfsrenderSVREGdfsPosObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsPos')
+                dfsrenderSVREGdfsPosObj.inputs.Surfaces = SVREGdfs
+                dfsrenderSVREGdfsPosObj.inputs.OutFile = '{0}/SVREGdfsPos.png'.format(WEBPATH)
+                dfsrenderSVREGdfsPosObj.inputs.Pos = True
+                dfsrenderSVREGdfsPosObj.inputs.Zoom = 0.6
+
+                qcstateSVREG = pe.Node(interface=bs.QCState(), name='qcstateSVREG')
+                qcstateSVREG.inputs.filename = subjstate
+                qcstateSVREG.inputs.stagenum = 13
+
+                ### Connect rendering to SVREG ####
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', volbendSVRegLabelObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', volbendSVRegLabelCorObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', volbendSVRegLabelSagObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', dfsrenderSVREGdfsLeftObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', dfsrenderSVREGdfsRightObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', dfsrenderSVREGdfsInfObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', dfsrenderSVREGdfsSupObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', dfsrenderSVREGdfsAntObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(svregObj, 'outputLabelFile', dfsrenderSVREGdfsPosObj, 'dataSinkDelay')
+
+                ### Connect QC to SVREG ####
+                brainsuite_workflow.connect(generateXls, 'roiwisestats', qcstateSVREG, 'Run')
 
             #### smooth surface
             smoothsurf = self.smoothsurf
@@ -641,37 +860,111 @@ class subjLevelProcessing(object):
         if 'BFP' in STAGES:
             if not os.path.exists(func):
                 os.makedirs(func)
-        #     BFPObj = pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(BFP['sess'][0]))
-        #     BFPObj.inputs.configini = BFP['configini']
-        #     BFPObj.inputs.t1file = BFP['t1']
-        #     BFPObj.inputs.fmrifile = BFP['func'][0]
-        #     BFPObj.inputs.studydir = BFP['studydir']
-        #     BFPObj.inputs.subjID = BFP['subjID']
-        #     BFPObj.inputs.session = BFP['sess'][0]
-        #     BFPObj.inputs.TR = BFP['TR']
-        #     ds3 = pe.Node(io.DataSink(), name='DATASINK3')
-        #     ds3.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
-        # brainsuite_workflow.connect(ds3, 'out_file', BFPObj, 'dataSinkDelay')
+
             BFPObjs = []
-            for func in range(len(BFP['sess'])):
-                BFPObjs.append(pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(BFP['sess'][func])))
-                BFPObjs[func].inputs.configini = str(BFP['configini'])
-                BFPObjs[func].inputs.t1file = os.path.join(CACHE_DIRECTORY, t1)
-                BFPObjs[func].inputs.fmrifile = BFP['func'][func]
-                BFPObjs[func].inputs.studydir = BFP['studydir']
-                BFPObjs[func].inputs.subjID = BFP['subjID']
-                # fullname = BFP['func'][func].split('/')[-1].split('_bold')[0].split('task-')[-1]
-                BFPObjs[func].inputs.session = BFP['sess'][func]
-                BFPObjs[func].inputs.TR = BFP['TR']
-            # print(BFPObjs[0].inputs)
-            # print(BFPObjs[1].inputs)
+            for task in range(len(BFP['sess'])):
+                BFPObjs.append(pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(BFP['sess'][task])))
+                BFPObjs[task].inputs.configini = str(BFP['configini'])
+                BFPObjs[task].inputs.t1file = os.path.join(CACHE_DIRECTORY, t1)
+                BFPObjs[task].inputs.fmrifile = BFP['func'][task]
+                BFPObjs[task].inputs.studydir = BFP['studydir']
+                BFPObjs[task].inputs.subjID = BFP['subjID']
+                # fullname = BFP['task'][task].split('/')[-1].split('_bold')[0].split('task-')[-1]
+                BFPObjs[task].inputs.session = BFP['sess'][task]
+                BFPObjs[task].inputs.TR = BFP['TR']
+
+            if 'QC' in STAGES:
+
+                BFPQCPrefix = func + BFP['subjID'] + '_' + BFP['sess'][0] + "_bold"
+                ssimpng = BFPQCPrefix + '.mc.ssim.png'
+                mcopng = BFPQCPrefix + '.mco.png'
+                Func2T1 = BFPQCPrefix + '.example.func2t1.nii.gz'
+                PreCorrFunc = BFPQCPrefix + '_b0/' + BFP['subjID'] + '_' + BFP['sess'][0] + "_bold" + '.infile.RAS.nii.gz'
+                PostCorrFunc = BFPQCPrefix + '_b0/' + BFP['subjID'] + '_' + BFP['sess'][0] + "_bold" + '.infile.corr.nii.gz'
+                pvcLabel = anat + SUBJECT_ID + '_T1w.pvc.label.nii.gz'
+                pvcFuncLabel = BFPQCPrefix + '.pvc.label.nii.gz'
+
+                makeMaskBFPpvcObj = pe.Node(bs.makeMask(), name='makeMaskBFPpvc')
+                makeMaskBFPpvcObj.inputs.fileNameAndROIs = ' '.join([pvcLabel, "1", "2", "4", "5", "6"])
+                makeMaskBFPObj = pe.Node(bs.makeMask(), name='makeMaskBFP')
+                makeMaskBFPObj.inputs.fileNameAndROIs = ' '.join([pvcFuncLabel, "1", "2", "4", "5", "6"])
+                brainsuite_workflow.connect(BFPObjs[0], 'dummy', makeMaskBFPpvcObj, "Run")
+                brainsuite_workflow.connect(BFPObjs[0], 'dummy', makeMaskBFPObj, "Run")
+
+                pvcMask = anat + SUBJECT_ID + '_T1w' + '.pvc.edge.mask.nii.gz'
+
+                funcPVCmask = BFPQCPrefix + '.pvc.edge.mask.nii.gz'
+
+                ## Copy png files
+                copySSIMObj = pe.Node(interface=bs.copyFile(), name='CopyMCSSIM')
+                copySSIMObj.inputs.inFile = ssimpng
+                copySSIMObj.inputs.outFile = '{0}/ssim.png'.format(WEBPATH)
+
+                copyMCOObj = pe.Node(interface=bs.copyFile(), name='CopyMCO')
+                copyMCOObj.inputs.inFile = mcopng
+                copyMCOObj.inputs.outFile = '{0}/mco.png'.format(WEBPATH)
+
+                brainsuite_workflow.connect(BFPObjs[0], 'dummy', copySSIMObj, "Run")
+                brainsuite_workflow.connect(BFPObjs[0], 'dummy', copyMCOObj, "Run")
+
+                # Func2T1 with PVC label mask
+                volbendFunc2T1Obj = pe.Node(interface=bs.Volblend(), name='volblendFunc2T1')
+                volbendFunc2T1Obj.inputs.inFile = Func2T1
+                volbendFunc2T1Obj.inputs.outFile = '{0}/Func2T1.png'.format(WEBPATH)
+                volbendFunc2T1Obj.inputs.view = 1  # axial
+                volbendFunc2T1Obj.inputs.maskFile = pvcMask
+
+                if self.epit1corr ==1:
+                    # precorr axial
+                    volbendPreCorrFuncObj = pe.Node(interface=bs.Volblend(), name='volblendPreCorrFunc')
+                    volbendPreCorrFuncObj.inputs.inFile = PreCorrFunc
+                    volbendPreCorrFuncObj.inputs.outFile = '{0}/PreCorrFunc.png'.format(WEBPATH)
+                    volbendPreCorrFuncObj.inputs.view = 1  # axial
+                    volbendPreCorrFuncObj.inputs.maskFile = funcPVCmask
+
+                    # precorr sag
+                    volbendPreCorrFuncSagObj = pe.Node(interface=bs.Volblend(), name='volblendPreCorrFuncSag')
+                    volbendPreCorrFuncSagObj.inputs.inFile = PreCorrFunc
+                    volbendPreCorrFuncSagObj.inputs.outFile = '{0}/PreCorrFuncSag.png'.format(WEBPATH)
+                    volbendPreCorrFuncSagObj.inputs.view = 3  # sagittal
+                    volbendPreCorrFuncSagObj.inputs.maskFile = funcPVCmask
+
+                    # postcorr axial
+                    volbendPostCorrFuncObj = pe.Node(interface=bs.Volblend(), name='volblendPostCorrFunc')
+                    volbendPostCorrFuncObj.inputs.inFile = PostCorrFunc
+                    volbendPostCorrFuncObj.inputs.outFile = '{0}/PostCorrFunc.png'.format(WEBPATH)
+                    volbendPostCorrFuncObj.inputs.view = 1  # axial
+                    volbendPostCorrFuncObj.inputs.maskFile = funcPVCmask
+
+                    # postcorr sag
+                    volbendPostCorrFuncSagObj = pe.Node(interface=bs.Volblend(), name='volblendPostCorrFuncSag')
+                    volbendPostCorrFuncSagObj.inputs.inFile = PostCorrFunc
+                    volbendPostCorrFuncSagObj.inputs.outFile = '{0}/PostCorrFuncSag.png'.format(WEBPATH)
+                    volbendPostCorrFuncSagObj.inputs.view = 3  # sagittal
+                    volbendPostCorrFuncSagObj.inputs.maskFile = funcPVCmask
+
+                    brainsuite_workflow.connect(makeMaskBFPObj, 'OutFile', volbendPreCorrFuncObj, 'dataSinkDelay')
+                    brainsuite_workflow.connect(makeMaskBFPObj, 'OutFile', volbendPreCorrFuncSagObj, 'dataSinkDelay')
+                    brainsuite_workflow.connect(makeMaskBFPObj, 'OutFile', volbendPostCorrFuncObj, 'dataSinkDelay')
+                    brainsuite_workflow.connect(makeMaskBFPObj, 'OutFile', volbendPostCorrFuncSagObj, 'dataSinkDelay')
+
+                qcstateBFP = pe.Node(interface=bs.QCState(), name='qcstateBFP')
+                qcstateBFP.inputs.filename = subjstate
+                qcstateBFP.inputs.stagenum = 14
+
+                ### Connect rendering to BFP ####
+                brainsuite_workflow.connect(makeMaskBFPpvcObj, 'OutFile', volbendFunc2T1Obj, 'dataSinkDelay')
+
+                ### Connect QC to BFP ####
+                brainsuite_workflow.connect(BFPObjs[0], 'res2std', qcstateBFP, 'Run')
+
             if 'SVREG' not in STAGES:
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
                 ds2.inputs.base_directory = anat
             brainsuite_workflow.connect(ds2, 'out_file', BFPObjs[0], 'dataSinkDelay')
             if len(BFP['sess']) > 1:
-                for func in range(len(BFP['func'])-1):
-                    brainsuite_workflow.connect(BFPObjs[func], 'res2std', BFPObjs[int(func+1)], 'dataSinkDelay')
+                for task in range(len(BFP['func'])-1):
+                    brainsuite_workflow.connect(BFPObjs[task], 'res2std', BFPObjs[int(task+1)], 'dataSinkDelay')
 
         if not self.bdponly:
             brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
@@ -679,3 +972,4 @@ class subjLevelProcessing(object):
         # Print message when all processing is complete.
         print('Processing for subject %s has completed. Nipype workflow is located at: %s' % (
         SUBJECT_ID, WORKFLOW_BASE_DIRECTORY))
+                ## later update to show all bfps

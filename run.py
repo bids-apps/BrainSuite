@@ -66,10 +66,10 @@ parser.add_argument('--participant_label', help='The label of the participant th
                    'provided all subjects should be analyzed. Multiple '
                    'participants can be specified with a space separated list.',
                    nargs="+")
-parser.add_argument('--stages', help='Processing stage to be run. Space delimited list. Default is ALL',
-                                     # 'which does not include WEBSERVER.',
+parser.add_argument('--stages', help='Processing stage to be run. Space delimited list. Default is ALL '
+                                     'which does not include WEBSERVER.',
                     nargs="+",
-                    choices=['CSE', 'SVREG', 'BDP', 'BFP', 'ALL'], default='ALL') #'QC', 'WEBSERVER',
+                    choices=['CSE', 'SVREG', 'BDP', 'BFP', 'QC', 'WEBSERVER','ALL'], default='ALL')
 parser.add_argument('--atlas', help='Atlas that is to be used for labeling in SVReg. '
                                     'Default atlas: BCI-DNI. Options: BSA, BCI-DNI, USCBrain.',
                     choices=['BSA', 'BCI-DNI', 'USCBrain'], default='BCI-DNI', required=False)
@@ -112,8 +112,8 @@ parser.add_argument('--ignore_suffix', help='Optional. Users can define which su
                                             'type "--ignore_suffix acq", which will render sub-01_ses-A_run-01 output '
                                             'folders.',
                     required=False)
-# parser.add_argument('--QCdir', help='Designate directory for QC HTML.', default=None)
-# parser.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
+parser.add_argument('--QCdir', help='Designate directory for QC HTML.', default=None)
+parser.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite{0} Pipelines BIDS App version {1}'.format(BrainsuiteVersion, __version__))
 
@@ -147,22 +147,25 @@ if args.singleThread:
 else:
     thread=False
 
+os.environ['runJustQC'] = 'False'
 if args.skipBSE:
     stages = args.stages.append('noBSE')
-if args.stages == 'ALL':
-    stages = ['CSE', 'SVREG', 'BDP', 'BFP'] # ,'QC'
-elif args.stages == 'BFP':
+if ('ALL' in args.stages) & (len(args.stages) ==1) :
+    stages = ['CSE', 'SVREG', 'BDP', 'BFP','QC'] #
+elif ('BFP' in args.stages) & (len(args.stages) ==1):
     stages = ['CSE', 'SVREG', 'BFP']
+elif ('QC' in args.stages) & (len(args.stages) ==1):
+    os.environ['runJustQC'] = 'True'
 # elif ('BFP' in args.stages) & (not 'SVREG' in args.stages):
 #     args.stages = ['SVREG', 'BFP']
 #     stages = args.stages
 else:
     stages = args.stages
 
-# if ('WEBSERVER' in stages) and (not args.localWebserver):
-#     if args.QCdir is None:
-#         sys.stdout.writable('If you would like not to launch a local webserver, please provide the directory where'
-#                             'you would like to store the QC data using --QCdir. E.g. --QCdir /home/yeun/public_html')
+if ('WEBSERVER' in stages) and (not args.localWebserver):
+    if args.QCdir is None:
+        sys.stdout.writable('If you would like not to launch a local webserver, please provide the directory where'
+                            'you would like to store the QC data using --QCdir. E.g. --QCdir /home/yeun/public_html')
 
 runProcessing = True
 if 'WEBSERVER' in stages:
@@ -172,13 +175,16 @@ if 'WEBSERVER' in stages:
         WEBDIR = os.path.join(args.QCdir, 'QC')
     else:
         WEBDIR = os.path.join(args.output_dir, 'QC')
+    print('QC thumbnails will be generated in: ', WEBDIR)
     if not os.path.exists(WEBDIR):
         os.makedirs(WEBDIR)
     if args.localWebserver:
         cmd = 'service apache2 start &'
         subprocess.call(cmd, shell=True)
-        cmd = 'ln -s {0} /var/www/html'.format(WEBDIR)
+        cmd = 'ln -sf {0}/* /var/www/html/ '.format(WEBDIR)
         subprocess.call(cmd, shell=True)
+        print("\n\n\nOpen web browser and navigate to localhost/index.html\n")
+
     cmd = '/BrainSuite/QC/watch.sh {0} {1}'.format(WEBDIR, args.output_dir)
     subprocess.call(cmd, shell=True)
 
@@ -278,19 +284,6 @@ if (args.analysis_level == "participant") and runProcessing:
                                                         extensions=["nii.gz", "nii"])]
 
 
-                # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
-                # subjectID = t1ws[0].split('/')[-1].split('_T1w')[0]
-                # outputdir = os.path.join(args.output_dir, subjectID, 'anat')
-                # if not cacheset:
-                #     cache = outputdir
-                # elif cacheset:
-                #     cache = cache + '/' + subjectID
-                #     if not os.path.exists(cache):
-                #         os.makedirs(cache)
-                # if not os.path.exists(outputdir):
-                #     os.makedirs(outputdir)
-
-                # session = sessions[ses]
 
                 # try:
                 runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,

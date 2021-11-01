@@ -48,7 +48,12 @@
 			"RunDetrend": 1,
 			"RunNSR": 1,
 			"scbPath": "/output/SCB.mat",
-			"T1mask": 1
+			"T1mask": 1,
+			"epit1corr": 0,
+        	"epit1corr_mask": 2,
+        	"epit1corr_rigidsim": "mi",
+        	"epit1corr_bias": 0,
+        	"epit1corr_numthreads": 60
 		}
 	}
 }

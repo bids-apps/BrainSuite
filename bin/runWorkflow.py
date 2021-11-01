@@ -1,6 +1,7 @@
 import subprocess
 from bin.brainsuiteWorkflowNoQC import subjLevelProcessing
 import os
+import glob
 
 def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwis, funcs,
             subject_label, BFPpath, configini, args):
@@ -25,8 +26,8 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
             cache = outputdir
         else:
             cache = args.cache + '/' + subjectID
-            if not os.path.exists(cache):
-                os.makedirs(cache)
+        if not os.path.exists(cache):
+            os.makedirs(cache)
 
         if 'QC' in stages:
             if args.QCdir:
@@ -58,16 +59,17 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
                         fmris.append(funcs[f])
                     else:
                         print('BFP will not run on {0} fmri data because the '
-                              'task name was not found in the specs (i.e. in the preprocspec.json file).'.format(
+                              'task name was not found in the specs (i.e. in the preprocspec.json file).\n'.format(
                             taskname))
                 if len(sess_inputs) > 0:
                     BFP.update({'func': fmris, 'sess': sess_inputs})
             else:
                 if 'BFP' in stages_tmp:
+                    print('No FMRI images found. Therefore, not running BFP. \n')
                     stages_tmp.remove('BFP')
 
         BFP.update({'subjID': subjectID})
-        print(BFP)
+        # print(BFP)
         if 'BDP' not in stages or len(dwis) == 0:
             if len(dwis) == 0:
                 print('No DWI images found. Therefore, not running BDP. \n')
@@ -92,7 +94,7 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
         # for i in range(0, len(dwis)):
             bval = layout.get_bval(dwis[i])
             bvec = layout.get_bvec(dwis[i])
-            print('Running the following stages: {0} \n\n'.format(stages_tmp))
+            print('\n\nRunning the following stages: {0} \n\n'.format(stages_tmp))
             process = subjLevelProcessing(stages_tmp, specs=preprocspecs, BDP=dwis[i].split('.')[0],
                                           BVAL=str(bval), BVEC=str(bvec), CACHE=cache, SingleThread=thread,
                                           ATLAS=str(atlas), QCDIR=QCdir)
@@ -100,8 +102,9 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
         process.runWorkflow(subjectID, t1, outputdir, BFP)
 
         try:
-            cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
-            subprocess.call(cmd, shell=True)
+            if glob.glob(os.path.join(outputdir, 'dwi', '*.FA.smooth3.0mm.nii.gz')):
+                cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
+                subprocess.call(cmd, shell=True)
         except:
             pass
 

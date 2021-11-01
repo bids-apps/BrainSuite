@@ -87,23 +87,23 @@ echo '"update_time": "'${updateTime}'",'
 seconds=$((updateSeconds-startTimeSeconds));
 runtime=`date -u -d @${seconds} +"%T"`;
 echo '"runtime": "'${runtime}'",'
-printf '"process_states": ['
-local subjID="";
-for subjID in $subjects; do
-	local filename=$OUTDIR/QC/$subjID/$subjID.state;
-	printf -- -1 > $filename;
-done;
-local i=0;
-for ((i=1;i<$nSubjs;i++)); do
-	printf ',-1';
-done;
-echo ']';
+#printf '"process_states": ['
+#local subjID="";
+#for subjID in $subjects; do
+#	local filename=$OUTDIR/QC/$subjID/$subjID.state;
+#	printf -- -1 > $filename;
+#done;
+#local i=0;
+#for ((i=1;i<$nSubjs;i++)); do
+#	printf ',-1';
+#done;
+#echo ']';
 echo '}';
 }
 
 for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 
-	status=`reset_jobstatus initializing`;
+	status=`jobstatus initializing`;
 	echo $status;
 	echo $status > $WEBPATH
 	chmod a+r $WEBPATH
@@ -120,6 +120,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 		  status=`end_jobstatus terminating`;
 		  echo $status > $WEBPATH;
 		  break; fi;
+		## TODO: fix logic here
 		bstates=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
 		nbstates=${#bstates[@]}
 		nfin=`grep -o '111' <<< $bstates | wc -l`
@@ -135,9 +136,16 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 			echo 'Completed monitoring.';
 			break;
 		fi;
-		subjects=($(ls ${WEBDIR} | grep sub- ))
+		subjects=`ls ${WEBDIR} | grep sub- `
 		nSubjs=${#subjects[@]}
-		/BrainSuite/QC/makehtml.sh $subjects > $WEBDIR/index.html
+#		echo $WEBDIR
+#		echo $subjects
+        /BrainSuite/QC/makehtml_main.sh $subjects > $WEBDIR/index.html
+		/BrainSuite/QC/makehtml_cse.sh $subjects > $WEBDIR/cse.html
+		/BrainSuite/QC/makehtml_thick.sh $subjects > $WEBDIR/thick.html
+		/BrainSuite/QC/makehtml_bdp.sh $subjects > $WEBDIR/bdp.html
+		/BrainSuite/QC/makehtml_svreg.sh $subjects > $WEBDIR/svreg.html
+		/BrainSuite/QC/makehtml_bfp.sh $subjects > $WEBDIR/bfp.html
 		status=`jobstatus running`;
 		echo $status > $WEBPATH
 		sleep 1;

@@ -1554,6 +1554,7 @@ class BDPInputSpec(CommandLineInputSpec):
 
 class BDPOutputSpec(TraitedSpec):
     tensor_coord = File(desc='path/name of the tensor bst file in T1 coordinate space')
+    dummy = traits.Str(desc='dummy output')
 
 
 class BDP(CommandLine):
@@ -1588,6 +1589,8 @@ class BDP(CommandLine):
     def _gen_filename(self, name):
         if name == 'tensor_coord':
             return getFileName(self.inputs.inputDiffusionData, '.tensor.T1_coord.bst')
+        if name == 'dummy':
+            return ''
         return None
 
     def _list_outputs(self):
@@ -2060,8 +2063,8 @@ class DfsRender(CommandLine):
     def _format_arg(self, name, spec, value):
         if (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
             return spec.argstr % os.path.expanduser(value)
-        if name == 'dataSinkDelay':
-            return spec.argstr % ''
+        # if name == 'dataSinkDelay':
+        #     return spec.argstr % os.path.expanduser(value)
 
         return super(DfsRender, self)._format_arg(name, spec, value)
 
@@ -2078,7 +2081,6 @@ class QCState(CommandLine):
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.filename, '.state')
-        return None
 
     # def _list_outputs(self):
     #     return l_outputs(self)
@@ -2087,6 +2089,54 @@ class QCState(CommandLine):
         if (name == 'filename') or (name == 'Run'):
             return spec.argstr % os.path.expanduser(value)
         return super(QCState, self)._format_arg(name, spec, value)
+
+
+class makeMaskInputSpec(CommandLineInputSpec):
+    fileNameAndROIs = traits.Str(mandatory=True, argstr='%s', position=0, desc='Input file name and ROI IDs.')
+    Run = traits.Str(argstr='%s', position=1, desc='dummy arg.')
+
+class makeMaskOutputSpec(TraitedSpec):
+    OutFile = File(desc='Output mask file name.')
+
+class makeMask(CommandLine):
+    input_spec = makeMaskInputSpec
+    output_spec = makeMaskOutputSpec
+    _cmd = 'makeMask.sh'
+
+    def _gen_filename(self):
+        return self.inputs.fileNameAndROIs.split(' ')[0].split('.')[0] + '.pvc.edge.mask.nii.gz'
+
+    # def _list_outputs(self):
+    #     return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if name == "Run":
+            return super(makeMask, self)._format_arg(name, spec, value)
+        return super(makeMask, self)._format_arg(name, spec, value)
+
+class copyFileInputSpec(CommandLineInputSpec):
+    inFile = traits.Str(mandatory=True, argstr='%s', position=0, desc='Input file name to be copied.')
+    outFile = traits.Str(mandatory=True, argstr='%s', position=1, desc='Output copied file name.')
+    Run = traits.Str(argstr='%s', position=2, desc='dummy arg.')
+
+class copyFileOutputSpec(TraitedSpec):
+    OutFile = File(desc='Copied file name.')
+
+class copyFile(CommandLine):
+    input_spec = copyFileInputSpec
+    output_spec = copyFileOutputSpec
+    _cmd = 'cp'
+
+    def _gen_filename(self):
+        return self.inputs.outFile
+
+    # def _list_outputs(self):
+    #     return l_outputs(self)
+
+    def _format_arg(self, name, spec, value):
+        if name == "Run":
+            return super(copyFile, self)._format_arg(name, spec, value)
+        return super(copyFile, self)._format_arg(name, spec, value)
 
 
 ## BFP module
@@ -2107,6 +2157,8 @@ class BFPInputSpec(CommandLineInputSpec):
 
 class BFPOutputSpec(TraitedSpec):
     res2std = File(desc='Output file, mapped to standard atlas.')
+    preProc = File(desc='Before ')
+    dummy = traits.Str(desc='dummy output')
 
 class BFP(CommandLine):
     input_spec = BFPInputSpec
@@ -2116,6 +2168,8 @@ class BFP(CommandLine):
     def _gen_filename(self, name):
         if name == 'configini':
             return self.inputs.subjID + 'task-{0}.res2standard.nii.gz'.format(self.inputs.session)
+        if name == 'dummy':
+            return ''
         return None
     def _list_outputs(self):
         return l_outputs(self)
