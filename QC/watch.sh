@@ -1,8 +1,8 @@
 #!/bin/bash
 startTime=`date`;
 startTimeSeconds=`date +%s`;
-if [[ $# -lt 1 ]]; then
-echo "usage: $0 webpath"
+if [[ $# -lt 2 ]]; then
+echo "usage: $0 $1 webpath outputdir"
 exit 0;
 fi;
 
@@ -103,7 +103,7 @@ echo '}';
 
 for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 
-	status=`jobstatus initializing`;
+	status=`reset_jobstatus initializing`;
 	echo $status;
 	echo $status > $WEBPATH
 	chmod a+r $WEBPATH
@@ -114,12 +114,17 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 	startTime=`date`;
 	startTimeSeconds=`date +%s`;
 	
-
+    status=`jobstatus running`;
+    echo $status;
 	for ((i=0;i<10000;i++)); do
-		if [ -f $OUTDIR/QC/stop.it ]; then
-		  status=`end_jobstatus terminating`;
-		  echo $status > $WEBPATH;
-		  break; fi;
+	    if (( $i % 20 == 0 )); then
+	        echo $status;
+	    fi
+	    echo $status > $WEBPATH
+#		if [ -f $OUTDIR/QC/stop.it ]; then
+#		  status=`end_jobstatus terminating`;
+#		  echo $status > $WEBPATH;
+#		  break; fi;
 		## TODO: fix logic here
 		bstates=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
 		nbstates=${#bstates[@]}
@@ -129,13 +134,6 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 #		echo Finished: "$nfin";
 #		echo Errored: "$nerr";
 #		echo Total completed: "$n";
-		if ((n==nbstates)); then 
-			status=`end_jobstatus terminating`
-			echo $status > $WEBPATH
-			touch $OUTDIR/QC/stop.it;
-			echo 'Completed monitoring.';
-			break;
-		fi;
 		subjects=`ls ${WEBDIR} | grep sub- `
 		nSubjs=${#subjects[@]}
 #		echo $WEBDIR
@@ -146,9 +144,19 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 		/BrainSuite/QC/makehtml_bdp.sh $subjects > $WEBDIR/bdp.html
 		/BrainSuite/QC/makehtml_svreg.sh $subjects > $WEBDIR/svreg.html
 		/BrainSuite/QC/makehtml_bfp.sh $subjects > $WEBDIR/bfp.html
+
 		status=`jobstatus running`;
 		echo $status > $WEBPATH
 		sleep 1;
+
+		if (($n == $nbstates)); then
+			status=`end_jobstatus terminating`
+			echo $status > $WEBPATH
+			touch $OUTDIR/QC/stop.it;
+			echo 'Completed monitoring.';
+			break;
+		fi;
+
 	done
 	stopTime=`date`;
 	status=`end_jobstatus finished at $stopTime`;

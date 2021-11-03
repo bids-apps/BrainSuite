@@ -150,9 +150,9 @@ else:
 os.environ['runJustQC'] = 'False'
 if args.skipBSE:
     stages = args.stages.append('noBSE')
-if ('ALL' in args.stages) & (len(args.stages) ==1) :
+if ('ALL' in args.stages):
     stages = ['CSE', 'SVREG', 'BDP', 'BFP','QC'] #
-elif ('BFP' in args.stages) & (len(args.stages) ==1):
+elif ('BFP' in args.stages):
     stages = ['CSE', 'SVREG', 'BFP']
 elif ('QC' in args.stages) & (len(args.stages) ==1):
     os.environ['runJustQC'] = 'True'
@@ -181,9 +181,11 @@ if 'WEBSERVER' in stages:
     if args.localWebserver:
         cmd = 'service apache2 start &'
         subprocess.call(cmd, shell=True)
-        cmd = 'ln -sf {0}/* /var/www/html/ '.format(WEBDIR)
+        if os.path.exists('/var/www/html/index.html'):
+            os.remove('/var/www/html/index.html')
+        cmd = 'ln -s {0}/* /var/www/html/ '.format(WEBDIR)
         subprocess.call(cmd, shell=True)
-        print("\n\n\nOpen web browser and navigate to localhost/index.html\n")
+        print("\n\n\nOpen web browser and navigate to localhost/cse.html\n")
 
     cmd = '/BrainSuite/QC/watch.sh {0} {1}'.format(WEBDIR, args.output_dir)
     subprocess.call(cmd, shell=True)
