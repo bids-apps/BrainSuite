@@ -162,7 +162,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 	status=`end_jobstatus finished at $stopTime`;
 	echo $status > $WEBPATH
 	echo 'Exiting.';
-	if [ -f $OUTDIR/QC/stop.it ]; then break; fi;
+	if [ -f $OUTDIR/QC/stop.it ]; then sleep 100; break; fi;
 #	for ((i=10;i>0;i--)); do
 #		echo respawning in $i;
 #		status=`jobstatus finished -- respawning in $i`;
