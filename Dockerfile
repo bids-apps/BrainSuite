@@ -71,6 +71,7 @@ RUN cd /
 ENV PYTHONPATH=""
 
 # Nipype
+RUN git config --global core.compression 0
 RUN git clone https://github.com/nipy/nipype && \
     cd nipype && \
     git checkout bdb7afc && \
