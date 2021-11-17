@@ -1,4 +1,4 @@
-
+FROM yeunkim:
 ########################################################################
 ### Authored by Chris Markiewicz (Github: effigies)
 FROM ubuntu:xenial-20200114
@@ -126,87 +126,34 @@ RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && p
 
 #RUN install -d /opt/conda/var/lib/dbus/
 #RUN apt-get install -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id
-#RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
-#    gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
-#    apt-get update && apt-get install -y --allow-unauthenticated r-base r-base-dev
-#RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" | tee -a /etc/apt/sources.list && \
-#    gpg --keyserver keyserver.ubuntu.com --recv-key E298A3A825C0D65DFD57CBB651716619E084DAB9 && echo 'foo'
-#RUN apt-get update && apt-get install -y --allow-unauthenticated r-base r-base-dev
 
+RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
 
+ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
 
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
+    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
+    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
+    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
 
-#RUN apt-get install -y libnlopt-dev
-#RUN wget https://cran.r-project.org/src/contrib/Archive/nloptr/nloptr_1.2.1.tar.gz && \
-#    R CMD INSTALL nloptr_1.2.1.tar.gz && \
-#    rm nloptr_1.2.1.tar.gz
-#RUN wget https://cran.r-project.org/src/contrib/Archive/foreign/foreign_0.8-71.tar.gz && \
-#    R CMD INSTALL foreign_0.8-71.tar.gz && \
-#    rm foreign_0.8-71.tar.gz
-#
-#RUN conda install -c r r-stringi
-#RUN wget https://github.com/gagolews/stringi/archive/master.zip -O stringi.zip && \
-#    unzip stringi.zip && \
-#    sed -i '/\/icu..\/data/d' stringi-master/.Rbuildignore && \
-#    R CMD build stringi-master
-##RUN R CMD INSTALL --configure-args='--disable-pkg-config' stringi_1.5.4.tar.gz
-#RUN apt-get install -y libnlopt-dev
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_083121c.tar.gz | tar xvz
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver4p01_t1distcorr.tar.gz| tar xvz
+RUN rm -rf bfp_ver4p01_t1distcorr/supp_data && mv bfp_ver4p01_t1distcorr/* bfp
+ENV BFP=/bfp
+ENV PATH="${BFP}:$PATH"
 
-#
-#RUN wget https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.2-18.tar.gz && \
-#    R CMD INSTALL Matrix_1.2-18.tar.gz
-#
-#RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep3.py
-#RUN python install_dep3.py
+COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
+COPY QC/makeMask.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
+RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh makeMask.sh
 
-#RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/08/bssr_0.3.1.tar.gz
+COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
+COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 
-#RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && \
-#    python install_bssr.py
-#RUN rm /bssr_0.3.1b.tar.gz
-#
+COPY ./bfp_sample_config_preproc.ini /config.ini
+COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 
-#
-
-
-
-
-#
-#RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
-#
-#ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
-#
-#RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver4p01/bfp_ver4p01.tar.gz | tar xvz
-#RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_122220.tar.gz | tar xvz
-##RUN rm /bfp_ver2p30.tar.gz
-#RUN rm -rf bfp_ver4p01/supp_data && mv bfp_ver4p01/* bfp
-#ENV BFP=/bfp
-#ENV PATH="${BFP}:$PATH"
-#
-#RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
-#    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
-#    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
-#    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
-#
-## TODO fix lines 181 to 185 (dev purposes)
-#RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_083121c.tar.gz | tar xvz
-#RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver4p01_t1distcorr.tar.gz| tar xvz
-#RUN rm -rf bfp_ver4p01_t1distcorr/supp_data && mv bfp_ver4p01_t1distcorr/* bfp
-#
-
-#
-#COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
-#COPY QC/makeMask.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
-#RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh makeMask.sh
-#
-#COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
-#COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
-#
-#COPY ./bfp_sample_config_preproc.ini /config.ini
-#COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
-#
-##COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
-#RUN chmod -R ugo+rx /jq-linux64
+#COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
+RUN chmod -R ugo+rx /jq-linux64
 
 COPY . /BrainSuite
 RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
@@ -215,8 +162,8 @@ RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
 
 
-#RUN chmod +x /BrainSuite/run.py
-#RUN chmod a+x /bfp/*
+RUN chmod +x /BrainSuite/run.py
+RUN chmod a+x /bfp/*
 
 
 ENTRYPOINT ["/BrainSuite/run.py"]
