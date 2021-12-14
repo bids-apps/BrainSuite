@@ -4,7 +4,7 @@ Author: Jason Wong
 Edit: Yeun Kim, Clayton Jerlow
 """
 from __future__ import unicode_literals, print_function
-
+import subprocess
 from nipype import config #Set configuration before importing nipype pipeline
 from nipype.interfaces.utility import Function
 cfg = dict(execution={'remove_unnecessary_outputs' : False}) #We do not want nipype to remove unnecessary outputs
@@ -114,13 +114,14 @@ class subjLevelProcessing(object):
             WEBPATH = os.path.join(self.QCdir, SUBJECT_ID)
             if not os.path.exists(WEBPATH):
                 os.makedirs(WEBPATH)
+            subjstate = os.path.join(WEBPATH, SUBJECT_ID)
 
         t1 = INPUT_MRI_FILE.split("/")[-1]
         t1 = SUBJECT_ID + '_T1w.' + '.'.join(t1.split('.')[1:])
         # TODO: check logic
         SUBJECT_ID = t1.split('.')[0].split('_T1w')[0]
 
-        subjstate = os.path.join(self.specs.outputdir, 'QC', SUBJECT_ID, SUBJECT_ID)
+
         labeldesc = BRAINSUITE_LABEL_DIRECTORY + LABEL_SUFFIX
         try:
             #TODO: copy and change file name
@@ -250,8 +251,10 @@ class subjLevelProcessing(object):
                 Thickdfs = anat + os.sep + SUBJECT_ID + '_T1w.pvc-thickness_0-6mm.left.mid.cortex.dfs ' + \
                            anat + os.sep + SUBJECT_ID + '_T1w.pvc-thickness_0-6mm.right.mid.cortex.dfs'
 
-                # pialmesh = pialmeshObj.outputs.outputSurfaceFile
-                # hemisplit =
+                pialmesh = os.path.join(CACHE_DIRECTORY, 'BrainSuite', 'PIALMESH', SUBJECT_ID + '_T1w.pial.cortex.dfs')
+                hemisplit = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'HEMISPLIT', SUBJECT_ID + '_T1w.right.pial.cortex.dfs') + \
+                            ' ' + os.path.join(CACHE_DIRECTORY, 'BrainSuite', 'HEMISPLIT',
+                                         SUBJECT_ID + '_T1w.left.pial.cortex.dfs')
 
                 volbendbseObj = pe.Node(interface=bs.Volblend(), name='volblendbse')
                 volbendbseObj.inputs.inFile = origT1
@@ -302,54 +305,63 @@ class subjLevelProcessing(object):
                 dfsrenderdfsLeftObj.inputs.OutFile = '{0}/dfsLeft.png'.format(WEBPATH)
                 dfsrenderdfsLeftObj.inputs.Left = True
                 dfsrenderdfsLeftObj.inputs.Zoom = 0.6
+                dfsrenderdfsLeftObj.inputs.CenterVol = bfc
 
                 dfsrenderdfsRightObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsRight')
                 dfsrenderdfsRightObj.inputs.Surfaces = dfs
                 dfsrenderdfsRightObj.inputs.OutFile = '{0}/dfsRight.png'.format(WEBPATH)
                 dfsrenderdfsRightObj.inputs.Right = True
                 dfsrenderdfsRightObj.inputs.Zoom = 0.6
+                dfsrenderdfsRightObj.inputs.CenterVol = bfc
 
                 dfsrenderdfsSupObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsSup')
                 dfsrenderdfsSupObj.inputs.Surfaces = dfs
                 dfsrenderdfsSupObj.inputs.OutFile = '{0}/dfsSup.png'.format(WEBPATH)
                 dfsrenderdfsSupObj.inputs.Sup = True
                 dfsrenderdfsSupObj.inputs.Zoom = 0.6
+                dfsrenderdfsSupObj.inputs.CenterVol = bfc
 
                 dfsrenderdfsInfObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderdfsInf')
                 dfsrenderdfsInfObj.inputs.Surfaces = dfs
                 dfsrenderdfsInfObj.inputs.OutFile = '{0}/dfsInf.png'.format(WEBPATH)
                 dfsrenderdfsInfObj.inputs.Inf = True
                 dfsrenderdfsInfObj.inputs.Zoom = 0.6
+                dfsrenderdfsInfObj.inputs.CenterVol = bfc
+
+                dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
+                dfsrenderhemisplitObj.inputs.Surfaces = pialmesh
+                dfsrenderhemisplitObj.inputs.OutFile = '{0}/hemisplit.png'.format(WEBPATH)
+                dfsrenderhemisplitObj.inputs.Sup = True
+                dfsrenderhemisplitObj.inputs.Zoom = 0.6
+                dfsrenderhemisplitObj.inputs.CenterVol = bfc
 
                 dfsrenderThickLeftObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickLeft')
                 dfsrenderThickLeftObj.inputs.Surfaces = Thickdfs
                 dfsrenderThickLeftObj.inputs.OutFile = '{0}/ThickdfsLeft.png'.format(WEBPATH)
                 dfsrenderThickLeftObj.inputs.Left = True
                 dfsrenderThickLeftObj.inputs.Zoom = 0.6
+                dfsrenderThickLeftObj.inputs.CenterVol = bfc
 
                 dfsrenderThickRightObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickRight')
                 dfsrenderThickRightObj.inputs.Surfaces = Thickdfs
                 dfsrenderThickRightObj.inputs.OutFile = '{0}/ThickdfsRight.png'.format(WEBPATH)
                 dfsrenderThickRightObj.inputs.Right = True
                 dfsrenderThickRightObj.inputs.Zoom = 0.6
+                dfsrenderThickRightObj.inputs.CenterVol = bfc
 
                 dfsrenderThickSupObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickSup')
                 dfsrenderThickSupObj.inputs.Surfaces = Thickdfs
                 dfsrenderThickSupObj.inputs.OutFile = '{0}/ThickdfsSup.png'.format(WEBPATH)
                 dfsrenderThickSupObj.inputs.Sup = True
                 dfsrenderThickSupObj.inputs.Zoom = 0.6
+                dfsrenderThickSupObj.inputs.CenterVol = bfc
 
                 dfsrenderThickInfObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickInf')
                 dfsrenderThickInfObj.inputs.Surfaces = Thickdfs
                 dfsrenderThickInfObj.inputs.OutFile = '{0}/ThickdfsInf.png'.format(WEBPATH)
                 dfsrenderThickInfObj.inputs.Inf = True
                 dfsrenderThickInfObj.inputs.Zoom = 0.6
-
-                # dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
-                # dfsrenderhemisplitObj.inputs.Surfaces = hemi
-                # dfsrenderhemisplitObj.inputs.OutFile = '{0}/hemisplit.png'.format(WEBPATH)
-                # dfsrenderhemisplitObj.inputs.Sup = True
-                # dfsrenderhemisplitObj.inputs.Zoom = 0.6
+                dfsrenderThickInfObj.inputs.CenterVol = bfc
 
 
                 qcstatevolbendbseObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbseObj')
@@ -416,6 +428,9 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsRightObj, 'Surfaces')
                 brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsSupObj, 'Surfaces')
                 brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsInfObj, 'Surfaces')
+
+                # TODO: fix to actual hemi surfaces later
+                brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', dfsrenderhemisplitObj, 'Surfaces')
 
                 dsQCThick = pe.Node(io.DataSink(), name='DATASINK_QCTHICK')
                 brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', dsQCThick, '@1')
@@ -652,36 +667,42 @@ class subjLevelProcessing(object):
                 dfsrenderSVREGdfsLeftObj.inputs.OutFile = '{0}/SVREGdfsLeft.png'.format(WEBPATH)
                 dfsrenderSVREGdfsLeftObj.inputs.Left = True
                 dfsrenderSVREGdfsLeftObj.inputs.Zoom = 0.6
+                dfsrenderSVREGdfsLeftObj.inputs.CenterVol = bfc
 
                 dfsrenderSVREGdfsRightObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsRight')
                 dfsrenderSVREGdfsRightObj.inputs.Surfaces = SVREGdfs
                 dfsrenderSVREGdfsRightObj.inputs.OutFile = '{0}/SVREGdfsRight.png'.format(WEBPATH)
                 dfsrenderSVREGdfsRightObj.inputs.Right = True
                 dfsrenderSVREGdfsRightObj.inputs.Zoom = 0.6
+                dfsrenderSVREGdfsRightObj.inputs.CenterVol = bfc
 
                 dfsrenderSVREGdfsInfObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsInf')
                 dfsrenderSVREGdfsInfObj.inputs.Surfaces = SVREGdfs
                 dfsrenderSVREGdfsInfObj.inputs.OutFile = '{0}/SVREGdfsInf.png'.format(WEBPATH)
                 dfsrenderSVREGdfsInfObj.inputs.Inf = True
                 dfsrenderSVREGdfsInfObj.inputs.Zoom = 0.6
+                dfsrenderSVREGdfsInfObj.inputs.CenterVol = bfc
 
                 dfsrenderSVREGdfsSupObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsSup')
                 dfsrenderSVREGdfsSupObj.inputs.Surfaces = SVREGdfs
                 dfsrenderSVREGdfsSupObj.inputs.OutFile = '{0}/SVREGdfsSup.png'.format(WEBPATH)
                 dfsrenderSVREGdfsSupObj.inputs.Sup = True
                 dfsrenderSVREGdfsSupObj.inputs.Zoom = 0.6
+                dfsrenderSVREGdfsSupObj.inputs.CenterVol = bfc
 
                 dfsrenderSVREGdfsAntObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsAnt')
                 dfsrenderSVREGdfsAntObj.inputs.Surfaces = SVREGdfs
                 dfsrenderSVREGdfsAntObj.inputs.OutFile = '{0}/SVREGdfsAnt.png'.format(WEBPATH)
                 dfsrenderSVREGdfsAntObj.inputs.Ant = True
                 dfsrenderSVREGdfsAntObj.inputs.Zoom = 0.6
+                dfsrenderSVREGdfsAntObj.inputs.CenterVol = bfc
 
                 dfsrenderSVREGdfsPosObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderSVREGdfsPos')
                 dfsrenderSVREGdfsPosObj.inputs.Surfaces = SVREGdfs
                 dfsrenderSVREGdfsPosObj.inputs.OutFile = '{0}/SVREGdfsPos.png'.format(WEBPATH)
                 dfsrenderSVREGdfsPosObj.inputs.Pos = True
                 dfsrenderSVREGdfsPosObj.inputs.Zoom = 0.6
+                dfsrenderSVREGdfsPosObj.inputs.CenterVol = bfc
 
                 qcstateSVREG = pe.Node(interface=bs.QCState(), name='qcstateSVREG')
                 qcstateSVREG.inputs.filename = subjstate
@@ -966,10 +987,16 @@ class subjLevelProcessing(object):
                 for task in range(len(BFP['func'])-1):
                     brainsuite_workflow.connect(BFPObjs[task], 'res2std', BFPObjs[int(task+1)], 'dataSinkDelay')
 
-        if not self.bdponly:
+        try:
             brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
+            if 'QC' in STAGES:
+                cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(subjstate, 111)
+                subprocess.call(cmd, shell=True)
+            print('Processing for subject %s has completed. Nipype workflow is located at: %s' % (
+                SUBJECT_ID, WORKFLOW_BASE_DIRECTORY))
+        except(RuntimeError) as err:
+            if 'QC' in STAGES:
+                cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(subjstate, 404)
+                subprocess.call(cmd, shell=True)
+            print("RuntimeError:", err)
 
-        # Print message when all processing is complete.
-        print('Processing for subject %s has completed. Nipype workflow is located at: %s' % (
-        SUBJECT_ID, WORKFLOW_BASE_DIRECTORY))
-                ## later update to show all bfps

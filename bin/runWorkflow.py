@@ -108,14 +108,14 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
         except:
             pass
 
-        if 'QC' in stages and not RuntimeError:
-            WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-            cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
-            subprocess.call(cmd, shell=True)
-        elif 'QC' in stages and RuntimeError:
-            WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-            cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
-            subprocess.call(cmd, shell=True)
+        # if 'QC' in stages and not RuntimeError:
+        #     WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+        #     cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
+        #     subprocess.call(cmd, shell=True)
+        # elif 'QC' in stages and RuntimeError:
+        #     WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
+        #     cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
+        #     subprocess.call(cmd, shell=True)
 
             # except RuntimeError:
     #     if 'QC' in stages:

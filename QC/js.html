@@ -9,9 +9,9 @@ function transpose(a) {
 function makecsv(){
 /* const rows = [values, reasons];
   let csvContent = "data:text/csv;charset=utf-8,"
-   + rows.map(e => e.join(",")).join("\n");
+   + rows.map(e => e.join("\t")).join("\n");
 */
-// var csvContent = values.join(",");
+// var csvContent = values.join("\t");
 var reasons = [];
 const textsReason = document.querySelectorAll('.exReason');
 textsReason.forEach(( textR )=> {
@@ -37,12 +37,12 @@ reasons.unshift('Note')
 const rows = [subIDs, values, reasons];
 rowsT = transpose(rows);
 let csvContent = "data:text/csv;charset=utf-8,"
-    + rowsT.map(e => e.join(",")).join("\n");
+    + rowsT.map(e => e.join("\t")).join("\n");
 
 var encodedUri = encodeURI(csvContent);
 var link = document.createElement("a");
 link.setAttribute("href", encodedUri);
-link.setAttribute("download", "BrainSuiteQC.csv");
+link.setAttribute("download", "BrainSuiteQC.tsv");
 document.body.appendChild(link); // Required for FF
 
 link.click();
@@ -65,11 +65,11 @@ function startTimer() {
     var n = endvar.toString();
     if (endvar > 0 ) {
         clearInterval(foo);
-        console.log('hello');
+        console.log('Timer running.');
     }
     else {
   // window .location.reload();
-        console.log('world');
+        console.log('Timer not running.');
     }
 }
 
@@ -81,6 +81,7 @@ function scanJSON(){
         success: function(json){
             if (json){
                 endvar = json.end;
+                statevar = json.process_states;
                 console.log("no error");
                 var endvarstr = endvar.toString();
                 console.log(endvarstr);

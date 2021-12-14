@@ -36,7 +36,7 @@ local i=0;
 local subjID="";
 for subjID in $subjects; do
 	if ((i>0)); then printf ','; fi;
-	filename=$OUTDIR/QC/$subjID/$subjID.state;
+	filename=$WEBDIR/$subjID/$subjID.state;
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
@@ -64,7 +64,7 @@ local i=0;
 local subjID="";
 for subjID in $subjects; do
 	if ((i>0)); then printf ','; fi;
-	filename=$OUTDIR/QC/$subjID/$subjID.state;
+	filename=$WEBDIR/$subjID/$subjID.state;
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
@@ -152,7 +152,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 		if (($n == $nbstates)); then
 			status=`end_jobstatus terminating`
 			echo $status > $WEBPATH
-			touch $OUTDIR/QC/stop.it;
+			touch $WEBDIR//stop.it;
 			echo 'Completed monitoring.';
 			break;
 		fi;
@@ -162,7 +162,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 	status=`end_jobstatus finished at $stopTime`;
 	echo $status > $WEBPATH
 	echo 'Exiting.';
-	if [ -f $OUTDIR/QC/stop.it ]; then sleep 100; break; fi;
+	if [ -f $WEBDIR//stop.it ]; then sleep 100; break; fi;
 #	for ((i=10;i>0;i--)); do
 #		echo respawning in $i;
 #		status=`jobstatus finished -- respawning in $i`;
@@ -171,5 +171,5 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 #	done;
 done;
 
-status=`jobstatus : process monitoring has ended.`;
+status=`end_jobstatus : process monitoring has ended.`;
 echo $status > $WEBPATH

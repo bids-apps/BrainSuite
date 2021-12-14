@@ -21,29 +21,29 @@ echo "</tr>"
 
 
 echo "<tr>"
-echo "<td><a href=$i/ssim.png><object data=$i/ssim.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/ssim.png><object data=$i/ssim.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/mco.png><object data=$i/mco.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/mco.png><object data=$i/mco.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 #echo "<td><a href=$i/fa_pvc.png><img src=$i/fa_pvc.png></a></td>"
-echo "<td><a href=$i/Func2T1.png><object data=$i/Func2T1.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/Func2T1.png><object data=$i/Func2T1.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 #echo "<td><a href=$i/fa.png><img src=$i/fa.png></a></td>"
 
-echo "<td><a href=$i/PreCorrFunc.png><object data=$i/PreCorrFunc.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/PreCorrFunc.png><object data=$i/PreCorrFunc.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/PreCorrFuncSag.png><object data=$i/PreCorrFuncSag.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/PreCorrFuncSag.png><object data=$i/PreCorrFuncSag.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/PostCorrFunc.png><object data=$i/PostCorrFunc.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/PostCorrFunc.png><object data=$i/PostCorrFunc.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/PostCorrFuncSag.png><object data=$i/PostCorrFuncSag.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/PostCorrFuncSag.png><object data=$i/PostCorrFuncSag.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 echo "<tr>"
 echo "<td style='text-align:center'>SSIM</td><td style='text-align:center'>MCO</td><td style='text-align:center'>FUNC2T1 T1 MASK</td><td style='text-align:center'>PRECORRECT</td><td style='text-align:center'>PRECORRECT</td><td style='text-align:center'>POSTCORRECT</td><td style='text-align:center'>POSTCORRECT</td>"

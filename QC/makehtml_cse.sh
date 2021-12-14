@@ -21,48 +21,51 @@ echo "</tr>"
 
 echo "<tr>"
 #echo "<td><a href=$i/bse.png><img src=$i/bse.png></a></td>"
-echo "<td><a href=$i/bse.png><object data=$i/bse.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/bse.png><object data=$i/bse.png type='image/png'></a></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 #echo "<td><a href=$i/bfc.png><img src=$i/bfc.png></a></td>"
 
-echo "<td><a href=$i/bfc.png><object data=$i/bfc.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/bfc.png><object data=$i/bfc.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 #echo "<td><a href=$i/pvc.png><img src=$i/pvc.png></a></td>"
 
-echo "<td><a href=$i/pvc.png><object data=$i/pvc.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/pvc.png><object data=$i/pvc.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 #echo "<td><a href=$i/cerebro.png><img src=$i/cerebro.png></a></td>"
 
-echo "<td><a href=$i/hemilabel.png><object data=$i/hemilabel.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/hemilabel.png><object data=$i/hemilabel.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/cerebro.png><object data=$i/cerebro.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/cerebro.png><object data=$i/cerebro.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 
-echo "<td><a href=$i/dewisp_ax.png><object data=$i/dewisp.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/dewisp_ax.png><object data=$i/dewisp.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/dewispCor.png><object data=$i/dewispCor.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/dewispCor.png><object data=$i/dewispCor.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 
 #echo "<td><a href=$i/dfs.png><img src=$i/dfs.png width='256' height='256'></a></td>"
 
-echo "<td><a href=$i/dfsLeft.png><object data=$i/dfsLeft.png width='256' height='256' type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/dfsLeft.png><object data=$i/dfsLeft.png width='256' height='256' type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/dfsRight.png><object data=$i/dfsRight.png width='256' height='256' type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/dfsRight.png><object data=$i/dfsRight.png width='256' height='256' type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/dfsSup.png><object data=$i/dfsSup.png width='256' height='256' type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/dfsSup.png><object data=$i/dfsSup.png width='256' height='256' type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/dfsInf.png><object data=$i/dfsInf.png width='256' height='256' type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/dfsInf.png><object data=$i/dfsInf.png width='256' height='256' type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
+
+echo "<td><a href=$i/hemisplit.png><object data=$i/hemisplit.png width='256' height='256' type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 
 echo "<tr>"
@@ -77,7 +80,8 @@ echo "<td style='text-align:center'>Orig + BSE Mask</td>
 <td style='text-align:center'>Inner Cortex (left)</td>
 <td style='text-align:center'>Inner Cortex (right)</td>
 <td style='text-align:center'>Inner Cortex (superior)</td>
-<td style='text-align:center'>Inner Cortex (inferior)</td>"
+<td style='text-align:center'>Inner Cortex (inferior)</td>
+<td style='text-align:center'>Pial Cortex (HemiSplit)</td>"
 echo "</tr>"
 
 echo "</tr>"

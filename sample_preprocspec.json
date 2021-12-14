@@ -53,6 +53,7 @@
         	"epit1corr_mask": 2,
         	"epit1corr_rigidsim": "mi",
         	"epit1corr_bias": 0,
+			"SimRef": 1,
         	"epit1corr_numthreads": 60
 		}
 	}

@@ -23,37 +23,37 @@ echo "</tr>"
 
 echo "<tr>"
 #echo "<td><a href=$i/svreglabel.png><img src=$i/svreglabel.png></a></td>"
-echo "<td><a href=$i/svregLabel.png><object data=$i/svregLabel.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/svregLabel.png><object data=$i/svregLabel.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/svregLabelCor.png><object data=$i/svregLabelCor.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/svregLabelCor.png><object data=$i/svregLabelCor.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/svregLabelSag.png><object data=$i/svregLabelSag.png type='image/png'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/svregLabelSag.png><object data=$i/svregLabelSag.png type='image/png'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 
 
 
 #echo "<td><a href=$i/svregsurf.png><img src=$i/svregsurf.png></a></td>"
 
-echo "<td><a href=$i/SVREGdfsLeft.png><object data=$i/SVREGdfsLeft.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/SVREGdfsLeft.png><object data=$i/SVREGdfsLeft.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/SVREGdfsRight.png><object data=$i/SVREGdfsRight.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/SVREGdfsRight.png><object data=$i/SVREGdfsRight.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/SVREGdfsInf.png><object data=$i/SVREGdfsInf.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/SVREGdfsInf.png><object data=$i/SVREGdfsInf.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/SVREGdfsSup.png><object data=$i/SVREGdfsSup.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/SVREGdfsSup.png><object data=$i/SVREGdfsSup.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/SVREGdfsAnt.png><object data=$i/SVREGdfsAnt.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/SVREGdfsAnt.png><object data=$i/SVREGdfsAnt.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
-echo "<td><a href=$i/SVREGdfsPos.png><object data=$i/SVREGdfsPos.png type='image/png' width='250'>"
-echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'</a></object></td>"
+echo "<td><a href=$i/SVREGdfsPos.png><object data=$i/SVREGdfsPos.png type='image/png' width='250'></a>"
+echo "<img src='http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/defaultimg.jpg'></object></td>"
 
 echo "</tr>"
 
