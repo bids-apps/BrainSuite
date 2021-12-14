@@ -101,6 +101,8 @@ echo '"runtime": "'${runtime}'",'
 echo '}';
 }
 
+bsjson=0;
+
 for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 
 	status=`reset_jobstatus initializing`;
@@ -116,10 +118,8 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 	
     status=`jobstatus running`;
     echo $status;
-	for ((i=0;i<10000;i++)); do
-	    if (( $i % 20 == 0 )); then
-	        echo $status;
-	    fi
+    cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
+	for ((i=0;i<100000;i++)); do
 	    echo $status > $WEBPATH
 #		if [ -f $OUTDIR/QC/stop.it ]; then
 #		  status=`end_jobstatus terminating`;
@@ -127,6 +127,11 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 #		  break; fi;
 		## TODO: fix logic here
 		bstates=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
+		if (( $i % 60 == 0 )); then
+	        echo $status;
+	        bsjson=$((j+1))
+	        cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
+	    fi
 		nbstates=${#bstates[@]}
 		nfin=`grep -o '111' <<< $bstates | wc -l`
 		nerr=`grep -o '404' <<< $bstates | wc -l`
