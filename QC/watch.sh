@@ -127,15 +127,16 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 #		  echo $status > $WEBPATH;
 #		  break; fi;
 		## TODO: fix logic here
-		bstates=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
+		bstates_tmp=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
+		read -a bstates <<< $bstates_tmp
 		if (( $i % 60 == 0 )); then
 	        echo $status;
-	        bsjson=$((j+1))
+	        bsjson=$((bsjson+1))
 	        cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
 	    fi
 		nbstates=${#bstates[@]}
-		nfin=`grep -o '111' <<< $bstates | wc -l`
-		nerr=`grep -o '404' <<< $bstates | wc -l`
+		nfin=`grep -o '111' <<< $bstates_tmp | wc -l`
+		nerr=`grep -o '404' <<< $bstates_tmp | wc -l`
 		n=$((nfin + nerr))
 #		echo Finished: "$nfin";
 #		echo Errored: "$nerr";
