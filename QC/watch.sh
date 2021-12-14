@@ -102,6 +102,7 @@ echo '}';
 }
 
 bsjson=0;
+cp $OUTDIR/brainsuite_run_params_date.json $WEBDIR
 
 for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 

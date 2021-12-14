@@ -8,6 +8,8 @@ import configparser
 from io import StringIO
 import nipype.pipeline.engine as pe
 import nipype.interfaces.brainsuite as bs
+from datetime import datetime
+from collections import OrderedDict
 
 Obj = pe.Node(interface=bs.Bfc(), name='Obj')
 undefined = Obj.inputs.biasRange
@@ -90,7 +92,7 @@ class preProcSpec(object):
         try:
             specs = json.load(open(preprocfile))
         except:
-            sys.stdout.writable("There was an error reading the model specification file."
+            sys.stdout.write("There was an error reading the model specification file."
                                 "\nPlease check that the format of the file is JSON.")
             return
 
@@ -215,3 +217,108 @@ class preProcSpec(object):
         self.read_file = True
 
 
+    def write_preproc_params(self, outputdir, STAGES, dataset_description_file=None):
+
+        timeofrun = datetime.now()
+
+        paramfile = outputdir + '/brainsuite_run_params_date.json'
+            #.format(timeofrun.strftime('%m%d%Y_time%H%M%S'))
+
+        params= OrderedDict()
+
+        if dataset_description_file:
+            try:
+                dataset_description = json.load(open(dataset_description_file))
+                params['DATASET DESCRIPTION'] = []
+                params['DATASET DESCRIPTION'].append({
+                    'Dataset Name' : dataset_description['Name'],
+                    'BIDSVersion': dataset_description['BIDSVersion']
+                })
+            except:
+                print('dataset_description.json file did not read in successfully.\n')
+
+        params['BrainSuite BIDS App run parameters'] = []
+        params['BrainSuite BIDS App run parameters'].append({
+            'DATE and TIME OF RUN' : timeofrun.strftime('%Y-%m-%d %H:%M:%S'),
+            'STAGES' : STAGES,
+            'NIPYPE CACHE FOLDER': self.cache
+        })
+
+        if 'CSE' in STAGES:
+            params['BrainSuite BIDS App run parameters'].append({
+                'CSE': {
+                    'autoParameters': self.autoParameters,
+                    'diffusionIterations' : self.diffusionIterations,
+                    'diffusionConstant' : self.diffusionConstant,
+                    'edgeDetectionConstant' : self.edgeDetectionConstant,
+                    'skipBSE' : self.skipBSE,
+                    'iterativeMode' : self.iterativeMode,
+                    'spatialPrior': self.spatialPrior,
+                    'costFunction': self.costFunction ,
+                    'useCentroids' : self.useCentroids,
+                    'linearConvergence': self.linearConvergence,
+                    'warpConvergence': self.warpConvergence,
+                    'warpLevel': self.warpLevel,
+                    'tissueFractionThreshold': self.tissueFractionThreshold
+                }
+            })
+        if 'SVREG' in STAGES:
+            params['BrainSuite BIDS App run parameters'].append({
+                'SVREG' : {
+                    'atlas': self.atlas,
+                    'singleThread': self.singleThread
+                }
+            })
+
+        if 'BDP' in STAGES:
+            params['BrainSuite BIDS App run parameters'].append({
+                'BDP': {
+                    'skipDistortionCorr' : self.skipDistortionCorr,
+                    'phaseEncodingDirection': self.phaseEncodingDirection,
+                    'estimateODF_3DShore' : self.estimateODF_3DShore,
+                    'estimateODF_GQI': self.estimateODF_GQI,
+                    'echoSpacing': self.echoSpacing,
+                    'fieldmapCorrection': self.fieldmapCorrection,
+                    'diffusion_time_ms': self.diffusion_time_ms
+                }
+            })
+
+        if ('CSE' in STAGES) or ('SVREG' in STAGES):
+            params['BrainSuite BIDS App run parameters'].append({
+                'POSTPROC SMOOTHING LEVELS': {
+                        'smoothVol': self.smoothvol,
+                        'smoothSurf': self.smoothsurf
+                }
+            })
+
+        if 'BFP' in STAGES:
+            params['BrainSuite BIDS App run parameters'].append({
+                'BFP': {
+                    'task-name': self.taskname,
+                    'TR': self.TR,
+                    'EnabletNLMPdfFiltering': self.tnlmpdf,
+                    'fpr' : self.fpr,
+                    'FSLOUTPUTTYPE': self.fslotype,
+                    'FWHM': self.fwhm,
+                    'HIGHPASS': self.highpass,
+                    'LOWPASS': self.lowpass,
+                    'memory': self.memory,
+                    'EnableShapeMeasures': self.shape,
+                    'T1SpaceProcessing': self.t1space,
+                    'FSLRigid': self.fslrigid,
+                    'BPoption': self.bpoption,
+                    'RunDetrend': self.rundetrend,
+                    'RunNSR': self.runnsr,
+                    'scbPath': self.scbpath,
+                    'T1mask': self.T1mask,
+                    'epit1corr' : self.epit1corr,
+                    'epit1corr_mask' : self.epit1corr_mask,
+                    'epit1corr_rigidsim': self.epit1corr_rigidsim,
+                    'epit1corr_bias' : self.epit1corr_bias,
+                    'epit1corr_numthreads': self.epit1corr_numthreads,
+                    'SimRef': self.simref
+                }
+            })
+
+        with open(paramfile, 'w') as f:
+            json.dump(params, f)

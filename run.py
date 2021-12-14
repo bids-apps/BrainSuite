@@ -164,7 +164,7 @@ else:
 
 if ('WEBSERVER' in stages) and (not args.localWebserver):
     if args.QCdir is None:
-        sys.stdout.writable('If you would like not to launch a local webserver, please provide the directory where'
+        sys.stdout.write('If you would like not to launch a local webserver, please provide the directory where'
                             'you would like to store the QC data using --QCdir. E.g. --QCdir /home/yeun/public_html')
 
 runProcessing = True

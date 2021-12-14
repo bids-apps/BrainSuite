@@ -99,6 +99,11 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
                                           BVAL=str(bval), BVEC=str(bvec), CACHE=cache, SingleThread=thread,
                                           ATLAS=str(atlas), QCDIR=QCdir)
             # BFP.update({'t1': t1ws[-1]})
+        dataset_description = None
+        if os.path.exists(args.bids_dir + '/dataset_description.json'):
+            dataset_description = args.bids_dir + '/dataset_description.json'
+
+        preprocspecs.write_preproc_params(args.output_dir, stages_tmp, dataset_description)
         process.runWorkflow(subjectID, t1, outputdir, BFP)
 
         try:
