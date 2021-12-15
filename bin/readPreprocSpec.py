@@ -91,6 +91,7 @@ class preProcSpec(object):
 
         try:
             specs = json.load(open(preprocfile))
+            self.specs = specs
         except:
             sys.stdout.write("There was an error reading the model specification file."
                                 "\nPlease check that the format of the file is JSON.")
@@ -277,9 +278,9 @@ class preProcSpec(object):
                     'phaseEncodingDirection': self.phaseEncodingDirection,
                     'estimateODF_3DShore' : self.estimateODF_3DShore,
                     'estimateODF_GQI': self.estimateODF_GQI,
-                    'echoSpacing': self.echoSpacing,
-                    'fieldmapCorrection': self.fieldmapCorrection,
-                    'diffusion_time_ms': self.diffusion_time_ms
+                    'echoSpacing': self.specs['BrainSuite']['Diffusion']['echoSpacing'],
+                    'fieldmapCorrection': self.specs['BrainSuite']['Diffusion']['fieldmapCorrection'],
+                    'diffusion_time_ms': self.specs['BrainSuite']['Diffusion']['diffusion_time_ms']
                 }
             })
 

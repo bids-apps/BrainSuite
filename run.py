@@ -187,6 +187,10 @@ if 'WEBSERVER' in stages:
         subprocess.call(cmd, shell=True)
         print("\n\n\nOpen web browser and navigate to localhost/cse.html\n")
 
+    with open('{0}/subjs.txt'.format(WEBDIR), 'w') as f:
+        for subj in subjects_to_analyze:
+            f.write(subj + '\n')
+
     cmd = '/BrainSuite/QC/watch.sh {0} {1}'.format(WEBDIR, args.output_dir)
     subprocess.call(cmd, shell=True)
 

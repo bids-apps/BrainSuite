@@ -8,8 +8,9 @@ fi;
 
 WEBDIR=$1
 OUTDIR=$2
-subjects=($(ls ${WEBDIR} | grep sub- ))
+#subjects=($(ls ${WEBDIR} | grep sub- ))
 
+readarray -t subjects < $WEBDIR/subjs.txt
 nSubjs=${#subjects[@]}
 
 WEBPATH=${WEBDIR}/brainsuite_state.json
@@ -111,8 +112,6 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 	echo $status > $WEBPATH
 	chmod a+r $WEBPATH
 
-	subjects=($(ls ${WEBDIR} | grep sub- ))
-	nSubjs=${#subjects[@]}
 
 	startTime=`date`;
 	startTimeSeconds=`date +%s`;
@@ -138,13 +137,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 		nfin=`grep -o '111' <<< $bstates_tmp | wc -l`
 		nerr=`grep -o '404' <<< $bstates_tmp | wc -l`
 		n=$((nfin + nerr))
-#		echo Finished: "$nfin";
-#		echo Errored: "$nerr";
-#		echo Total completed: "$n";
-		subjects=`ls ${WEBDIR} | grep sub- `
-		nSubjs=${#subjects[@]}
-#		echo $WEBDIR
-#		echo $subjects
+
         /BrainSuite/QC/makehtml_main.sh $subjects > $WEBDIR/index.html
 		/BrainSuite/QC/makehtml_cse.sh $subjects > $WEBDIR/cse.html
 		/BrainSuite/QC/makehtml_thick.sh $subjects > $WEBDIR/thick.html
@@ -156,7 +149,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 		echo $status > $WEBPATH
 		sleep 1;
 
-		if (($n == $nbstates)); then
+		if (($n == $nSubjs)); then
 			status=`end_jobstatus terminating`
 			echo $status > $WEBPATH
 			touch $WEBDIR//stop.it;
