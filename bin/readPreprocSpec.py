@@ -47,6 +47,15 @@ class preProcSpec(object):
         self.bids_dir = bids_dir
         self.outputdir = outputdir
 
+        self.scbpath = ''
+        self.T1mask = True
+        self.epit1corr = 1
+        self.epit1corr_mask = 3
+        self.epit1corr_rigidsim = 'mi'
+        self.epit1corr_bias = 1
+        self.epit1corr_numthreads = 60
+        self.simref = 1
+
         # bse
         self.autoParameters = True
         self.diffusionIterations = 3
@@ -222,7 +231,7 @@ class preProcSpec(object):
 
         timeofrun = datetime.now()
 
-        paramfile = outputdir + '/brainsuite_run_params_date.json'
+        paramfile = outputdir + '/brainsuite_run_params.json'
             #.format(timeofrun.strftime('%m%d%Y_time%H%M%S'))
 
         params= OrderedDict()
@@ -272,15 +281,24 @@ class preProcSpec(object):
             })
 
         if 'BDP' in STAGES:
+            echoSpacing = self.echoSpacing
+            fieldmapCorrection = self.fieldmapCorrection
+            diffusion_time_ms = self.diffusion_time_ms
+            if self.echoSpacing == undefined:
+                echoSpacing = ''
+            if self.fieldmapCorrection == undefined:
+                fieldmapCorrection = ''
+            if self.diffusion_time_ms == undefined:
+                diffusion_time_ms = ''
             params['BrainSuite BIDS App run parameters'].append({
                 'BDP': {
                     'skipDistortionCorr' : self.skipDistortionCorr,
                     'phaseEncodingDirection': self.phaseEncodingDirection,
                     'estimateODF_3DShore' : self.estimateODF_3DShore,
                     'estimateODF_GQI': self.estimateODF_GQI,
-                    'echoSpacing': self.specs['BrainSuite']['Diffusion']['echoSpacing'],
-                    'fieldmapCorrection': self.specs['BrainSuite']['Diffusion']['fieldmapCorrection'],
-                    'diffusion_time_ms': self.specs['BrainSuite']['Diffusion']['diffusion_time_ms']
+                    'echoSpacing': echoSpacing,
+                    'fieldmapCorrection': fieldmapCorrection,
+                    'diffusion_time_ms': diffusion_time_ms
                 }
             })
 

@@ -55,6 +55,7 @@ RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
 RUN chmod +x /BrainSuite/run.py
 RUN chmod a+x /bfp/*
 
+RUN echo "set enable-bracketed-paste off" >> ~/.inputrc
 
 ENTRYPOINT ["/BrainSuite/run.py"]
 

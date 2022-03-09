@@ -6,6 +6,8 @@ import re as regex
 
 from ..base import TraitedSpec, CommandLineInputSpec, CommandLine, File, traits, isdefined
 from ..traits_extension import str
+from ... import config, logging, LooseVersion, __version__
+iflogger = logging.getLogger('interface')
 
 """This script provides interfaces for BrainSuite command line tools.
 Please see brainsuite.org for more information.
@@ -13,6 +15,43 @@ Please see brainsuite.org for more information.
 Author: Jason Wong
 Edit: Clayton Jerlow
 """
+
+class BrainSuiteCommandLine(CommandLine):
+    def _check_mandatory_inputs(self):
+        """ Raises an exception if a mandatory input is Undefined
+        """
+        for name, spec in list(self.inputs.traits(mandatory=True).items()):
+            value = getattr(self.inputs, name)
+            self._check_xor(spec, name, value)
+            if not isdefined(value) and spec.xor is None:
+                msg = ("%s requires a value for input '%s'. "
+                       "For a list of required inputs, see %s.help()" %
+                       (self.__class__.__name__, name, self.__class__.__name__))
+                # raise ValueError(msg)
+                iflogger.info(msg)
+            if isdefined(value):
+                self._check_requires(spec, name, value)
+        for name, spec in list(self.inputs.traits(mandatory=None,
+                                                  transient=None).items()):
+            self._check_requires(spec, name, getattr(self.inputs, name))
+
+    @property
+    def cmdline(self):
+        """ `command` plus any arguments (args)
+        validates arguments and generates command line"""
+        self._check_mandatory_inputs()
+        allargs = [self.cmd] + self._parse_inputs()
+        return ' '.join(allargs)
+
+    def raise_exception(self, runtime):
+        iflogger.info('[ERROR] RuntimeError has occurred.')
+        message = "Command:\n" + runtime.cmdline + "\n"
+        message += "Standard output:\n" + runtime.stdout + "\n"
+        message += "Standard error:\n" + runtime.stderr + "\n"
+        message += "Return code: " + str(runtime.returncode)
+        iflogger.info(message)
+        return runtime
+
 
 class BseInputSpec(CommandLineInputSpec):
     inputMRIFile = File(
@@ -56,7 +95,7 @@ class BseInputSpec(CommandLineInputSpec):
         argstr='--norotate')
     timer = traits.Bool(
         desc='show timing', argstr='--timer')
-
+    dummy = traits.Str(desc='dummy output')
 
 class BseOutputSpec(TraitedSpec):
     outputMRIVolume = File(desc='path/name of brain-masked MRI volume')
@@ -68,7 +107,7 @@ class BseOutputSpec(TraitedSpec):
     inputMRIFile = File(desc='input MRI volume')
 
 
-class Bse(CommandLine):
+class Bse(BrainSuiteCommandLine):
     """
     brain surface extractor (BSE)
     This program performs automated skull and scalp removal on T1-weighted MRI volumes.
@@ -103,6 +142,9 @@ class Bse(CommandLine):
             return getFileName(self.inputs.inputMRIFile, fileToSuffixMap[name])
 
         return None
+
+    def _format_arg(self, name, spec, value):
+        return super(Bse, self)._format_arg(name, spec, value)
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -177,7 +219,7 @@ class BfcOutputSpec(TraitedSpec):
     correctionScheduleFile = File(desc='path/name of schedule file')
 
 
-class Bfc(CommandLine):
+class Bfc(BrainSuiteCommandLine):
     """
     bias field corrector (BFC)
     This program corrects gain variation in T1-weighted MRI.
@@ -247,7 +289,7 @@ class PvcOutputSpec(TraitedSpec):
     outputTissueFractionFile = File(desc='path/name of tissue fraction file')
 
 
-class Pvc(CommandLine):
+class Pvc(BrainSuiteCommandLine):
     """
     partial volume classifier (PVC) tool.
     This program performs voxel-wise tissue classification T1-weighted MRI.
@@ -331,7 +373,7 @@ class CerebroOutputSpec(TraitedSpec):
     outputWarpTransformFile = File(desc='path/name of warp transform file')
 
 
-class Cerebro(CommandLine):
+class Cerebro(BrainSuiteCommandLine):
     """
     Cerebrum/cerebellum labeling tool
     This program performs automated labeling of cerebellum and cerebrum in T1 MRI.
@@ -402,7 +444,7 @@ class CortexOutputSpec(TraitedSpec):
     outputCerebrumMask = File(desc='path/name of cerebrum mask')
 
 
-class Cortex(CommandLine):
+class Cortex(BrainSuiteCommandLine):
     """
     cortex extractor
     This program produces a cortical mask using tissue fraction estimates
@@ -458,7 +500,7 @@ class ScrubmaskOutputSpec(TraitedSpec):
     outputMaskFile = File(desc='path/name of mask file')
 
 
-class Scrubmask(CommandLine):
+class Scrubmask(BrainSuiteCommandLine):
     """
     ScrubMask tool
     scrubmask filters binary masks to trim loosely connected voxels that may
@@ -514,7 +556,7 @@ class TcaOutputSpec(TraitedSpec):
     outputMaskFile = File(desc='path/name of mask file')
 
 
-class Tca(CommandLine):
+class Tca(BrainSuiteCommandLine):
     """
     topological correction algorithm (TCA)
     This program removes topological handles from a binary object.
@@ -563,7 +605,7 @@ class DewispOutputSpec(TraitedSpec):
     outputMaskFile = File(desc='path/name of mask file')
 
 
-class Dewisp(CommandLine):
+class Dewisp(BrainSuiteCommandLine):
     """
     dewisp
     removes wispy tendril structures from cortex model binary masks.
@@ -642,7 +684,7 @@ class DfsOutputSpec(TraitedSpec):
     outputSurfaceFile = File(desc='path/name of surface file')
 
 
-class Dfs(CommandLine):
+class Dfs(BrainSuiteCommandLine):
     """
     Surface Generator
     Generates mesh surfaces using an isosurface algorithm.
@@ -728,7 +770,7 @@ class PialmeshOutputSpec(TraitedSpec):
     outputSurfaceFile = File(desc='path/name of surface file')
 
 
-class Pialmesh(CommandLine):
+class Pialmesh(BrainSuiteCommandLine):
     """
     pialmesh
     computes a pial surface model using an inner WM/GM mesh and a tissue fraction map.
@@ -796,7 +838,7 @@ class HemisplitOutputSpec(TraitedSpec):
     outputRightPialHemisphere = File(desc='path/name of right pial hemisphere')
 
 
-class Hemisplit(CommandLine):
+class Hemisplit(BrainSuiteCommandLine):
     """
     Hemisphere splitter
     Splits a surface object into two separate surfaces given an input label volume.
@@ -873,7 +915,7 @@ class SkullfinderOutputSpec(TraitedSpec):
     outputLabelFile = File(desc='path/name of label file')
 
 
-class Skullfinder(CommandLine):
+class Skullfinder(BrainSuiteCommandLine):
     """
     Skull and scalp segmentation algorithm.
 
@@ -1027,7 +1069,7 @@ class SVRegOutputSpec(TraitedSpec):
     outputLabelFile = File(desc='path/name of svreg label file')
 
 
-class SVReg(CommandLine):
+class SVReg(BrainSuiteCommandLine):
     """
     surface and volume registration (svreg)
     This program registers a subject's BrainSuite-processed volume and surfaces
@@ -1557,7 +1599,7 @@ class BDPOutputSpec(TraitedSpec):
     dummy = traits.Str(desc='dummy output')
 
 
-class BDP(CommandLine):
+class BDP(BrainSuiteCommandLine):
     """
     BrainSuite Diffusion Pipeline (BDP) enables fusion of diffusion and
     structural MRI information for advanced image and connectivity analysis.
@@ -1626,7 +1668,7 @@ class ThicknessPVCOutputSpec(TraitedSpec):
         desc='path/name of atlas-registered surface file containing right cortical thickness data')
 
 
-class ThicknessPVC(CommandLine):
+class ThicknessPVC(BrainSuiteCommandLine):
     """
     ThicknessPVC computes cortical thickness using partial tissue fractions.
     This thickness measure is then transferred to the atlas surface to
@@ -1694,7 +1736,7 @@ class Thickness2AtlasOutputSpec(TraitedSpec):
         desc='path/name of atlas-registered surface file containing right cortical thickness data')
 
 
-class Thickness2Atlas(CommandLine):
+class Thickness2Atlas(BrainSuiteCommandLine):
     """
     ThicknessPVC computes cortical thickness using partial tissue fractions.
     This thickness measure is then transferred to the atlas surface to
@@ -1758,7 +1800,7 @@ class SVRegSmoothSurfOutputSpec(TraitedSpec):
     smoothSurfFile = File(desc='path/name of smoothed surface file')
 
 
-class SVRegSmoothSurf(CommandLine):
+class SVRegSmoothSurf(BrainSuiteCommandLine):
     """
         SVRegApplyMap (SVRegApplyMap)
         This program applies an SVReg deformation file to an input volume.
@@ -1781,7 +1823,6 @@ class SVRegSmoothSurf(CommandLine):
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.outSurface, '')
-        return None
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -1813,7 +1854,7 @@ class SVRegApplyMapOutputSpec(TraitedSpec):
     mappedFile = File(desc='path/name of resampled nifti file containing warped data')
 
 
-class SVRegApplyMap(CommandLine):
+class SVRegApplyMap(BrainSuiteCommandLine):
     """
         SVRegApplyMap (SVRegApplyMap)
         This program applies an SVReg deformation file to an input volume.
@@ -1869,7 +1910,7 @@ class SVRegSmoothVolOutputSpec(TraitedSpec):
     smoothFile = File(desc='path/name of resampled nifti file containing smooth vol data')
 
 
-class SVRegSmoothVol(CommandLine):
+class SVRegSmoothVol(BrainSuiteCommandLine):
     """
         SVRegSmoothVol (SVRegSmoothVol)
         This program applies volumetric smoothing on an input atlas file.
@@ -1898,7 +1939,7 @@ class SVRegSmoothVol(CommandLine):
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.outFile, '')
-        return None
+        # return None
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -1921,14 +1962,13 @@ class GenerateXlsOutputSpec(TraitedSpec):
     roiwisestats = File(desc='path/name of ROIwise stats file.')
 
 
-class GenerateXls(CommandLine):
+class GenerateXls(BrainSuiteCommandLine):
     input_spec = GenerateXlsInputSpec
     output_spec = GenerateXlsOutputSpec
     _cmd = 'generate_stats_xls.sh'
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.subjectFilePrefix, '')
-        return None
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -1971,7 +2011,7 @@ class VolblendOutputSpec(TraitedSpec):
     outFile = File(desc='Output file.')
 
 
-class Volblend(CommandLine):
+class Volblend(BrainSuiteCommandLine):
     input_spec = VolblendInputSpec
     output_spec = VolblendOutputSpec
     _cmd = 'volblend'
@@ -2048,7 +2088,7 @@ class DfsRenderOutputSpec(TraitedSpec):
     outFile = File(desc='Output file. Must be a png.')
 
 
-class DfsRender(CommandLine):
+class DfsRender(BrainSuiteCommandLine):
     input_spec = DfsRenderInputSpec
     output_spec = DfsRenderOutputSpec
     _cmd = 'dfsrender'
@@ -2070,25 +2110,35 @@ class DfsRender(CommandLine):
 
 
 class QCStateInputSpec(CommandLineInputSpec):
-    filename = traits.Str(mandatory=True, argstr='%s', position=0, desc='Basename.')
+    prefix = traits.Str(mandatory=True, argstr='%s', position=0, desc='Basename.')
     stagenum = traits.Int(mandatory=True, argstr='%d', position=1, desc='Stage number.')
-    Run = traits.Str(argstr='%s', position=2, desc='dummy arg.')
+    # stage = traits.Str(mandatory=True, argstr='%s', position=2, desc='Stage character/symbol of the state.')
+    state = traits.Str(mandatory=True, argstr='%s', position=2, desc='String of all states.')
+    Run = traits.Any(argstr='%s', position=3, desc='dummy arg.')
 
+class QCStateOutputSpec(TraitedSpec):
+    OutStateFile = File(desc='State file output.')
 
-class QCState(CommandLine):
+class QCState(BrainSuiteCommandLine):
     input_spec = QCStateInputSpec
+    output_spec = QCStateOutputSpec
     _cmd = 'qcState.sh'
 
-    def _gen_filename(self, name):
+    def _gen_filename(self):
         return getFileName(self.inputs.filename, '.state')
 
     # def _list_outputs(self):
     #     return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
-        if (name == 'filename') or (name == 'Run'):
-            return spec.argstr % os.path.expanduser(value)
-        return super(QCState, self)._format_arg(name, spec, value)
+        if (name == 'Run'):
+            # return spec.argstr % \
+            #        {"prefix": self.inputs.prefix, "stagenum": self.inputs.stagenum,
+            #         "state": self.inputs.state}
+            return ' %s %s %s ' % (self.inputs.prefix,self.inputs.stagenum,self.inputs.state)
+            # return spec.argstr % os.path.expanduser(value)
+        # return super(QCState, self)._format_arg(name, spec, value)
+        return ' %s %s %s ' % (self.inputs.prefix, self.inputs.stagenum, self.inputs.state)
 
 
 class makeMaskInputSpec(CommandLineInputSpec):
@@ -2098,7 +2148,7 @@ class makeMaskInputSpec(CommandLineInputSpec):
 class makeMaskOutputSpec(TraitedSpec):
     OutFile = File(desc='Output mask file name.')
 
-class makeMask(CommandLine):
+class makeMask(BrainSuiteCommandLine):
     input_spec = makeMaskInputSpec
     output_spec = makeMaskOutputSpec
     _cmd = 'makeMask.sh'
@@ -2122,7 +2172,7 @@ class copyFileInputSpec(CommandLineInputSpec):
 class copyFileOutputSpec(TraitedSpec):
     OutFile = File(desc='Copied file name.')
 
-class copyFile(CommandLine):
+class copyFile(BrainSuiteCommandLine):
     input_spec = copyFileInputSpec
     output_spec = copyFileOutputSpec
     _cmd = 'cp'
@@ -2160,7 +2210,7 @@ class BFPOutputSpec(TraitedSpec):
     preProc = File(desc='Before ')
     dummy = traits.Str(desc='dummy output')
 
-class BFP(CommandLine):
+class BFP(BrainSuiteCommandLine):
     input_spec = BFPInputSpec
     output_spec = BFPOutputSpec
     _cmd = 'bfp.sh'

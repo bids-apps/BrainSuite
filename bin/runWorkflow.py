@@ -104,14 +104,24 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
             dataset_description = args.bids_dir + '/dataset_description.json'
 
         preprocspecs.write_preproc_params(args.output_dir, stages_tmp, dataset_description)
+        subjectTXT = args.output_dir + '/subjs.txt'
+        if not os.path.exists(subjectTXT):
+            open(subjectTXT, 'w').close()
+        repeatedSubj = False
+        for subj in open(subjectTXT, 'r').readlines():
+            if subj.rstrip().lstrip() == subjectID:
+                repeatedSubj = True
+        if not repeatedSubj:
+            with open(args.output_dir+'/subjs.txt', 'a') as f:
+                f.write(subjectID+'\n')
         process.runWorkflow(subjectID, t1, outputdir, BFP)
 
-        try:
-            if glob.glob(os.path.join(outputdir, 'dwi', '*.FA.smooth3.0mm.nii.gz')):
-                cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
-                subprocess.call(cmd, shell=True)
-        except:
-            pass
+        # try:
+        #     if glob.glob(os.path.join(outputdir, 'dwi', '*.FA.smooth3.0mm.nii.gz')):
+        #         cmd = "rename 's/_T1w/_dwi/' {0}/*".format(os.path.join(args.output_dir, subjectID, 'dwi'))
+        #         subprocess.call(cmd, shell=True)
+        # except:
+        #     pass
 
         # if 'QC' in stages and not RuntimeError:
         #     WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)

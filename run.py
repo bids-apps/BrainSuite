@@ -152,8 +152,8 @@ if args.skipBSE:
     stages = args.stages.append('noBSE')
 if ('ALL' in args.stages):
     stages = ['CSE', 'SVREG', 'BDP', 'BFP','QC'] #
-elif ('BFP' in args.stages):
-    stages = ['CSE', 'SVREG', 'BFP']
+# elif ('BFP' in args.stages):
+#     stages = ['CSE', 'SVREG', 'BFP']
 elif ('QC' in args.stages) & (len(args.stages) ==1):
     os.environ['runJustQC'] = 'True'
 # elif ('BFP' in args.stages) & (not 'SVREG' in args.stages):
@@ -171,6 +171,9 @@ runProcessing = True
 if 'WEBSERVER' in stages:
     if (len(stages)==1):
         runProcessing = False
+        subjectTXT = args.output_dir + '/subjs.txt'
+        if not os.path.exists(subjectTXT):
+            open(subjectTXT, 'w').close()
     if args.QCdir:
         WEBDIR = os.path.join(args.QCdir, 'QC')
     else:
@@ -186,10 +189,6 @@ if 'WEBSERVER' in stages:
         cmd = 'ln -s {0}/* /var/www/html/ '.format(WEBDIR)
         subprocess.call(cmd, shell=True)
         print("\n\n\nOpen web browser and navigate to localhost/cse.html\n")
-
-    with open('{0}/subjs.txt'.format(WEBDIR), 'w') as f:
-        for subj in subjects_to_analyze:
-            f.write(subj + '\n')
 
     cmd = '/BrainSuite/QC/watch.sh {0} {1}'.format(WEBDIR, args.output_dir)
     subprocess.call(cmd, shell=True)
