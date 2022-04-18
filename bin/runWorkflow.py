@@ -1,5 +1,5 @@
 import subprocess
-from bin.brainsuiteWorkflowNoQC import subjLevelProcessing
+from bin.brainsuiteWorkflow import subjLevelProcessing
 import os
 import glob
 

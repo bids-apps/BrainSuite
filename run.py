@@ -14,7 +14,7 @@ from bids.grabbids import BIDSLayout
 from builtins import str
 import shutil
 
-from bin.brainsuiteWorkflowNoQC import subjLevelProcessing
+from bin.brainsuiteWorkflow import subjLevelProcessing
 from bin.readPreprocSpec import preProcSpec
 from bin.readSpec import bssrSpec
 from bin.runBssr import *
