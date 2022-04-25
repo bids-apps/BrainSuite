@@ -1,0 +1,121 @@
+<head>
+  <title>BrainSuite Dashboard</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="bootstrap-multiselect/js/bootstrap-multiselect.js"></script>
+  <link rel="stylesheet" href="bootstrap-multiselect/css/bootstrap-multiselect.css" type="text/css"/>
+
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet">
+  <script src="brainsuiteQC.js"></script>
+  <link href="style.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light custom-toggler ">
+    <span class="XXX"><img src="http://brainsuite.org/wp-content/uploads/2016/10/brainsuite13_icon_250px-b.png" height="38PX"></span>
+      <a class="navbar-brand" href="#">BrainSuite Dashboard</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+
+
+
+        <div class="dropdown">
+          <button class="btn btn-outline-primary dropdown-toggle btn-sm" type="button" id="pipelineDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-solid fa-code-fork" aria-hidden="true"></i><span class="XXX"> Pipeline</span>
+            <!-- d-block d-sm-none d-xl-block -->
+          </button>
+          <div class="dropdown-menu" id="pipelineDropdownMenuDiv" aria-labelledby="pipelineDropdownMenu"></div>
+        </div>  
+
+        <select id="qcColumnSelector" multiple="multiple"></select>
+        <button id="expand all" class="btn btn-outline-primary btn-sm mr-1" onclick="toggleExpandAll()"><i class="fa-solid fa-square-caret-down"></i><span class="XXX"> Expand All</span></button>
+        <div class="btn-group-toggle" data-toggle="buttons">
+            <label class="btn btn-outline-primary btn-sm ">
+              <input type="checkbox"  id="hideUnlaunchedCB" onclick='handleHideUnlaunched(this);'><i class="fa-solid fa-eye-slash"></i><span class="XXX"> Hide Unlaunched</span>
+            </label>
+          </div> 
+      <!-- </div>
+      <div class="collapse navbar-collapse" id="navbarCollapse"> -->
+
+        <div class="dropdown">
+          <button class="btn btn-outline-primary dropdown-toggle btn-sm" type="button" id="imageSizeDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-solid fa-image" aria-hidden="true"></i><span class="XXX"> Image Size</span>
+          </button>
+          <div class="dropdown-menu" aria-labelledby="imageSizeDropdownMenu">
+            <input type="range" min="32" max="1024" value="256" class="slider" id="imageHeightSlider">
+            <button class="dropdown-item btn-sm" id="micro" onclick="updateHeightSlider(32)">micro</button>
+            <button class="dropdown-item btn-sm" id="tiny" onclick="updateHeightSlider(64)">tiny</button>
+            <button class="dropdown-item btn-sm" id="smaller" onclick="updateHeightSlider(128)">smaller</button>
+            <button class="dropdown-item btn-sm" id="default" onclick="updateHeightSlider(256)">default</button>
+            <button class="dropdown-item btn-sm" id="big" onclick="updateHeightSlider(512)">bigger</button>
+            <button class="dropdown-item btn-sm" id="huge" onclick="updateHeightSlider(1024)">huge</button>
+          </div>
+        </div>
+        <!-- <div class="btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-outline-primary btn-sm ">
+            <input type="checkbox" id="showAnnotationsCB" onclick='handleWrapImagesClick(this);' ><i class="fa-solid fa-table-cells-large"></i><div class="XXX">  Wrap Images</div>
+          </label>
+        </div> -->
+      <!-- </div>
+      <div class="collapse navbar-collapse" id="navbarCollapse"> -->
+
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle btn-sm" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fa-solid fa-gauge-simple-high"></i><span class="XXX"> Update Speed</span></button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenu1">
+              <button class="dropdown-item btn-sm" id='lightning' onclick='setUpdateInterval(50)'>lightning (50ms)</button>
+              <button class="dropdown-item btn-sm" id='fast' onclick='setUpdateInterval(200)'>fast (200ms)</button>
+              <button class="dropdown-item btn-sm" id='normal' onclick='setUpdateInterval(1000)'>normal (1s)</button>
+              <button class="dropdown-item btn-sm" id='slow' onclick='setUpdateInterval(2000)'>slow (2s)</button>
+              <button class="dropdown-item btn-sm" id='glacial' onclick='setUpdateInterval(5000)'>glacial (5s)</button>
+            </div>
+          </div>
+          <button id='pause' class='btn btn-outline-primary btn-sm' onclick='toggleUpdates()'><i class="fa-solid fa-pause" aria-hidden="true"></i><span class="XXX"> Pause</span></button>
+
+        <div class="dropdown">
+          <button class="btn btn-outline-primary btn-sm dropdown-toggle " type="button" id="schemeDropdownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="fa-solid fa-palette"></i><span class="XXX"> Scheme</button>
+          <div class="dropdown-menu" aria-labelledby="schemeDropdownMenu" id="scheme buttons">
+        </div>
+
+
+        </div>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+
+        <div class="btn-group-toggle" data-toggle="buttons">
+          <label class="btn btn-outline-primary btn-sm ">
+            <input type="checkbox" id="showAnnotationsCB" onclick='handleShowAnnotationsClick(this);' ><i class="fa-solid fa-clipboard"></i><span class="XXX"> Annotations</span>
+          </label>
+        </div>
+        <button id="export annotations" class="btn btn-outline-primary btn-sm mr-1" onclick="exportAnnotations()"><i class="fa fa-download" aria-hidden="true"></i><span class="XXX"> Export Annotations</span></button>
+
+
+
+                  <!-- <label class="btn btn-outline-primary btn-sm ">
+              <input type="checkbox"  id="lazyLoadCB"  onclick='handleEnableLazyLoad(this);'> Lazy Load
+            </label> -->
+      <!-- <form class="form-inline mt-2 mt-md-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+      </form> -->
+    </div>
+  </nav> 
+<div class="container-fluid" style="margin-top: 60px">
+  <div>
+  <!-- <div class="border border-round border-primary "> -->
+    <span id="RunParameters"></span>
+    <div id=info >initializing</div>
+    <span id="session counter"></span>
+  </div>
+    <br/>  
+<div id="subjectPanel" class="border-round"></div>
+
+</div>
+
+</body>
+</html>

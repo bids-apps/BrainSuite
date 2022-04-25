@@ -51,6 +51,7 @@ RUN cd /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
 
+ENV PATH=/BrainSuite/QC/:${PATH}
 
 RUN chmod +x /BrainSuite/run.py
 RUN chmod a+x /bfp/*

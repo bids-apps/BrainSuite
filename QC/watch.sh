@@ -1,4 +1,6 @@
 #!/bin/bash
+
+ulimit -f 20000 -c 0
 startTime=`date`;
 startTimeSeconds=`date +%s`;
 if [[ $# -lt 2 ]]; then
@@ -11,10 +13,6 @@ OUTDIR=$2
 #subjects=($(ls ${WEBDIR} | grep sub- ))
 
 numstages=30
-
-if [[ -f $OUTDIR/subjs.txt ]]; then
-    ln -sf $OUTDIR/subjs.txt $WEBDIR/subjs.txt
-fi;
 
 WEBPATH=${WEBDIR}/brainsuite_state.json
 
@@ -35,16 +33,26 @@ echo '"status": "'${@}'",'
 echo '"start_time": "'${startTime}'",'
 echo '"update_time": "'${updateTime}'",'
 echo '"runtime": "'${runtime}'",'
+#printf '"subjectIDs": ['
+#local j=0;
+#local subjidtext="";
+#for subjidtext in ${subjects[@]}; do
+#    if ((j>0)); then printf ','; fi;
+#    printf ${subjidtext};
+#    ((j++))
+#done;
+#echo '],';
 printf '"process_states": ['
 local i=0;
 local subjID="";
 for subjID in ${subjects[@]}; do
-	if ((i>0)); then printf ','; fi;
+    subjID=`echo "$subjID" | tr -d '"'`
 	filename=$WEBDIR/${subjID}/${subjID}.state;
+	if ((i>0)); then printf ','; fi;
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
-		printf -- -1;
+		printf -- '"N"';
 	fi;
 	((i++))
 done;
@@ -63,16 +71,26 @@ echo '"status": "'${@}'",'
 echo '"start_time": "'${startTime}'",'
 echo '"update_time": "'${updateTime}'",'
 echo '"runtime": "'${runtime}'",'
+#printf '"subjectIDs": ['
+#local j=0;
+#local subjidtext="";
+#for subjidtext in ${subjects[@]}; do
+#    if ((j>0)); then printf ','; fi;
+#    printf ${subjidtext};
+#    ((j++))
+#done;
+#echo '],';
 printf '"process_states": ['
 local i=0;
 local subjID="";
 for subjID in ${subjects[@]}; do
-	if ((i>0)); then printf ','; fi;
+    subjID=`echo "$subjID" | tr -d '"'`
 	filename=$WEBDIR/${subjID}/${subjID}.state;
+	if ((i>0)); then printf ','; fi;
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
-		printf -- -1;
+		printf -- '"N"';
 	fi;
 	((i++))
 done;
@@ -89,21 +107,31 @@ echo '"status": "'${@}'",'
 echo '"start_time": "'${startTime}'",'
 echo '"update_time": "'${updateTime}'",'
 echo '"runtime": "'${runtime}'",'
+#printf '"subjectIDs": ['
+#local j=0;
+#local subjidtext="";
+#for subjidtext in ${subjects[@]}; do
+#    if ((j>0)); then printf ','; fi;
+#    printf ${subjidtext};
+#    ((j++))
+#done;
+#echo '],';
 printf '"process_states": ['
 local i=0;
 local subjID="";
 for subjID in ${subjects[@]}; do
-	if ((i>0)); then printf ','; fi;
+    subjID=`echo "$subjID" | tr -d '"'`
 	filename=$WEBDIR/${subjID}/${subjID}.state;
+	if ((i>0)); then printf ','; fi;
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
-		printf -- -1;
+		printf -- '"N"';
 	fi;
 	((i++))
 done;
 echo ']';
-#echo '"end": 0'
+echo '"end": 0'
 echo '}';
 }
 
@@ -111,121 +139,90 @@ function consolidate_states {
     local subjID="";
 
     for subjID in ${subjects[@]}; do
+        subjID=`echo "$subjID" | tr -d '"'`
         subj_state_path=${WEBDIR}/${subjID}/
         subj_state=${subj_state_path}/${subjID}.state
         states_path=${WEBDIR}/${subjID}/${subjID}/states/
         if [ -d ${states_path} ]; then
-                touch ${subj_state}
-                > ${subj_state}
-                for (( stage=1;stage<$((numstages+1));stage++)); do
-                    if [[ -f ${states_path}/stage-${stage}.state ]]; then
-                        cat ${states_path}/stage-${stage}.state >>  ${subj_state}
-                    fi
-                done
+            touch ${subj_state}
+            > ${subj_state}
+            for (( stage=1;stage<$((numstages+1));stage++ )); do
+                if [[ -f ${states_path}/stage-${stage}.state ]]; then
+                    cat ${states_path}/stage-${stage}.state >>  ${subj_state}
+                fi
+            done
+            subj_state_var=$(cat ${subj_state})
+            echo $subj_state_var | sed -e 's/ //g' > ${subj_state}
+            echo \"$(cat ${subj_state})\" > ${subj_state}
         fi
-        subj_state_var=$(cat ${subj_state})
-        echo $subj_state_var | sed -e 's/ //g' > ${subj_state}
-        echo \"$(cat ${subj_state})\" > ${subj_state}
+
     done
 
 }
+
 bsjson=0;
-brainsuite_run_params=false
-subjlist=false
-for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
-    if [[ -f $WEBDIR/subjs.txt ]]; then
-        readarray -t subjects < $WEBDIR/subjs.txt
-        nSubjs=${#subjects[@]}
-        consolidate_states
-    else
-        nSubjs=100000
-    fi
+begin=0;
 
-	status=`reset_jobstatus initializing`;
-	echo $status;
+echo Real-time QC watch initiated...
+    while [ $begin -eq 0 ] ; do
+
+        echo "Checking queued subjects..."
+
+        if [[ -f $WEBDIR/subjectIDs.json ]]; then
+            subjects_tmp=`/jq-linux64 '.subjects | .[]' ${WEBDIR}/subjectIDs.json`
+            read -a subjects <<< $subjects_tmp
+            echo "QCing ${#subjects[@]} subjects..."
+            if [ ${#subjects[@]} > 0 ]; then
+                status=`reset_jobstatus initializing`;
+                echo $status;
+                echo $status > $WEBPATH
+                chmod a+r $WEBPATH
+                for subjID in ${subjects[@]}; do
+                    subjID=`echo "$subjID" | tr -d '"'`
+                    subj_state_path=${WEBDIR}/${subjID}/
+                    subj_state=${subj_state_path}/${subjID}.state
+                    states_path=${WEBDIR}/${subjID}/${subjID}/states/
+                    if [ -d ${states_path} ]; then
+                        begin=1
+                    fi
+                done
+            fi
+        fi
+        sleep 10
+    done
+
+for (( outerLoop=0;outerLoop<1000;outerLoop++ )); do
+
+    consolidate_states
+	status=`jobstatus running`;
+    echo $status;
 	echo $status > $WEBPATH
-	chmod a+r $WEBPATH
-
 
 	startTime=`date`;
 	startTimeSeconds=`date +%s`;
 	
-    status=`jobstatus running`;
-    echo $status;
-    cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
+
+#    cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
 	for ((i=0;i<100000;i++)); do
-	    if [[ -f $WEBDIR/subjs.txt ]]; then
-            readarray -t subjects < $WEBDIR/subjs.txt
-            nSubjs=${#subjects[@]}
-            consolidate_states
-        else
-            nSubjs=100000
-        fi
+	    consolidate_states
+	    status=`jobstatus running`;
+	    if (( $i % 60 == 0 )); then
+	        echo $status
+	    fi
 	    echo $status > $WEBPATH
-#		if [ -f $OUTDIR/QC/stop.it ]; then
-#		  status=`end_jobstatus terminating`;
-#		  echo $status > $WEBPATH;
-#		  break; fi;
-		## TODO: fix logic here
 		bstates_tmp=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
 		read -a bstates <<< $bstates_tmp
-		while [  $brainsuite_run_params == false ]; do
-		    if [[ -f $WEBDIR/subjs.txt ]]; then
-                readarray -t subjects < $WEBDIR/subjs.txt
-                nSubjs=${#subjects[@]}
-                consolidate_states
-            else
-                nSubjs=100000
-            fi
-            status=`reset_jobstatus initializing`;
-            echo $status > $WEBPATH
-            chmod a+r $WEBPATH
-            bstates_tmp=`/jq-linux64 '.process_states | .[]' ${WEBPATH}`
-		    read -a bstates <<< $bstates_tmp
-            for states in ${bstates[@]}; do
-                if echo $states | grep -q L; then
-                    echo 'running'
-#                if test $((states)) -gt 0; then
-                    cp $OUTDIR/brainsuite_run_params.json $WEBDIR
-                    brainsuite_run_params=true
-                fi;
-            done
-        done
 
-        consolidate_states
-
-		if (( $i % 1 == 0 )); then
-	        echo $status;
-	        bsjson=$((bsjson+1))
-	        cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
-	    fi
-	    # TODO: change logic - as long as there are no Qs and Ls
+#		if (( $i % 1 == 0 )); then
+#	        echo $status;
+#	        bsjson=$((bsjson+1))
+#	        cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
+#	    fi
 	    allstates=$(printf "%s" "${bstates[@]}")
-#		nbstates=${#bstates[@]}
-#		nfin=`grep -o '111' <<< $bstates_tmp | wc -l`
-#		nerr=`grep -o '404' <<< $bstates_tmp | wc -l`
-#		n=$((nfin + nerr))
-
-        /BrainSuite/QC/makehtml_main.sh $subjects > $WEBDIR/index.html
-		/BrainSuite/QC/makehtml_cse.sh $subjects > $WEBDIR/cse.html
-		/BrainSuite/QC/makehtml_thick.sh $subjects > $WEBDIR/thick.html
-		/BrainSuite/QC/makehtml_bdp.sh $subjects > $WEBDIR/bdp.html
-		/BrainSuite/QC/makehtml_svreg.sh $subjects > $WEBDIR/svreg.html
-		/BrainSuite/QC/makehtml_bfp.sh $subjects > $WEBDIR/bfp.html
 
 		status=`jobstatus running`;
 		echo $status > $WEBPATH
 		sleep 1;
-
-#        if (( $n > 0 )) && (( $nSubjs > 0)); then
-#            if (($n == $nSubjs)); then
-#                status=`end_jobstatus terminating`
-#                echo $status > $WEBPATH
-#                touch $WEBDIR//stop.it;
-#                echo 'Completed monitoring.';
-#                break;
-#            fi;
-#        fi;
         n=0
         if echo $allstates | grep -q Q; then
             n=$((n + 1))
@@ -233,10 +230,12 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
         if echo $allstates | grep -q L; then
             n=$((n + 1))
         fi
-        if (( $n == 0)) ; then
+        if echo $allstates | grep -q N; then
+            n=$((n + 1))
+        fi
+        if (( $n == 0)) && (( ${#subjects[@]} == ${#bstates[@]} )); then
             status=`end_jobstatus terminating`
             echo $status > $WEBPATH
-#            touch $WEBDIR//stop.it;
             echo 'Completed monitoring.';
             break;
         fi
@@ -247,13 +246,7 @@ for ((outerLoop=0;outerLoop<1000;outerLoop++)); do
 	echo $status > $WEBPATH
 	echo 'Exiting.';
 	break
-#	if [ -f $WEBDIR//stop.it ]; then sleep 100; break; fi;
-#	for ((i=10;i>0;i--)); do
-#		echo respawning in $i;
-#		status=`jobstatus finished -- respawning in $i`;
-#		echo $status > $WEBPATH
-#		sleep 1;
-#	done;
+
 done;
 
 status=`end_jobstatus : process monitoring has ended.`;

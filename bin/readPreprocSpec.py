@@ -341,3 +341,15 @@ class preProcSpec(object):
 
         with open(paramfile, 'w') as f:
             json.dump(params, f)
+
+    def write_subjectIDsJSON(self, t1ws, args, WEBDIR):
+        subjectIDs = {'subjects':[]}
+        for i, t1 in enumerate(t1ws):
+            subjectID = t1ws[i].split('/')[-1].split('_T1w')[0]
+            if args.ignore_suffix:
+                subjectID_tmp = [tok for tok in subjectID.split('_') if not args.ignore_suffix in tok]
+                subjectID = '_'.join(subjectID_tmp)
+            subjectIDs['subjects'].append(subjectID)
+
+        with open(WEBDIR + '/subjectIDs.json', 'w') as f:
+            json.dump(subjectIDs, f)

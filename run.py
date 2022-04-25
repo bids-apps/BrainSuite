@@ -112,8 +112,14 @@ parser.add_argument('--ignore_suffix', help='Optional. Users can define which su
                                             'type "--ignore_suffix acq", which will render sub-01_ses-A_run-01 output '
                                             'folders.',
                     required=False)
-parser.add_argument('--QCdir', help='Designate directory for QC HTML.', default=None)
+parser.add_argument('--QCdir', help='Designate directory for QC Dashboard.', default=None)
+parser.add_argument('--QCsubjList', help='For QC purposes, optional subject list (txt format, individual subject ID separated '
+                                         'by new lines; subject ID without "sub-" is required (i.e. 001). This is helpful'
+                                         'in displaying only the thumbnails of the queued subjects when running on clusters/'
+                                         'compute nodes.', required=False,
+                    default=None)
 parser.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
+parser.add_argument('--port', help='Port number for QC webserver.', default=8080)
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite{0} Pipelines BIDS App version {1}'.format(BrainsuiteVersion, __version__))
 
@@ -138,9 +144,15 @@ if not os.path.exists(args.output_dir):
 # only for a subset of subjects
 if args.participant_label:
     subjects_to_analyze = args.participant_label
+elif args.QCsubjList:
+    with open(args.QCsubjList, 'r') as f:
+        for line in f.readlines():
+            subjects_to_analyze.append(line.rstrip().lstrip())
 else:
     subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
     subjects_to_analyze = [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
+
+assert len(subjects_to_analyze) > 0
 
 if args.singleThread:
     thread= True
@@ -169,28 +181,18 @@ if ('WEBSERVER' in stages) and (not args.localWebserver):
 
 runProcessing = True
 if 'WEBSERVER' in stages:
-    if (len(stages)==1):
-        runProcessing = False
-        subjectTXT = args.output_dir + '/subjs.txt'
-        if not os.path.exists(subjectTXT):
-            open(subjectTXT, 'w').close()
     if args.QCdir:
+        parentWEBDIR =args.QCdir
         WEBDIR = os.path.join(args.QCdir, 'QC')
     else:
+        parentWEBDIR = args.output_dir
         WEBDIR = os.path.join(args.output_dir, 'QC')
     print('QC thumbnails will be generated in: ', WEBDIR)
     if not os.path.exists(WEBDIR):
         os.makedirs(WEBDIR)
-    if args.localWebserver:
-        cmd = 'service apache2 start &'
-        subprocess.call(cmd, shell=True)
-        if os.path.exists('/var/www/html/index.html'):
-            os.remove('/var/www/html/index.html')
-        cmd = 'ln -s {0}/* /var/www/html/ '.format(WEBDIR)
-        subprocess.call(cmd, shell=True)
-        print("\n\n\nOpen web browser and navigate to localhost/cse.html\n")
-
-    cmd = '/BrainSuite/QC/watch.sh {0} {1}'.format(WEBDIR, args.output_dir)
+    cmd = 'cp -r /BrainSuite/QC/web_essentials/* {0}'.format(parentWEBDIR)
+    subprocess.call(cmd, shell=True)
+    cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
     subprocess.call(cmd, shell=True)
 
 atlases = { 'BCI-DNI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
@@ -219,17 +221,11 @@ if (args.analysis_level == "participant") and runProcessing:
         shutil.copyfile('/config.ini', '{0}/config.ini'.format(args.output_dir))
         configini = '{0}/config.ini'.format(args.output_dir)
 
-    # print('\nWill run: {0}'.format(stages))
+    allt1ws = []
     for subject_label in subjects_to_analyze:
-        mcrCache = os.path.join(args.output_dir, '.mcrCache/{0}.mcrCache'.format(subject_label))
-        # mcrCache = '/.mcrCache/{0}.mcrCache'.format(subject_label)
-        if not os.path.exists(mcrCache):
-            os.makedirs(mcrCache)
-        os.environ['MCR_CACHE_ROOT']= mcrCache
 
         sessions = layout.get(target='session', return_type='id',
                               subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
-
         if len(sessions) > 0:
             for ses in range(0, len(sessions)):
                 runs = layout.get(target='run', return_type='id', session=sessions[ses],
@@ -239,104 +235,103 @@ if (args.analysis_level == "participant") and runProcessing:
                         t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
                                                                type='T1w', session=sessions[ses],
                                                                extensions=["nii.gz", "nii"])]
-                        dwis = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                               type='dwi', session=sessions[ses],
-                                                               extensions=["nii.gz", "nii"])]
-                        funcs = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                                type='bold', session=sessions[ses],
-                                                                extensions=["nii.gz", "nii"])]
-                        runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                    dwis, funcs, subject_label, BFPpath, configini, args)
-
                 else:
                     t1ws = [f.filename for f in layout.get(subject=subject_label,
                                                            type='T1w', session=sessions[ses],
                                                            extensions=["nii.gz", "nii"])]
-                    dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                           type='dwi', session=sessions[ses],
-                                                           extensions=["nii.gz", "nii"])]
-                    funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                            type='bold', session=sessions[ses],
-                                                            extensions=["nii.gz", "nii"])]
-                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                            dwis, funcs, subject_label, BFPpath, configini, args)
         else:
             runs = layout.get(target='run', return_type='id',
                               subject=subject_label, type='T1w', extensions=["nii.gz", "nii"])
             if len(runs) > 0:
                 for r in range(0, len(runs)):
                     t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                           type='T1w',
-                                                           extensions=["nii.gz", "nii"])]
-                    dwis = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                           type='dwi',
-                                                           extensions=["nii.gz", "nii"])]
-                    funcs = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                            type='bold',
-                                                            extensions=["nii.gz", "nii"])]
-                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                dwis, funcs, subject_label, BFPpath, configini, args)
+                                                           type='T1w', extensions=["nii.gz", "nii"])]
             else:
                 t1ws = [f.filename for f in layout.get(subject=subject_label,
                                                        type='T1w', extensions=["nii.gz", "nii"])]
-                # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
-
-                dwis = [f.filename for f in layout.get(subject=subject_label,
-                                                       type='dwi', extensions=["nii.gz", "nii"])]
-
-                funcs = [f.filename for f in layout.get(subject=subject_label,
-                                                        type='bold',
-                                                        extensions=["nii.gz", "nii"])]
-
-
-
-                # try:
-                runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                        dwis, funcs, subject_label, BFPpath, configini, args)
-                #     if 'QC' in stages:
-                #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-                #         cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
-                #         subprocess.call(cmd, shell=True)
-                # except RuntimeError as err:
-                #     if 'QC' in stages:
-                #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-                #         cmd= '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
-                #         subprocess.call(cmd, shell=True)
+        allt1ws.extend(t1ws)
+    dataset_description = None
+    if os.path.exists(args.bids_dir + '/dataset_description.json'):
+        dataset_description = args.bids_dir + '/dataset_description.json'
+    # preprocspecs.write_preproc_params(args.output_dir, stages, dataset_description)
+    if 'WEBSERVER' in stages:
+        preprocspecs.write_subjectIDsJSON(allt1ws, args, WEBDIR)
+        preprocspecs.write_preproc_params(WEBDIR, stages, dataset_description)
+        if args.localWebserver:
+            print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}'\n".format(args.port))
+            cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, '--bind 127.0.0.1')
+            subprocess.call(cmd, shell=True)
 
 
-        # else:
-        #
-        #     t1ws = [f.filename for f in layout.get(subject=subject_label,
-        #                                            type='T1w', extensions=["nii.gz", "nii"])]
-        #     # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
-        #
-        #     dwis = [f.filename for f in layout.get(subject=subject_label,
-        #                                            type='dwi', extensions=["nii.gz", "nii"])]
-        #
-        #     funcs = [f.filename for f in layout.get(subject=subject_label,
-        #                                             type='bold',
-        #                                             extensions=["nii.gz", "nii"])]
-        #     #
-            # outputdir = str(args.output_dir + os.sep + 'sub-%s' % subject_label + os.sep + 'anat')
-            #
-            #
-            # subjectID = 'sub-%s' % subject_label
-            # session = ''
-            # try:
-            #     runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, subjectID, outputdir, layout,
-            #             dwis, funcs, subject_label, BFPpath, configini, args)
-            #     if 'QC' in stages:
-            #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-            #         cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 111)
-            #         subprocess.call(cmd, shell=True)
-            # except RuntimeError as err:
-            #     if 'QC' in stages:
-            #         WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
-            #         cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 404)
-            #         subprocess.call(cmd, shell=True)
+    if not 'WEBSERVER' in stages:
+        for subject_label in subjects_to_analyze:
+            mcrCache = os.path.join(args.output_dir, '.mcrCache/{0}.mcrCache'.format(subject_label))
+            if not os.path.exists(mcrCache):
+                os.makedirs(mcrCache)
+            os.environ['MCR_CACHE_ROOT']= mcrCache
 
+            sessions = layout.get(target='session', return_type='id',
+                                  subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
 
+            if len(sessions) > 0:
+                for ses in range(0, len(sessions)):
+                    runs = layout.get(target='run', return_type='id', session=sessions[ses],
+                                  subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
+                    if len(runs) > 0:
+                        for r in range(0, len(runs)):
+                            t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                                   type='T1w', session=sessions[ses],
+                                                                   extensions=["nii.gz", "nii"])]
+                            dwis = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                                   type='dwi', session=sessions[ses],
+                                                                   extensions=["nii.gz", "nii"])]
+                            funcs = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                                    type='bold', session=sessions[ses],
+                                                                    extensions=["nii.gz", "nii"])]
+                            runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                                        dwis, funcs, subject_label, BFPpath, configini, args)
 
+                    else:
+                        t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                               type='T1w', session=sessions[ses],
+                                                               extensions=["nii.gz", "nii"])]
+                        dwis = [f.filename for f in layout.get(subject=subject_label,
+                                                               type='dwi', session=sessions[ses],
+                                                               extensions=["nii.gz", "nii"])]
+                        funcs = [f.filename for f in layout.get(subject=subject_label,
+                                                                type='bold', session=sessions[ses],
+                                                                extensions=["nii.gz", "nii"])]
+                        runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                                dwis, funcs, subject_label, BFPpath, configini, args)
+            else:
+                runs = layout.get(target='run', return_type='id',
+                                  subject=subject_label, type='T1w', extensions=["nii.gz", "nii"])
+                if len(runs) > 0:
+                    for r in range(0, len(runs)):
+                        t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                               type='T1w',
+                                                               extensions=["nii.gz", "nii"])]
+                        dwis = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                               type='dwi',
+                                                               extensions=["nii.gz", "nii"])]
+                        funcs = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
+                                                                type='bold',
+                                                                extensions=["nii.gz", "nii"])]
+                        runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                                    dwis, funcs, subject_label, BFPpath, configini, args)
+                else:
+                    t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                           type='T1w', extensions=["nii.gz", "nii"])]
+                    # assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
+
+                    dwis = [f.filename for f in layout.get(subject=subject_label,
+                                                           type='dwi', extensions=["nii.gz", "nii"])]
+
+                    funcs = [f.filename for f in layout.get(subject=subject_label,
+                                                            type='bold',
+                                                            extensions=["nii.gz", "nii"])]
+                    runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
+                            dwis, funcs, subject_label, BFPpath, configini, args)
 
 if args.analysis_level == "group":
 

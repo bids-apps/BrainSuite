@@ -514,7 +514,9 @@ class subjLevelProcessing(object):
                 qcthickPVC.inputs.prefix = statesDir
                 qcthickPVC.inputs.stagenum = stageNumDict['THICKPVC']
                 qcthickPVC.inputs.state = completed
-                brainsuite_workflow.connect(dfsrenderThickInfObj, 'outFile', qcthickPVC, 'Run')
+                # brainsuite_workflow.connect(dfsrenderThickInfObj, 'outFile', qcthickPVC, 'Run')
+                # brainsuite_workflow.connect(dfsrenderThickLeftObj, 'outFile', qcthickPVC, 'Run')
+                brainsuite_workflow.connect(dsQCThick, 'out_file', qcthickPVC, 'Run')
 
 
                 # brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', dfsrenderhemisplitObj, 'Surfaces')
