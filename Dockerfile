@@ -96,7 +96,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gfortran
 RUN apt-get install -y pandoc software-properties-common
 
 # Apache
-RUN apt-get install -y apache2
+#RUN apt-get install -y apache2
 RUN cd / && wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
 
 RUN conda install -y -c conda-forge rpy2
