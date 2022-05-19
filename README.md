@@ -22,11 +22,12 @@ The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffus
 * Fitting of orientation distribution functions to the DWI data (using FRT, FRACT, GQI, 3D-SHORE, or ERFO as appropriate)
 * Computation of diffusion indices (FA, MD, AxD, RD, GFA)
 
-The BrainSuite Functional Pipeline ([BFP](https://github.com/ajoshiusc/bfp)) processes rResting and task fMRI data.
-*** We need a brainsuite.org link for BFP ***
+The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes resting-state and task-based fMRI data.
 
-* BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite.
-* add more about BFP
+* BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite
+* Performs motion correction and outlier detection
+* Registers the fMRI data to the corresponding T1w anatomical data
+* Generates a representation of the fMRI data in grayordinate space in preparation for group-level analysis
 
 ### Group-level Statistical Analysis
 * Group-level statistical analysis of structural data is performed using the BrainSuite Statistics Toolbox in R ([bssr](http://brainsuite.org/bssr/)). Bssr supports the following analyses:
@@ -34,19 +35,21 @@ The BrainSuite Functional Pipeline ([BFP](https://github.com/ajoshiusc/bfp)) pro
     * cortical surface analysis of the vertex-wise thickness in the atlas space
     * diffusion parameter maps analysis (e.g., fractional anisotropy, mean diffusivity, radial diffusivity)
     * region of interest (ROI)-based analysis of average gray matter thickness, surface area, and gray matter volume within cortical ROIs
-* Group-level statistical analysis of fMRI data is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), a tool that temporally aligns spatially registered fMRI datasets for direct timeseries comparisons between subjects.
-    * say
-    * more
-    * about bfp
+* Group-level statistical analysis of fMRI data (functional connectivity) is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), a tool that temporally aligns spatially registered fMRI datasets for direct timeseries comparisons between subjects.
+    * atlas-based linear modeling using a reference dataset created from multiple input datasets
+    * atlas-free pairwise testing of all pairs of subjects is performed and used as test statistics for regression or group difference studies
+
+### QC and BrainSuite Dashboard
+* Quality check (QC) component of the BrainSuite BIDS App generates snapshots of key stages in the participant-level workflows for quick visualization and assessment
+* BrainSuite Dashboard is an interactive web-page that is updated in real time while BrainSuite BIDS App
+
 
 ## Usage
 ### Data input requirements
-This App requires at least one T1w image. If no corresponding DWI data is found, the App will only run CSE and SVReg on the T1w(s). If there are corresponding DWI data (DWI image data, bval file, and bvec file), the App will grab the nearest DWI data (i.e. within sub-ID/ directory or sub-ID/ses directory) and will perform CSE, SVReg, and BDP.
+This App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
 
-If there are unequal number of T1w data and DWI data, the App will process the T1w and DWI data in pairs until there are no matched pairs left. The pairs will be matched according to the run numbers (i.e. run-01).
-
-* **Required**: T1w image (BIDS/NIFTI format).
-* (Optional): DWI image, fMRI image (BIDS/NIFTI format).
+* **Required**: T1w NIFTI image (BIDS format).
+* (Optional): DWI NIFTI image, fMRI NIFTI image (BIDS format).
 
 ### Pre-requisites
 * Imaging data must be formatted and organized according to the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
@@ -64,11 +67,16 @@ yeunkim/brainsuitebidsapp:stable
 ```
 usage: run.py [-h]
               [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
-              [--stages {CSE,SVREG,BDP,BFP,ALL} [{CSE,SVREG,BDP,BFP,ALL} ...]]
+              [--stages {CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} [{CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} ...]]
               [--atlas {BSA,BCI-DNI,USCBrain}]
               [--analysistype {STRUCT,FUNC,ALL}] [--modelspec MODELSPEC]
               [--preprocspec PREPROCSPEC] [--rmarkdown RMARKDOWN]
-              [--singleThread] [--cache CACHE] [--TR TR] [--skipBSE] [-v]
+              [--singleThread] [--cache CACHE] [--TR TR]
+              [--fmri_task_name FMRI_TASK_NAME [FMRI_TASK_NAME ...]]
+              [--skipBSE] [--ignoreSubjectConsistency]
+              [--bidsconfig [BIDSCONFIG]] [--ignore_suffix IGNORE_SUFFIX]
+              [--QCdir QCDIR] [--QCsubjList QCSUBJLIST] [--localWebserver]
+              [--port PORT] [--bindLocalHostOnly] [-v]
               bids_dir output_dir {participant,group}
 
 BrainSuite21a BIDS-App (T1w, dMRI, rs-fMRI)
@@ -94,9 +102,9 @@ optional arguments:
                         parameter is not provided all subjects should be
                         analyzed. Multiple participants can be specified with
                         a space separated list.
-  --stages {CSE,SVREG,BDP,BFP,ALL} [{CSE,SVREG,BDP,BFP,ALL} ...]
+  --stages {CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} [{CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} ...]
                         Processing stage to be run. Space delimited list.
-                        Default is ALL
+                        Default is ALL which does not include WEBSERVER.
   --atlas {BSA,BCI-DNI,USCBrain}
                         Atlas that is to be used for labeling in SVReg.
                         Default atlas: BCI-DNI. Options: BSA, BCI-DNI,
@@ -122,12 +130,45 @@ optional arguments:
                         parallel processing tool from Matlab (Parpool).
   --cache CACHE         Nipype cache output folder
   --TR TR               Repetition time of MRI
+  --fmri_task_name FMRI_TASK_NAME [FMRI_TASK_NAME ...]
+                        fMRI task name to be processed during BFP. The name
+                        should only containthe contents after "task-". E.g.,
+                        restingstate.
   --skipBSE             Skips BSE stage when running CSE. Please make sure
                         there are sub-ID_T1w.mask.nii.gz files in the subject
                         folders.
+  --ignoreSubjectConsistency
+                        Reduces down the BIDS validator log and the associated
+                        memory needs. This is often helpful forlarge datasets.
+  --bidsconfig [BIDSCONFIG]
+                        Configuration of the severity of errors for BIDS
+                        validator. If no path is specified, a default path of
+                        .bids-validator-config.json(relative to the input bids
+                        directory) file is used.
+  --ignore_suffix IGNORE_SUFFIX
+                        Optional. Users can define which suffix to ignore in
+                        the output folder. E.g., if input T1w is sub-01_ses-
+                        A_acq-highres_run-01_T1w.nii.gz,and user would like to
+                        ignore the "acq-highres" suffix portion, then user can
+                        type "--ignore_suffix acq", which will render
+                        sub-01_ses-A_run-01 output folders.
+  --QCdir QCDIR         Designate directory for QC Dashboard.
+  --QCsubjList QCSUBJLIST
+                        For QC purposes, optional subject list (txt format,
+                        individual subject ID separated by new lines; subject
+                        ID without "sub-" is required (i.e. 001). This is
+                        helpfulin displaying only the thumbnails of the queued
+                        subjects when running on clusters/compute nodes.
+  --localWebserver      Launch local webserver for QC.
+  --port PORT           Port number for QC webserver.
+  --bindLocalHostOnly   When running local web server through this app, the
+                        server binds to all of the IPs on the machine. If you
+                        would like to only bind to the local host, please use
+                        this flag.
   -v, --version         show program's version number and exit
+
 ```
-### Participant level usage ###
+### Participant-level usage ###
 To run it in participant level mode:
 ```bash
 docker run -ti --rm \
@@ -136,12 +177,30 @@ docker run -ti --rm \
   bids/brainsuite \
   /data /output participant --participant_label 01
 ```
-Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages. 
+Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages, which includes CSE, SVReg, BDP, BFP, and QC.
 
 User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
 All sessions will be processed. The output files will be located in the output folder specified.
 
-### Group level usage ###
+### QC and BrainSuite Dashboard usage ###
+Adding "QC" to the stages 
+To run 
+```bash
+docker run -ti --rm \
+  -v /path/to/local/bids/input/dataset/:/data \
+  -v /path/to/local/output/:/output \
+  bids/brainsuite \
+  /data /output participant --participant_label 01
+```
+
+
+
+### Group-level analysis usage ###
+
+#### Pre-requisite ####
+* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed.
+* A JSON file containing the specifications for group level analysis.
+Sample JSON file is provided with the source code (BrainSuite/sample_modelspec.json)
 
 To run it in group level mode:
 ```bash
@@ -152,10 +211,6 @@ docker run -ti --rm \
   /data /output group --modelspec modelspec.json
 ```
 
-#### Pre-requisite ####
-* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. This file MUST be in the output folder containing the outputs of the processed images. An example file can be downloaded [here](http://brainsuite.org/wp-content/uploads/2018/05/participants.tsv).
-* A JSON file containing the specifications for group level analysis. Details on the fields are listed below.
-Sample JSON file is provided with the source code (BrainSuite/sample_modelspec.json)
 
 #### Explanation of modelspec.json fields ####
 * **tsv_fname** : Name of the TSV file containing data that is to be used for group analysis.
