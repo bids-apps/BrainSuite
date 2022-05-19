@@ -28,7 +28,7 @@ class preProcSpec(object):
 
         # bfp
         self.taskname = ["rest"]
-        self.TR = 0
+        self.TR = 2
         self.continuerun = 1
         self.multithread = 1
         self.tnlmpdf = 1
@@ -88,55 +88,79 @@ class preProcSpec(object):
         self.fieldmapCorrection = undefined
         self.diffusion_time_ms = undefined
 
+        self.estimateODF_ERFO = False
+        self.sigma_GQI = undefined
+        self.ERFO_SNR = undefined
+
         # smoothing
         self.smoothvol = 3.0
         self.smoothsurf = 2.0
 
     def read_preprocfile(self, preprocfile):
         if not os.path.isfile(preprocfile):
-            sys.stdout.write('Model specification file not found.\n')
+            sys.stdout.write('##############################################\n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '************ WARNING!!! ************ \n'
+                             'Preprocecssing specification file not found.\n'
+                             'Running with default parameters!!!!'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '##############################################\n')
             self.read_success = False
             return
 
         try:
             specs = json.load(open(preprocfile))
             self.specs = specs
-        except:
-            sys.stdout.write("There was an error reading the model specification file."
-                                "\nPlease check that the format of the file is JSON.")
+        except Exception as e:
+            sys.stdout.write('##############################################\n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '************ ERROR!!! ************\n '
+                             'There was an error reading the model specification file.\n'
+                             'Please check that the JSON file is properly formatted.\n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '\n'
+                             'JSON reading error message:\n'
+            )
+            print(e, '\n')
             return
 
         # svreg
-        self.atlas = specs['BrainSuite']['Structural']['atlas']
-        self.singleThread = bool(specs['BrainSuite']['Structural']['singleThread'])
+        self.atlas = specs['BrainSuite']['Anatomical']['atlas']
+        self.singleThread = bool(specs['BrainSuite']['Anatomical']['singleThread'])
 
         # nipype config
-        self.cache = specs['BrainSuite']['Structural']['cacheFolder']
+        self.cache = specs['BrainSuite']['Global Settings']['cacheFolder']
 
         # bse
-        self.autoParameters = bool(specs['BrainSuite']['Structural']['autoParameters'])
-        self.diffusionIterations = specs['BrainSuite']['Structural']['diffusionIterations']
-        self.diffusionConstant = specs['BrainSuite']['Structural']['diffusionConstant']
-        self.edgeDetectionConstant = specs['BrainSuite']['Structural']['edgeDetectionConstant']
-        self.skipBSE = bool(specs['BrainSuite']['Structural']['skipBSE'])
+        self.autoParameters = bool(specs['BrainSuite']['Anatomical']['autoParameters'])
+        self.diffusionIterations = specs['BrainSuite']['Anatomical']['diffusionIterations']
+        self.diffusionConstant = specs['BrainSuite']['Anatomical']['diffusionConstant']
+        self.edgeDetectionConstant = specs['BrainSuite']['Anatomical']['edgeDetectionConstant']
+        self.skipBSE = bool(specs['BrainSuite']['Anatomical']['skipBSE'])
         # bfc
-        self.iterativeMode = bool(specs['BrainSuite']['Structural']['iterativeMode'])
+        self.iterativeMode = bool(specs['BrainSuite']['Anatomical']['iterativeMode'])
         # pvc
-        self.spatialPrior = specs['BrainSuite']['Structural']['spatialPrior']
+        self.spatialPrior = specs['BrainSuite']['Anatomical']['spatialPrior']
         # cerebro
-        self.costFunction = specs['BrainSuite']['Structural']['costFunction']
-        self.useCentroids = bool(specs['BrainSuite']['Structural']['useCentroids'])
-        self.linearConvergence = specs['BrainSuite']['Structural']['linearConvergence']
-        self.warpConvergence = specs['BrainSuite']['Structural']['warpConvergence']
-        self.warpLevel = specs['BrainSuite']['Structural']['warpLevel']
+        self.costFunction = specs['BrainSuite']['Anatomical']['costFunction']
+        self.useCentroids = bool(specs['BrainSuite']['Anatomical']['useCentroids'])
+        self.linearConvergence = specs['BrainSuite']['Anatomical']['linearConvergence']
+        self.warpConvergence = specs['BrainSuite']['Anatomical']['warpConvergence']
+        self.warpLevel = specs['BrainSuite']['Anatomical']['warpLevel']
         # inner cortical mask
-        self.tissueFractionThreshold = specs['BrainSuite']['Structural']['tissueFractionThreshold']
+        self.tissueFractionThreshold = specs['BrainSuite']['Anatomical']['tissueFractionThreshold']
 
         # bdp
         self.skipDistortionCorr = bool(specs['BrainSuite']['Diffusion']['skipDistortionCorr'])
         self.phaseEncodingDirection = specs['BrainSuite']['Diffusion']['phaseEncodingDirection']
         self.estimateODF_3DShore = bool(specs['BrainSuite']['Diffusion']['estimateODF_3DShore'])
         self.estimateODF_GQI = bool(specs['BrainSuite']['Diffusion']['estimateODF_GQI'])
+        self.estimateODF_ERFO = bool(specs['BrainSuite']['Diffusion']['estimateODF_ERFO'])
 
         self.echoSpacing = undefined if (specs['BrainSuite']['Diffusion']['echoSpacing'] == '' ) \
             else specs['BrainSuite']['Diffusion']['echoSpacing']
@@ -144,6 +168,10 @@ class preProcSpec(object):
             else specs['BrainSuite']['Diffusion']['fieldmapCorrection']
         self.diffusion_time_ms = undefined if (specs['BrainSuite']['Diffusion']['diffusion_time_ms'] == '') \
             else specs['BrainSuite']['Diffusion']['diffusion_time_ms']
+        self.sigma_GQI = undefined if (specs['BrainSuite']['Diffusion']['sigma_GQI'] == '') \
+            else specs['BrainSuite']['Diffusion']['sigma_GQI']
+        self.ERFO_SNR = undefined if (specs['BrainSuite']['Diffusion']['ERFO_SNR'] == '') \
+            else specs['BrainSuite']['Diffusion']['ERFO_SNR']
 
         # check diffusion_time_ms dependency
         if self.estimateODF_3DShore:
@@ -167,8 +195,9 @@ class preProcSpec(object):
         self.highpass = specs['BrainSuite']['Functional']['HIGHPASS']
         self.lowpass = specs['BrainSuite']['Functional']['LOWPASS']
         self.memory = specs['BrainSuite']['Functional']['memory']
-        self.shape = specs['BrainSuite']['Functional']['EnableShapeMeasures']
-        self.t1space = specs['BrainSuite']['Functional']['T1SpaceProcessing']
+        self.multithread = specs['BrainSuite']['Functional']['MultiThreading']
+        # self.shape = specs['BrainSuite']['Functional']['EnableShapeMeasures']
+        # self.t1space = specs['BrainSuite']['Functional']['T1SpaceProcessing']
         self.fslrigid = specs['BrainSuite']['Functional']['FSLRigid']
         self.bpoption = specs['BrainSuite']['Functional']['BPoption']
         self.rundetrend = specs['BrainSuite']['Functional']['RunDetrend']
@@ -200,6 +229,7 @@ class preProcSpec(object):
         config.set('main','FWHM', str(self.fwhm))
         config.set('main','HIGHPASS', str(self.highpass))
         config.set('main','LOWPASS', str(self.lowpass))
+        config.set('main', 'MultiThreading', str(self.multithread))
         config.set('main','memory', str(self.memory))
         config.set('main','EnableShapeMeasures', str(self.shape))
         config.set('main','T1SpaceProcessing', str(self.t1space))

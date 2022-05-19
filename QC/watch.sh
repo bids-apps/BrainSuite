@@ -52,7 +52,7 @@ for subjID in ${subjects[@]}; do
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
-		printf -- '"N"';
+		printf -- '"P"';
 	fi;
 	((i++))
 done;
@@ -90,7 +90,7 @@ for subjID in ${subjects[@]}; do
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
-		printf -- '"N"';
+		printf -- '"P"';
 	fi;
 	((i++))
 done;
@@ -126,7 +126,7 @@ for subjID in ${subjects[@]}; do
 	if [ -f $filename ]; then
 		printf -- $(<$filename);
 	else
-		printf -- '"N"';
+		printf -- '"P"';
 	fi;
 	((i++))
 done;
@@ -230,7 +230,7 @@ for (( outerLoop=0;outerLoop<1000;outerLoop++ )); do
         if echo $allstates | grep -q L; then
             n=$((n + 1))
         fi
-        if echo $allstates | grep -q N; then
+        if echo $allstates | grep -q P; then
             n=$((n + 1))
         fi
         if (( $n == 0)) && (( ${#subjects[@]} == ${#bstates[@]} )); then
@@ -249,7 +249,7 @@ for (( outerLoop=0;outerLoop<1000;outerLoop++ )); do
 
 done;
 
-status=`end_jobstatus : process monitoring has ended.`;
+status=`end_jobstatus process monitoring has ended.`;
 echo $status > $WEBPATH
 
 killall5 -9

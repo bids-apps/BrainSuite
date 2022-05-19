@@ -1230,12 +1230,29 @@ class BDPInputSpec(CommandLineInputSpec):
              'separate directory with name "GQI" and the ODFs can be visualized by '
              'loading the saved ".odf" file in BrainSuite.'
     )
-    odfLambta = traits.Bool(
+    sigma_GQI = traits.Float(
+        argstr='--gqi-simga %f',
+        desc='Sets the GQI adjustable factor, required for calculating diffusion'
+             'sampling length. The default value is set to 1.25. Paper suggests'
+             'setting this parameter between 1 and 1.3.'
+    )
+    odfLambda = traits.Bool(
         argstr='--odf-lambda <L>',
         desc='Sets the regularization parameter, lambda, of the Laplace-Beltrami '
              'operator while estimating ODFs. The default value is set to 0.006 . This '
              'can be used to set the appropriate regularization for the input '
              'diffusion data. '
+    )
+    estimateODF_ERFO = traits.Bool(
+        argstr='--erfo',
+        desc='Estimates ODFs using the ERFO method. The outputs are saved in a'
+             'separate directory with name "ERFO" and the ODFs can be visualized by '
+             'loading the saved ".odf" file in BrainSuite.'
+    )
+    ERFO_SNR = traits.Float(
+        argstr='--snr %f',
+        desc='Sets the SNR of the acquired data, required for calculating ERFO ODFs. '
+             'This is an optional parameter with the default value is set to 35.'
     )
     t1Mask = File(
         argstr='--t1-mask %s',
@@ -2000,6 +2017,8 @@ class VolblendInputSpec(CommandLineInputSpec):
                                                                   '[default: -1]')
     flip = traits.Bool(argstr='--flip', mandatory=False, desc='flip image U/D.')
     flop = traits.Bool(argstr='--flop', mandatory=False, desc='flip image L/R.')
+    voxelspace = traits.Bool(argstr='--voxelspace',mandatory=False,
+                             desc="Use voxel coordinates (don't rescale anisotropic)")
     dataSinkDelay = File(
         argstr='%s',
         desc='Connect datasink outfile to dataSinkDelay to delay execution of '
@@ -2014,7 +2033,7 @@ class VolblendOutputSpec(TraitedSpec):
 class Volblend(BrainSuiteCommandLine):
     input_spec = VolblendInputSpec
     output_spec = VolblendOutputSpec
-    _cmd = 'volblend'
+    _cmd = 'volslice'
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.outFile, '')
@@ -2041,41 +2060,24 @@ class DfsRenderInputSpec(CommandLineInputSpec):
     Left = traits.Bool(argstr='--left', mandatory=False, desc='sagittal view (left)')
     Right = traits.Bool(argstr='--right', mandatory=False, desc='sagittal view (right)')
     BGcolor = traits.Str(argstr='--bg %s', mandatory=False, desc='background color (rgb) [default: 0 0 0]')
-    Shiny = traits.Int(argstr='--shiny %d', mandatory=False,
-                       desc='shininess exponent(1: shiny, 128: less shiny) [default: 0]')
-    FiberWidth = traits.Int(argstr='--fiberwidth %d', mandatory=False, desc='fiber line width (0..10) [default: 1]')
     Xwidth = traits.Int(argstr='-x %d', mandatory=False, desc='width in pixels [default: 512]')
     Ywidth = traits.Int(argstr='-y %d', mandatory=False, desc='height in pixels [default: 512]')
     Surfaces = traits.Str(argstr='-s %s', mandatory=False, desc='surface1 [... surfaceN]')
     SolidSurfaces = traits.Str(argstr='--solidcolor %s', mandatory=False,
                                desc='surfaceIndex1 [ ... surfaceIndexN] (render these surfaces in grey)')
-    Alpha = traits.Float(argstr='--alpha %f', mandatory=False, desc='translucency value, 0-1 [default: 0.5]')
-    TransSurfaces = traits.Str(argstr='--translucent %s', mandatory=False, desc='surfaceIndex1 [ ... alphaValueN]')
-    WireSurfaces = traits.Str(argstr='--wire %s', mandatory=False,
-                              desc='surfaceIndex1 [ ... surfaceIndexN] (use wireframe for these surfaces)')
     Zoom = traits.Float(argstr='--zoom %f', mandatory=False, desc='zoom factor [default: 1]')
     xRot = traits.Int(argstr='--xrot %d', mandatory=False, desc='x rotation angle [default: 0]')
     yRot = traits.Int(argstr='--yrot %d', mandatory=False, desc='y rotation angle [default: 0]')
     zRot = traits.Int(argstr='--zrot %d', mandatory=False, desc='z rotation angle [default: 0]')
     Position = traits.Int(argstr='-p %d %d %d', mandatory=False,
                           desc='position (if no-center is selected) [default: 0 0 0]')
-    track = File(argstr='-t %s', mandatory=False, desc='track file (.dft or .trk)')
-    Tubes = traits.Bool(argstr='--tubes', mandatory=False, desc='render fibers as tubes')
-    colorByAngle = traits.Bool(argstr='--colorbyangle', mandatory=False, desc='color by angle along track')
-    TubeRadius = traits.Int(argstr='--tuberadius %f', mandatory=False, desc='radius of fiber tubes (mm) [default: 0.2]')
-    Panels = traits.Int(argstr='--panels %d', mandatory=False, desc='number of panels for tubes [default: 10]')
-    TubeJoin = traits.Bool(argstr='--joins', mandatory=False, desc='show joins of tubes (better, slower rendering)')
     Grey = traits.Bool(argstr='--no-color', mandatory=False, desc='render surfaces in greyscale')
     NoCenter = traits.Bool(argstr='--nocenter', mandatory=False, desc='do not center based on first surface')
-    xClip = traits.Int(argstr='--clip-x %d', mandatory=False,
-                       desc='x-clipping [0=off, 1=positive, 2=negative] [default: 0]')
-    yClip = traits.Int(argstr='--clip-y %d', mandatory=False,
-                       desc='y-clipping [0=off, 1=positive, 2=negative] [default: 0]')
-    zClip = traits.Int(argstr='--clip-z %d', mandatory=False,
-                       desc='z-clipping [0=off, 1=positive, 2=negative] [default: 0]')
-    clipPoint = traits.Int(argstr='--clippoint %d %d %d', mandatory=False,
-                           desc='clip point (if 0,0,0, then use volume center) [default: 0 0 0]')
+    KeepGoing = traits.Bool(argstr='-k', mandatory=False, desc='Keep going')
+    NoColor = traits.Bool(argstr='--no-color', mandatory=False, desc='Render surfaces in greyscale')
     CenterVol = File(argstr='--vol %s', mandatory=False, desc='center based on volume')
+    UseColors = traits.Str(argstr='--use-colors %s', mandatory=False, desc='r1 g1 b1 [ ... rN gN bN] (use these colors)')
+    Surfbilateral = traits.Str(argstr='%s', mandatory=False, desc='dummy argument to print bilateral hemi')
     dataSinkDelay = traits.List(
         str,
         argstr='%s',
@@ -2091,7 +2093,7 @@ class DfsRenderOutputSpec(TraitedSpec):
 class DfsRender(BrainSuiteCommandLine):
     input_spec = DfsRenderInputSpec
     output_spec = DfsRenderOutputSpec
-    _cmd = 'dfsrender'
+    _cmd = 'renderdfs'
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.OutFile, '')
@@ -2101,7 +2103,7 @@ class DfsRender(BrainSuiteCommandLine):
         return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
-        if (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
+        if (name=='bilteral') or (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
             return spec.argstr % os.path.expanduser(value)
         # if name == 'dataSinkDelay':
         #     return spec.argstr % os.path.expanduser(value)

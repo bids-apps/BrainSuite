@@ -10,11 +10,9 @@ var enableHover = true;
 var completed = "⚫";
 var launched = "🔵";
 var queued = "⚪";
-var errorcode = "🔴";
-var updateInterval = 200;
+var errorsymbol = "🔴";
+var updateInterval = 1000;
 var wrapImages = false;
-//var pixel = '1x1-00000000.png';
-//var pixel='<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==">'
 var pixel='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
 
 var expandSubject = null;
@@ -24,6 +22,21 @@ var enableLazyLoad = true;
 var showAnnotations = false;
 var hideUnlaunched = false;
 var expand=null;
+
+const pendingCode='P';
+const completedCode='C';
+const notRunCode='N';
+const errorCode='E';
+const launchCode='L';
+const queuedCode='Q';
+
+const allFinishedRegex = new RegExp('^['+completedCode+notRunCode+']*$');
+const notRunningRegex = new RegExp('^['+queuedCode+completedCode+notRunCode+errorCode+']*$');
+const isQueuedRegex = new RegExp(queuedCode);
+const isErrorRegex = new RegExp(errorCode);
+const isLaunchedRegex = new RegExp(launchCode);
+const finishedWithErrorRegex = new RegExp('^['+completedCode+notRunCode+errorCode+']+$');
+
 
 function setUpdateInterval(t) {
     updateInterval = t;
@@ -88,7 +101,7 @@ function updateDisplayedSubjects() {
         for (var sid = 0; sid < subjects.length; sid++) {
             var subject = subjects[sid];
             if (subjstatus[sid] == null) continue;
-            if (subjstatus[sid][0] == 'N') {
+            if (subjstatus[sid][0] == pendingCode) {
                 var div = document.getElementById('d' + sid);
                 if (div != null) div.style.display = (hideUnlaunched) ? "none" : "block";
             }
@@ -172,17 +185,22 @@ var contents = [
 
 function progressBar(stagecodes, showAll = false) {
     if (stagecodes == null) return;
-    if (stagecodes[stage] == 'N') return "queued for launch.";
+    if (stagecodes[stage] == pendingCode) return "launch pending.";
     const notrun = (showAll) ? "&#x1F916" : "";
     var bar = "";
     for (var stage = 0; stage < stagecodes.length; stage++) {
         var stagename = stagenames[stage];
+        var code="";
         switch (stagecodes[stage]) {
-            case 'L': bar += launched; break;
-            case 'E': bar += errorcode; break;
-            case 'Q': bar += queued; break;
-            case 'C': bar += completed; break;
-            case 'U': bar += notrun; break;
+            case launchCode: code = launched; stagename += ' - running'; break;
+            case errorCode: code = errorsymbol; stagename += ' - error'; break;
+            case queuedCode: code = queued;  stagename += ' - queued'; break;
+            case completedCode: code = completed; stagename += ' - completed'; break;
+            case notRunCode: code = notrun; break;
+        }
+        if (code != "")
+        {
+            bar += '<a href="#" style="text-decoration: none;" data-toggle="tooltip" data-delay=\'{ "show": 0, "hide": 0 }\' title="'+stagename+'">'+code+'</a>';             
         }
     }
     return bar;
@@ -228,7 +246,7 @@ function processStats()
     var nStatus=subjstatus.length;
     var nTotal=subjects.length;
     var s=nStatus +"/" + nTotal;
-    var waiting=0;
+    var pending=0;
     var finished=0;
     var error=0;
     var queued=0;
@@ -237,18 +255,18 @@ function processStats()
     for (var i=0;i<nStatus;i++)
     {
         var stagecodes=subjstatus[i];
-        if (stagecodes[0]=='N') waiting++;
-        else if (/^[CU]*$/.test(stagecodes)) finished++; // finished if all jobs are complete or not specified to run
-        else if (/L/.test(stagecodes)) running++; // finished if all jobs are complete or not specified to run
-        else if (/Q/.test(stagecodes)) queued++; // finished if all jobs are complete or not specified to run
+        if (stagecodes[0]==pendingCode) pending++;
+        else if (allFinishedRegex.test(stagecodes)) finished++; // finished if all jobs are complete or not specified to run
+        else if (isLaunchedRegex.test(stagecodes)) running++; // finished if all jobs are complete or not specified to run
+        else if (isQueuedRegex.test(stagecodes)) queued++; // finished if all jobs are complete or not specified to run
         else other++;
-        if (/E/.test(stagecodes)) error++; // finished if all jobs are complete or not specified to run
+        if (isErrorRegex.test(stagecodes)) error++; // finished if all jobs are complete or not specified to run
     }
     return "<span class='text-success'>finished: "+finished+"</span>"+
         " <span class='text-primary'>running: "+running+"</span>"+
         " <span class='text-danger'>error: "+error+"</span>"+
         " <span class='text-dark'>queued: "+queued+"</span>"+
-        " <span class='text-muted'>waiting: "+waiting+"</span>"+
+        " <span class='text-muted'>pending: "+pending+"</span>"+
         "</br>";
 }
 
@@ -361,24 +379,24 @@ function makeSubjectStatusBar(sid) {
     +"</div>"
     + "&nbsp" + subject;
     if (stagecodes == null) return subjectLine+"</b>&nbspstatus unavailable. &nbsp</B>";
-    if (stagecodes[0] == 'N') return subjectLine+ "</b>&nbspwaiting to launch. &nbsp</B>";
+    if (stagecodes[0] == pendingCode) return subjectLine+ "</b>&nbsplaunch pending. &nbsp</B>";
     subjectLine += "</b>&nbsp" + progressBar(stagecodes) + "&nbsp";
-    var allFinished = /^[CU]*$/.test(stagecodes); // finished if all jobs are complete or not specified to run
-    var isWaiting = /Q/.test(stagecodes);
-    var notRunning = /^[QUCE]*$/.test(stagecodes); // test if queued BUT NOT RUNNING
+    var allFinished = allFinishedRegex.test(stagecodes); // finished if all jobs are complete or not specified to run
+    var isQueued = isQueuedRegex.test(stagecodes);
+    var notRunning = notRunningRegex.test(stagecodes); // test if queued BUT NOT RUNNING
     var finishedWithError = true;
-    for (var stage = 0; stage < stagecodes.length; stage++) if (stagecodes[stage] != 'C' && stagecodes[stage] != 'E') { finishedWithError = false; break; }
-    var finishedOrWaiting = true;
-    for (var stage = 0; stage < stagecodes.length; stage++) if (stagecodes[stage] != 'C' && stagecodes[stage] != 'Q') { finishedOrWaiting = false; break; }
+    for (var stage = 0; stage < stagecodes.length; stage++) if (stagecodes[stage] != completedCode && stagecodes[stage] != errorCode) { finishedWithError = false; break; }
+    var finishedOrQueued = true;
+    for (var stage = 0; stage < stagecodes.length; stage++) if (stagecodes[stage] != completedCode && stagecodes[stage] != queuedCode) { finishedOrQueued = false; break; }
     if (allFinished) { subjectLine += "<span class='desc text-success' style='color:green;'>finished all stages.</span>"; }
-    else if (isWaiting && notRunning) { subjectLine += "<span class='desc' style='color:black;'>queued to run.</span>"; }
+    else if (isQueued && notRunning) { subjectLine += "<span class='desc' style='color:black;'>queued to run.</span>"; }
     else {
         var errors = "";
         for (var stage = 0; stage < stagecodes.length; stage++) {
-            if (stagecodes[stage] == 'L') {
+            if (stagecodes[stage] == launchCode) {
                 subjectLine += "<span class='desc text-primary' style='color:blue'>running " + stagenames[stage] + ".</span>" + "&nbsp";
             }
-            if (stagecodes[stage] == 'E') {
+            if (stagecodes[stage] == errorCode) {
                 if (errors.length > 0) errors += ", ";
                 errors += stagenames[stage];
             }
@@ -392,7 +410,7 @@ function generateSlideRow(sid) {
     var slideHTML = "";
     var subject = subjects[sid];
     if (subjstatus[sid] == null) return "";
-    if (subjstatus[sid][0] == 'N') return "";
+    if (subjstatus[sid][0] == pendingCode) return "";
     var loadingGIF = "<img width=25% SRC='https://c.tenor.com/hQz0Kl373E8AAAAi/loading-waiting.gif'>";
     var showCount = 0;
     if (contents.filter(e => e.show == true).length == 0) { return "no stages selected."; }
@@ -407,12 +425,11 @@ function generateSlideRow(sid) {
             var imgcls = 'slideImage';
             var para = "<p class='slidetext' style='font-size: " + slideHeight / 20 + "pt;'>";
             switch (stagecode) {
-                case 'C': color = "green"; bootcls = 'success'; image = path + subject + "/" + contents[i].img; imgcls+=" zoom"; break;
-                case 'L': color = "blue"; bootcls = 'primary'; imagetext = para + "running " + stagenames[stage] + "...</p><br/>" + loadingGIF; break;
-                case 'Q': color = "black"; bootcls = 'dark'; imagetext = para + stagenames[stage] + " is queued</p>"; break;
-                case 'E': color = "red"; bootcls = 'danger'; imagetext = para + "error in: " + stagenames[stage] + "</p>"; break;
-
-                case 'U': continue;
+                case completedCode: color = "green"; bootcls = 'success'; image = path + subject + "/" + contents[i].img; imgcls+=" grow"; break;
+                case launchCode: color = "blue"; bootcls = 'primary'; imagetext = para + "running " + stagenames[stage] + "...</p><br/>" + loadingGIF; break;
+                case queuedCode: color = "black"; bootcls = 'dark'; imagetext = para + stagenames[stage] + " is queued</p>"; break;
+                case errorCode: color = "red"; bootcls = 'danger'; imagetext = para + "error in: " + stagenames[stage] + "</p>"; break;
+                case notRunCode: continue;
                 default: break;
             }
             var captionfont = "<p class='captiontext text-" + bootcls + " text-wrap' style='font-size: " + slideHeight / 22 + "pt; color:" + color + ";'>";
@@ -495,14 +512,14 @@ function setProgressCodes(C, L, Q, E) {
     completed = C;
     launched = L;
     queued = Q;
-    errorcode = E;
+    errorsymbol = E;
 }
 
 function setColorSchemePng(C, L, Q, E) {
     completed = '<img height=14 width=14 src=' + C + '>';
     launched = '<img height=14 width=14 src=' + L + '>';
     queued = '<img height=14 width=14 src=' + Q + '>';
-    errorcode = '<img height=14 width=14 src=' + E + '>';
+    errorsymbol = '<img height=14 width=14 src=' + E + '>';
 }
 
 function emojiButton(a, b, c, d, buttonText) {
@@ -582,6 +599,7 @@ $(function () {
         s += pngButton(blackCircle, blueCircle, whiteCircle, redCircle, "use png");
         s += emojiButton('💚', '💜', '💙', '💔');
         s += emojiButton('🧠', '🏃', '🤷', '🔥');
+        s += emojiButton("🎉", "🍿", "💤", "💣");
         s += emojiButton('🟩', '🟨', '⬛', '🟥', 'wrdl');
         s += pngButton(greenSquare, yellowSquare, blackSquare, redSquare, "wrdlpng");
         s += emojiButton("🟢", "🔵", "🟡", "🔴", "green emoji");
@@ -595,31 +613,13 @@ $(function () {
         slider.value = slideHeight;
         slider.oninput = function () { setSlideHeight(this.value); }
     }
-    setProgressCodes("⚫", "🔵", "⚪", "🔴");
+    setProgressCodes("⚫", "🔵", "⚪", "🔴");//setProgressCodes("🎉", "🍿", "💤", "💣");
     $.getJSON("QC/subjectIDs.json", function (data) {
         subjects = data.subjects;
         if (subjects != undefined) expand=Array(subjects.length).fill(false);
         initContainers();
     });
     $.getJSON("QC/brainsuite_run_params.json", function (data) { brainsuiteRunParameters = data; showRunParameters();});
-
-    // updateColumnSelectorGroups('qcColumnSelector');
-    // $('#qcColumnSelector').multiselect({
-    //     enableClickableOptGroups: true,
-    //     enableCollapsibleOptGroups: true,
-    //     includeSelectAllOption: true,
-    //     collapseOptGroupsByDefault: true,
-    //     maxHeight: 400,
-    //     onChange: function (option, checked, select) { updateColumns(); },
-    //     onSelectAll: function (options) { updateColumns(); },
-    //     onDeselectAll: function (options) { updateColumns(); },
-    //     templates: {
-    //         button: '<span class="multiselect dropdown-toggle text-primary border-primary btn" data-toggle="dropdown"><i class="fa-solid fa-gears"></i> Stages&nbsp&nbsp</span>'
-
-    //     }
-    // });
-//    buildStageMenus();
     intervalID = setInterval(updateState, updateInterval);
-
 });
 

@@ -82,10 +82,7 @@ class bssrSpec(object):
         self.corr_var = specs['BrainSuite']['Structural']['corr_var']
         self.covariates = specs['BrainSuite']['Structural']['covariates']
         self.group_var = specs['BrainSuite']['Structural']['group_var']
-        if specs['BrainSuite']['Structural']['paired'] == "True":
-            self.paired = True
-        else:
-            self.paired= False
+        self.paired = bool(specs['BrainSuite']['Structural']['paired'])
         self.smooth = specs['BrainSuite']['Structural']['smooth']
         # self.roi = ['"' + str(item) + '"' for item in specs['BrainSuite']['roiid']]
         self.roi = specs['BrainSuite']['Structural']['roiid'] # bssr roi read in list
@@ -98,28 +95,6 @@ class bssrSpec(object):
         self.exclude_col = specs['BrainSuite']['Structural']['exclude_col']
         self.pvalue = specs['BrainSuite']['Structural']['pvalue']
 
-        ## make bfp stats separate
-        # self.bfptest = specs['BrainSuite']['Functional']['test']
-        # self.groups = specs['BrainSuite']['Functional']['groups']
-        # self.exclude = specs['BrainSuite']['Functional']['exclude']
-        # self.ndim = specs['BrainSuite']['Functional']['ndim']
-        # # self.numtimepoints = specs['BrainSuite']['Functional']['num_timempoints']
-        # self.sessionid = "task-" + specs['BrainSuite']['Functional']['session_id']
-        # self.lentime = specs['BrainSuite']['Functional']['lentime']
-        # self.filtered = specs['BrainSuite']['Functional']['filtered']
-        # self.GOfolder = specs['BrainSuite']['Functional']['GOfolder']
-        # self.outname = specs['BrainSuite']['Functional']['outname']
-        # self.smooth_iter = specs['BrainSuite']['Functional']['smooth_iter']
-        # self.save_surfaces = specs['BrainSuite']['Functional']['save_surfaces']
-        # self.save_figures = specs['BrainSuite']['Functional']['save_figures']
-        # self.atlas_groupsync = specs['BrainSuite']['Functional']['atlas_groupsync']
-        # self.atlas_fname = specs['BrainSuite']['Functional']['atlas_fname']
-        # self.test_all = specs['BrainSuite']['Functional']['test_all']
-        # self.main = specs['BrainSuite']['Functional']['main']
-        # self.reg1 = specs['BrainSuite']['Functional']['reg1']
-        # self.reg2 = specs['BrainSuite']['Functional']['reg2']
-        # self.atlas = specs['BrainSuite']['Functional']['atlas']
-        # self.sig_alpha = specs['BrainSuite']['Functional']['sig_alpha']
 
 
     def read_bfp_modelfile(self, modelfile):
@@ -133,17 +108,17 @@ class bssrSpec(object):
         # self.data_dir = specs['BrainSuite']['Functional']['data_dir']
         self.file_ext = specs['BrainSuite']['Functional']['file_ext']
         self.lentime = specs['BrainSuite']['Functional']['lentime']
-        self.matchT= specs['BrainSuite']['Functional']['matchT']
+        self.matchT= str(bool(specs['BrainSuite']['Functional']['matchT']))
         self.stat_test = specs['BrainSuite']['Functional']['stat_test']
         self.bfp_out_dir= specs['BrainSuite']['Functional']['out_dir']
         self.outname = specs['BrainSuite']['Functional']['outname']
         self.smooth_iter= specs['BrainSuite']['Functional']['smooth_iter']
-        self.save_surfaces = specs['BrainSuite']['Functional']['save_surfaces']
-        self.save_figures = specs['BrainSuite']['Functional']['save_figures']
+        self.save_surfaces = str(bool(specs['BrainSuite']['Functional']['save_surfaces']))
+        self.save_figures = str(bool(specs['BrainSuite']['Functional']['save_figures']))
         self.sig_alpha= specs['BrainSuite']['Functional']['sig_alpha']
-        self.atlas_groupsync = specs['BrainSuite']['Functional']['atlas_groupsync']
+        self.atlas_groupsync = str(bool(specs['BrainSuite']['Functional']['atlas_groupsync']))
         self.atlas_fname = specs['BrainSuite']['Functional']['atlas_fname']
-        self.test_all = specs['BrainSuite']['Functional']['test_all']
+        self.test_all = str(bool(specs['BrainSuite']['Functional']['test_all']))
         self.tsv_fname = specs['BrainSuite']['Functional']['tsv_fname']
         self.colvar_main = specs['BrainSuite']['Functional']['colvar_main']
         self.colvar_reg1 = specs['BrainSuite']['Functional']['colvar_reg1']

@@ -95,7 +95,10 @@ parser.add_argument('--singleThread', help='Turns on single-thread mode for SVRe
                                            'with the parallel processing tool from Matlab (Parpool).',
                     action='store_true', required=False)
 parser.add_argument('--cache', help='Nipype cache output folder', required=False)
-parser.add_argument('--TR', help='Repetition time of MRI', default=0)
+parser.add_argument('--TR', help='Repetition time of MRI', default=2, type=int)
+parser.add_argument('--fmri_task_name', help='fMRI task name to be processed during BFP. The name should only contain'
+                                             'the contents after "task-". E.g., restingstate.',
+                    nargs="+")
 parser.add_argument('--skipBSE', help='Skips BSE stage when running CSE. Please make sure '
                                       'there are sub-ID_T1w.mask.nii.gz files in the subject folders.',
                     action='store_true', required=False)
@@ -120,6 +123,10 @@ parser.add_argument('--QCsubjList', help='For QC purposes, optional subject list
                     default=None)
 parser.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
 parser.add_argument('--port', help='Port number for QC webserver.', default=8080)
+parser.add_argument('--bindLocalHostOnly', help='When running local web server through this app, '
+                                                'the server binds to all of the IPs on the machine. '
+                                                'If you would like to only bind to the local host, '
+                                                'please use this flag.', action='store_true', required=False)
 parser.add_argument('-v', '--version', action='version',
                     version='BrainSuite{0} Pipelines BIDS App version {1}'.format(BrainsuiteVersion, __version__))
 
@@ -181,6 +188,10 @@ if ('WEBSERVER' in stages) and (not args.localWebserver):
 
 runProcessing = True
 if 'WEBSERVER' in stages:
+    if args.bindLocalHostOnly:
+        bind = '--bind 127.0.0.1'
+    else:
+        bind = ''
     if args.QCdir:
         parentWEBDIR =args.QCdir
         WEBDIR = os.path.join(args.QCdir, 'QC')
@@ -204,7 +215,7 @@ atlas = atlases[str(args.atlas)]
 if 'BFP' in stages:
     assert args.atlas != 'BSA'
 
-if (args.analysis_level == "participant") and runProcessing:
+if (args.analysis_level == "participant"):
 
     cacheset =False
     preprocspecs = preProcSpec(args.bids_dir, args.output_dir)
@@ -257,9 +268,11 @@ if (args.analysis_level == "participant") and runProcessing:
     if 'WEBSERVER' in stages:
         preprocspecs.write_subjectIDsJSON(allt1ws, args, WEBDIR)
         preprocspecs.write_preproc_params(WEBDIR, stages, dataset_description)
+        if not os.path.exists(WEBDIR + '/brainsuite_dashboard_config.json'):
+            shutil.copyfile('/BrainSuite/QC/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
         if args.localWebserver:
             print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}'\n".format(args.port))
-            cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, '--bind 127.0.0.1')
+            cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, bind)
             subprocess.call(cmd, shell=True)
 
 

@@ -1,6 +1,9 @@
 {
 	"BrainSuite": {
-		"Structural": {
+		"Global Settings": {
+			"cacheFolder": "/tmp"
+		},
+		"Anatomical": {
 			"autoParameters": 0,
 			"diffusionIterations": 3,
 			"diffusionConstant": 25,
@@ -15,8 +18,7 @@
 			"warpLevel": 5,
 			"tissueFractionThreshold": 50.0,
 			"atlas": "BSA",
-			"singleThread": 0,
-			"cacheFolder": "/tmp"
+			"singleThread": 0
 		},
 		"Diffusion": {
 			"skipDistortionCorr": 0,
@@ -25,7 +27,10 @@
 			"fieldmapCorrection": "",
 			"estimateODF_3DShore": 0,
 			"diffusion_time_ms": "",
-			"estimateODF_GQI": 0
+			"estimateODF_GQI": 0,
+			"sigma_GQI": "",
+			"estimateODF_ERFO": 0,
+			"ERFO_SNR": ""
 		},
 		"PostProc": {
 			"smoothSurf": 2.0,
@@ -33,16 +38,15 @@
 		},
 		"Functional": {
 			"task-name": ["rest"],
-			"TR": 0,
+			"TR": 2,
 			"EnabletNLMPdfFiltering": 1,
 			"fpr": 0.001,
 			"FSLOUTPUTTYPE": "NIFTI_GZ",
 			"FWHM": 6,
 			"HIGHPASS":0.005,
 			"LOWPASS": 0.1,
+			"MultiThreading": 1,
 			"memory": 16,
-			"EnableShapeMeasures": 0,
-			"T1SpaceProcessing": 1,
 			"FSLRigid": 0,
 			"BPoption": 1,
 			"RunDetrend": 1,

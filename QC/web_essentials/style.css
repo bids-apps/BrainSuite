@@ -242,6 +242,33 @@ span.multiselect {
     /* white-space: normal; */
 }
 
+/* #navbarCollapse > span > div > span */
+.xcustom-select {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='currentColor' fill='currentColor' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
+  /* background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%ff00ff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") right .75rem center/8px 10px no-repeat; */
+}
+.xxcustom-select {
+  background:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='blue' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right .75rem center/8px 10px !important;
+}
+
+.grow {
+  /* padding: 5px 5px 5px 5px; */
+  /* border-radius: 10px; */
+  height: 256px;
+  /* width: 22%; */
+  /* margin: 5px 1% 5px 1%; */
+  /* float: left; */
+  /* position: relative; */
+  /* transition: height 0.5s; */
+  /* -webkit-transition: height 0.5s; */
+  /* text-align: center; */
+  overflow: hidden;
+}
+.grow:hover {
+  transform: scale(4);
+}
+
+
 /* .zoom {
   position:relative;
   left:0px;
@@ -253,13 +280,4 @@ span.multiselect {
   transform: scale(4);
   overflow:visible;
   z-index:10000;
-}
-
-/* #navbarCollapse > span > div > span */
-.xcustom-select {
-  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='currentColor' fill='currentColor' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
-  /* background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%ff00ff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") right .75rem center/8px 10px no-repeat; */
-}
-.xxcustom-select {
-  background:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='blue' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right .75rem center/8px 10px !important;
 }

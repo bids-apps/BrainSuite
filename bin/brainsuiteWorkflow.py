@@ -27,7 +27,7 @@ BRAINSUITE_LABEL_DIRECTORY = "/opt/BrainSuite{0}/labeldesc/".format(BRAINSUITE_V
 LABEL_SUFFIX = 'brainsuite_labeldescriptions_30March2018.xml'
 completed = 'C'
 launched = 'L'
-unqueued = 'U'
+unqueued = 'N'
 queued = 'Q'
 errored = 'E'
 QCSTATE = '/BrainSuite/QC/qcState.sh'
@@ -60,8 +60,9 @@ class subjLevelProcessing(object):
         self.phaseEncodingDirection = specs.phaseEncodingDirection
         self.estimateODF_3DShore = specs.estimateODF_3DShore
         self.estimateODF_GQI = specs.estimateODF_GQI
-        self.generateStats = specs.generateStats
-        self.forcePartialROIStats = specs.forcePartialROIStats
+        self.estimateODF_ERFO = specs.estimateODF_ERFO
+        self.sigma_GQI = specs.sigma_GQI
+        self.ERFO_SNR = specs.ERFO_SNR
 
         self.echoSpacing = specs.echoSpacing
         self.fieldmapCorrection = specs.fieldmapCorrection
@@ -296,9 +297,8 @@ class subjLevelProcessing(object):
                            anat + os.sep + SUBJECT_ID + '_T1w.pvc-thickness_0-6mm.right.mid.cortex.dfs'
 
                 pialmesh = os.path.join(CACHE_DIRECTORY, 'BrainSuite', 'PIALMESH', SUBJECT_ID + '_T1w.pial.cortex.dfs')
-                hemisplit = os.path.join(CACHE_DIRECTORY,'BrainSuite', 'HEMISPLIT', SUBJECT_ID + '_T1w.right.pial.cortex.dfs') + \
-                            ' ' + os.path.join(CACHE_DIRECTORY, 'BrainSuite', 'HEMISPLIT',
-                                         SUBJECT_ID + '_T1w.left.pial.cortex.dfs')
+                hemisplit = '{0} '.format(os.path.join(CACHE_DIRECTORY,'BrainSuite', 'HEMISPLIT', SUBJECT_ID + '_T1w.left.pial.cortex.dfs'))
+                                             # os.path.join(CACHE_DIRECTORY, 'BrainSuite', 'HEMISPLIT',SUBJECT_ID + '_T1w.right.pial.cortex.dfs'))
 
                 if 'noBSE' not in STAGES:
                     volbendbseObj = pe.Node(interface=bs.Volblend(), name='volblendbse')
@@ -374,11 +374,12 @@ class subjLevelProcessing(object):
                 dfsrenderdfsInfObj.inputs.CenterVol = bfc
 
                 dfsrenderhemisplitObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderhemisplit')
-                dfsrenderhemisplitObj.inputs.Surfaces = pialmesh
+                dfsrenderhemisplitObj.inputs.Surfaces = hemisplit
                 dfsrenderhemisplitObj.inputs.OutFile = '{0}/hemisplit.png'.format(WEBPATH)
                 dfsrenderhemisplitObj.inputs.Sup = True
                 dfsrenderhemisplitObj.inputs.Zoom = 0.6
                 dfsrenderhemisplitObj.inputs.CenterVol = bfc
+                dfsrenderhemisplitObj.inputs.UseColors = '0 0.5 0.75 1 0.5 0.25'
 
                 dfsrenderThickLeftObj = pe.Node(interface=bs.DfsRender(), name='dfsrenderThickLeft')
                 dfsrenderThickLeftObj.inputs.Surfaces = Thickdfs
@@ -493,7 +494,7 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsInfObj, 'Surfaces')
 
                 # TODO: fix to actual hemi surfaces later
-                brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', dfsrenderhemisplitObj, 'Surfaces')
+                brainsuite_workflow.connect(hemisplitObj, 'outputRightPialHemisphere', dfsrenderhemisplitObj, 'Surfbilateral')
 
                 qcthickPVCLaunch = pe.Node(interface=bs.QCState(), name='qcthickPVCLaunch')
                 qcthickPVCLaunch.inputs.prefix = statesDir
@@ -629,6 +630,15 @@ class subjLevelProcessing(object):
             bdpObj.inputs.estimateODF_FRACT = True
             bdpObj.inputs.estimateODF_FRT = True
             bdpObj.inputs.skipDistortionCorr = self.skipDistortionCorr
+
+            bdpObj.inputs.phaseEncodingDirection = self.phaseEncodingDirection
+            bdpObj.inputs.estimateODF_3DShore = self.diffusion_time_ms
+            bdpObj.inputs.estimateODF_GQI = self.estimateODF_GQI
+            bdpObj.inputs.estimateODF_ERFO = self.estimateODF_ERFO
+            bdpObj.inputs.echoSpacing = self.echoSpacing
+            bdpObj.inputs.fieldmapCorrection = self.fieldmapCorrection
+            bdpObj.inputs.sigma_GQI = self.sigma_GQI
+            bdpObj.inputs.ERFO_SNR = self.ERFO_SNR
 
             bdpsubdir = '/../dwi'
             bdpObj.inputs.outputSubdir = bdpsubdir

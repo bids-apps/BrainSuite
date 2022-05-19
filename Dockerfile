@@ -22,8 +22,10 @@ RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
 ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
 
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
-    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/volblend && \
-    wget -q http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/dfsrender && \
+    wget -q http://shattuck.bmap.ucla.edu/bids/volslice21a_x86_64-pc-linux-gnu && \
+    wget -q http://shattuck.bmap.ucla.edu/bids/renderdfs21a_x86_64-pc-linux-gnu && \
+    ln -s volslice21a_x86_64-pc-linux-gnu volslice && \
+    ln -s renderdfs21a_x86_64-pc-linux-gnu renderdfs && \
     chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
 
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_083121c.tar.gz | tar xvz
@@ -31,6 +33,8 @@ RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver
 RUN rm -rf bfp_ver4p01_t1distcorr/supp_data && mv bfp_ver4p01_t1distcorr/* bfp
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
+
+RUN apt-get install -y xvfb libosmesa6-dev
 
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 COPY QC/makeMask.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
