@@ -129,7 +129,7 @@ optional arguments:
                         be useful when machines run into issues with the
                         parallel processing tool from Matlab (Parpool).
   --cache CACHE         Nipype cache output folder
-  --TR TR               Repetition time of MRI
+  --TR TR               Repetition time of MRI (in seconds).
   --fmri_task_name FMRI_TASK_NAME [FMRI_TASK_NAME ...]
                         fMRI task name to be processed during BFP. The name
                         should only containthe contents after "task-". E.g.,
@@ -183,16 +183,39 @@ User can remove ``` --participant_label <ids-list> ``` argument to have all subj
 All sessions will be processed. The output files will be located in the output folder specified.
 
 ### QC and BrainSuite Dashboard usage ###
-Adding "QC" to the stages 
-To run 
+Adding "QC" to the stages (--stages QC) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
+
+To run QC and BrainSuite Dashboard along with your processing for real-time updates, you will need to launch a separate instance of the BrainSuite BIDS App image. 
+
+
+### Running real-time QC and BrainSuite Dashboard without a web server ###
+If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag --localWebserver. 
+You will also need to expose a port to the image; for example:
+
+```bash
+docker run -ti --rm \
+  -p 8080:8080
+  -v /path/to/local/bids/input/dataset/:/data \
+  -v /path/to/local/output/:/output \
+  bids/brainsuite \
+  /data /output participant --stages WEBSERVER --localWebserver  
+```
+where "-p 8080:8080" tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
+Stages include WEBSERVER, which indicates that the BIDS App will launch the BrainSuite Dashboard.
+
+### Running real-time QC and BrainSuite Dashboard with an existing web server ###
+If your institution has a running web server and you would like to serve using this web server, you do not need to expose ports or start a local web server. 
+Instead, all you need to do is to set the path to the QC output directory; this location must be where the web server will be serving from.
+
 ```bash
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
   bids/brainsuite \
-  /data /output participant --participant_label 01
+  /data /output participant --stages WEBSERVER --QCdir /path/to/QC/output
 ```
 
+You can also specify a list of subjects you would like to selectively QC by using the --QCsubjList argument (see usage above).
 
 
 ### Group-level analysis usage ###
