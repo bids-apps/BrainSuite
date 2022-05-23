@@ -226,7 +226,7 @@ You can also specify a list of subjects you would like to selectively QC by usin
 * A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/sample_demographics.tsv). 
 * A JSON file containing the specifications for group level analysis. Sample JSON file is provided with the source code ([BrainSuite/sample_modelspec.json](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/sample_modelspec.json))
 
-Explanation on all the fields in the modelspec.json file are found [here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/modelspec_details.md).
+Explanation on all the fields in the modelspec.json file are found [here](modelspec_details.md).
 
 To run group-level mode:
 ```bash
