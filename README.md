@@ -62,7 +62,7 @@ yeunkim/brainsuitebidsapp:stable
 ```
 
 ### Command line arguments
-```
+```bash
 usage: run.py [-h]
               [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
               [--stages {CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} [{CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} ...]]
@@ -228,7 +228,7 @@ You can also specify a list of subjects you would like to selectively QC by usin
 
 Explanation on all the fields in the modelspec.json file are found [here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/modelspec_details.md).
 
-To run it in group level mode:
+To run group-level mode:
 ```bash
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
