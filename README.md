@@ -1,9 +1,7 @@
 # BrainSuite BIDS-App 
 ## Overview
 BrainSuite BIDS-App provides a portable, streamlined method for performing BrainSuite (http://brainsuite.org) analysis workflows for processing and analyzing anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](http://brainsuite.org/brainsuite21a).
-
-## Description
-BrainSuite is an open-source collection of software for processing MRI data. The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
+The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
 
 ### Subject-Level Analysis
 The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP comprise:
@@ -44,7 +42,7 @@ The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes
 * BrainSuite Dashboard is an interactive web-page that is updated in real time while BrainSuite BIDS App
 
 
-## Usage
+# Usage
 ### Data input requirements
 This App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
 
@@ -182,6 +180,8 @@ Where 01 is the "sub-01". User can supply multiple participant labels by listing
 User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
 All sessions will be processed. The output files will be located in the output folder specified.
 
+If you would like to **modify parameters** for the participant-level run, you can do so by modifying the parameters in a preprocspecs.json file. [Full instructions and details are written here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/preprocspec_details.md).
+
 ### QC and BrainSuite Dashboard usage ###
 Adding "QC" to the stages (--stages QC) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
 
@@ -221,9 +221,10 @@ You can also specify a list of subjects you would like to selectively QC by usin
 ### Group-level analysis usage ###
 
 #### Pre-requisite ####
-* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed.
-* A JSON file containing the specifications for group level analysis.
-Sample JSON file is provided with the source code (BrainSuite/sample_modelspec.json)
+* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/sample_demographics.tsv). 
+* A JSON file containing the specifications for group level analysis. Sample JSON file is provided with the source code ([BrainSuite/sample_modelspec.json](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/sample_modelspec.json))
+
+Explanation on all the fields in the modelspec.json file are found [here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/modelspec_details.md).
 
 To run it in group level mode:
 ```bash
