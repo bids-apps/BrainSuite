@@ -5,7 +5,7 @@ RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_dep.py
 RUN python install_dep.py
 
 # BrainSuite
-RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
+RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite21a.BIDS.tgz && \
     tar -xzf /BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
     mv /BrainSuite${BrainSuiteVersion} /opt && \
     cd /opt/BrainSuite${BrainSuiteVersion}/bin && \
@@ -20,13 +20,6 @@ RUN wget http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/install_bssr.py && p
 RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
 
 ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
-
-RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && \
-    wget -q http://shattuck.bmap.ucla.edu/bids/volslice21a_x86_64-pc-linux-gnu && \
-    wget -q http://shattuck.bmap.ucla.edu/bids/renderdfs21a_x86_64-pc-linux-gnu && \
-    ln -s volslice21a_x86_64-pc-linux-gnu volslice && \
-    ln -s renderdfs21a_x86_64-pc-linux-gnu renderdfs && \
-    chmod -R ugo+xr /opt/BrainSuite${BrainSuiteVersion}/bin
 
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_083121c.tar.gz | tar xvz
 RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver4p01_t1distcorr.tar.gz| tar xvz

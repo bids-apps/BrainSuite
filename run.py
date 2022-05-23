@@ -95,7 +95,7 @@ parser.add_argument('--singleThread', help='Turns on single-thread mode for SVRe
                                            'with the parallel processing tool from Matlab (Parpool).',
                     action='store_true', required=False)
 parser.add_argument('--cache', help='Nipype cache output folder', required=False)
-parser.add_argument('--TR', help='Repetition time of MRI', default=2, type=int)
+parser.add_argument('--TR', help='Repetition time of MRI (in seconds).', default=2, type=int)
 parser.add_argument('--fmri_task_name', help='fMRI task name to be processed during BFP. The name should only contain'
                                              'the contents after "task-". E.g., restingstate.',
                     nargs="+")
