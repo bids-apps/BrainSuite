@@ -112,10 +112,10 @@ optional arguments:
                         functional (fMRI). Options: STRUCT, FUNC, ALL.
   --modelspec MODELSPEC
                         Optional. Only for group analysis level.Path to JSON
-                        file that contains statistical modelspecifications.
+                        file that contains statistical models pecifications.
   --preprocspec PREPROCSPEC
                         Optional. BrainSuite preprocessing parameters.Path to
-                        JSON file that contains preprocessingspecifications.
+                        JSON file that contains preprocessing specifications.
   --rmarkdown RMARKDOWN
                         Optional. Executable Rmarkdown file that uses bssr
                         forgroup analysis stage. If this argument is
@@ -180,16 +180,18 @@ Where 01 is the "sub-01". User can supply multiple participant labels by listing
 User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
 All sessions will be processed. The output files will be located in the output folder specified.
 
+For the functional pipeline, you will need to define the TR (repetition time in seconds for the fMRI data) using ```--TR``` command. If this is not called, then the default value of 2 will be used. 
+
 If you would like to **modify parameters** for the participant-level run, you can do so by modifying the parameters in a preprocspecs.json file. [Full instructions and details are written here](https://bitbucket.org/brainsuite/brainsuite-bids-app/src/master/preprocspec_details.md).
 
 ### QC and BrainSuite Dashboard usage ###
-Adding "QC" to the stages (--stages QC) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
+Adding "QC" to the stages (```--stages QC```) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
 
 To run QC and BrainSuite Dashboard along with your processing for real-time updates, you will need to launch a separate instance of the BrainSuite BIDS App image. 
 
 
 ### Running real-time QC and BrainSuite Dashboard without a web server ###
-If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag --localWebserver. 
+If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag ```--localWebserver```. 
 You will also need to expose a port to the image; for example:
 
 ```bash
@@ -200,7 +202,7 @@ docker run -ti --rm \
   bids/brainsuite \
   /data /output participant --stages WEBSERVER --localWebserver  
 ```
-where "-p 8080:8080" tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
+where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
 Stages include WEBSERVER, which indicates that the BIDS App will launch the BrainSuite Dashboard.
 
 ### Running real-time QC and BrainSuite Dashboard with an existing web server ###
