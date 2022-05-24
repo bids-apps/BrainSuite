@@ -1,9 +1,7 @@
 # BrainSuite BIDS-App 
 ## Overview
 BrainSuite BIDS-App provides a portable, streamlined method for performing BrainSuite (http://brainsuite.org) analysis workflows for processing and analyzing anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](http://brainsuite.org/brainsuite21a).
-
-## Description
-BrainSuite is an open-source collection of software for processing MRI data. The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
+The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
 
 ### Subject-Level Analysis
 The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP comprise:
@@ -44,7 +42,7 @@ The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes
 * BrainSuite Dashboard is an interactive web-page that is updated in real time while BrainSuite BIDS App
 
 
-## Usage
+# Usage
 ### Data input requirements
 This App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
 
@@ -64,7 +62,7 @@ yeunkim/brainsuitebidsapp:stable
 ```
 
 ### Command line arguments
-```
+```bash
 usage: run.py [-h]
               [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
               [--stages {CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} [{CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} ...]]
@@ -114,10 +112,10 @@ optional arguments:
                         functional (fMRI). Options: STRUCT, FUNC, ALL.
   --modelspec MODELSPEC
                         Optional. Only for group analysis level.Path to JSON
-                        file that contains statistical modelspecifications.
+                        file that contains statistical models pecifications.
   --preprocspec PREPROCSPEC
                         Optional. BrainSuite preprocessing parameters.Path to
-                        JSON file that contains preprocessingspecifications.
+                        JSON file that contains preprocessing specifications.
   --rmarkdown RMARKDOWN
                         Optional. Executable Rmarkdown file that uses bssr
                         forgroup analysis stage. If this argument is
@@ -182,14 +180,18 @@ Where 01 is the "sub-01". User can supply multiple participant labels by listing
 User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
 All sessions will be processed. The output files will be located in the output folder specified.
 
+For the functional pipeline, you will need to define the TR (repetition time in seconds for the fMRI data) using ```--TR``` command. If this is not called, then the default value of 2 will be used. 
+
+If you would like to **modify parameters** for the participant-level run, you can do so by modifying the parameters in a preprocspecs.json file. [Full instructions and details are written here](preprocspec_details.md).
+
 ### QC and BrainSuite Dashboard usage ###
-Adding "QC" to the stages (--stages QC) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
+Adding "QC" to the stages (```--stages QC```) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
 
 To run QC and BrainSuite Dashboard along with your processing for real-time updates, you will need to launch a separate instance of the BrainSuite BIDS App image. 
 
 
 ### Running real-time QC and BrainSuite Dashboard without a web server ###
-If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag --localWebserver. 
+If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag ```--localWebserver```. 
 You will also need to expose a port to the image; for example:
 
 ```bash
@@ -200,7 +202,7 @@ docker run -ti --rm \
   bids/brainsuite \
   /data /output participant --stages WEBSERVER --localWebserver  
 ```
-where "-p 8080:8080" tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
+where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
 Stages include WEBSERVER, which indicates that the BIDS App will launch the BrainSuite Dashboard.
 
 ### Running real-time QC and BrainSuite Dashboard with an existing web server ###
@@ -221,11 +223,12 @@ You can also specify a list of subjects you would like to selectively QC by usin
 ### Group-level analysis usage ###
 
 #### Pre-requisite ####
-* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed.
-* A JSON file containing the specifications for group level analysis.
-Sample JSON file is provided with the source code (BrainSuite/sample_modelspec.json)
+* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](sample_demographics.tsv). 
+* A JSON file containing the specifications for group level analysis. Sample JSON file is provided with the source code ([BrainSuite/sample_modelspec.json](sample_modelspec.json))
 
-To run it in group level mode:
+Explanation on all the fields in the modelspec.json file are found [here](modelspec_details.md).
+
+To run group-level mode:
 ```bash
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
