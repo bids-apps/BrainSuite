@@ -77,11 +77,11 @@ parser.add_argument('--analysistype', help='Group analysis type: structural (T1 
                                            'or functional (fMRI). Options: STRUCT, FUNC, ALL.',
                     choices=['STRUCT', 'FUNC', 'ALL'], default='ALL')
 parser.add_argument('--modelspec', help='Optional. Only for group analysis level.'
-                                      'Path to JSON file that contains statistical model'
+                                      'Path to JSON file that contains statistical model '
                                         'specifications.',
                     required=False)
 parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing parameters.'
-                                      'Path to JSON file that contains preprocessing'
+                                      'Path to JSON file that contains preprocessing '
                                         'specifications.',
                     required=False)
 parser.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
@@ -170,14 +170,9 @@ os.environ['runJustQC'] = 'False'
 if args.skipBSE:
     stages = args.stages.append('noBSE')
 if ('ALL' in args.stages):
-    stages = ['CSE', 'SVREG', 'BDP', 'BFP','QC'] #
-# elif ('BFP' in args.stages):
-#     stages = ['CSE', 'SVREG', 'BFP']
+    stages = ['CSE', 'SVREG', 'BDP', 'BFP','QC']
 elif ('QC' in args.stages) & (len(args.stages) ==1):
     os.environ['runJustQC'] = 'True'
-# elif ('BFP' in args.stages) & (not 'SVREG' in args.stages):
-#     args.stages = ['SVREG', 'BFP']
-#     stages = args.stages
 else:
     stages = args.stages
 
@@ -302,7 +297,7 @@ if (args.analysis_level == "participant"):
                                                                     type='bold', session=sessions[ses],
                                                                     extensions=["nii.gz", "nii"])]
                             runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                        dwis, funcs, subject_label, BFPpath, configini, args)
+                                        dwis, funcs, subject_label, configini, args, layout)
 
                     else:
                         t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -315,7 +310,7 @@ if (args.analysis_level == "participant"):
                                                                 type='bold', session=sessions[ses],
                                                                 extensions=["nii.gz", "nii"])]
                         runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                dwis, funcs, subject_label, BFPpath, configini, args)
+                                dwis, funcs, subject_label, configini, args, layout)
             else:
                 runs = layout.get(target='run', return_type='id',
                                   subject=subject_label, type='T1w', extensions=["nii.gz", "nii"])
@@ -331,7 +326,7 @@ if (args.analysis_level == "participant"):
                                                                 type='bold',
                                                                 extensions=["nii.gz", "nii"])]
                         runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                    dwis, funcs, subject_label, BFPpath, configini, args)
+                                    dwis, funcs, subject_label, configini, args, layout)
                 else:
                     t1ws = [f.filename for f in layout.get(subject=subject_label,
                                                            type='T1w', extensions=["nii.gz", "nii"])]
@@ -344,7 +339,7 @@ if (args.analysis_level == "participant"):
                                                             type='bold',
                                                             extensions=["nii.gz", "nii"])]
                     runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                            dwis, funcs, subject_label, BFPpath, configini, args)
+                            dwis, funcs, subject_label, configini, args, layout)
 
 if args.analysis_level == "group":
 

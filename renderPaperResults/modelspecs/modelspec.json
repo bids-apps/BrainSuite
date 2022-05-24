@@ -1,0 +1,52 @@
+{
+	"BrainSuite": {
+	  "Structural":{
+        "tsv_fname": "/nafs/shattuck/yeunkim/processing/AOMIC_PIOP/aomic-piop_10192021.tsv",
+        "measure": "cbm",
+		"test": "anova",
+		"main_effect": "ravenscore",
+		"covariates": [
+			"age","scanner"
+		],
+		"corr_var": "age",
+		"group_var": "sex",
+		"paired": "False",
+		"smooth": 2.0,
+		"mult_comp": "fdr",
+		"pvalue":"parametric",
+		"niter":2000,
+		"roiid": [102],
+		"hemi": "both",
+		"maskfile": "",
+		"atlas": "",
+		"roimeas": "",
+		"dbmmeas": "" ,
+		"exclude_col": "Monly",
+	  	"out_dir": "/nafs/shattuck/yeunkim/AOMIC-PIOP2_all_output/stats/cbm_anova_M/"},
+
+	"Functional":{
+        "tsv_fname": "/data/participants.tsv",
+		"file_ext": "-rest_bold.32k.GOrd.filt.mat",
+		"lentime": 240,
+		"matchT": "False",
+		"stat_test": "atlas-linear" ,
+		"pw_pairs": 2000,
+		"pw_fdr": 0,
+		"pw_perm": 2000,
+		"outname": "BFPtest",
+        "sig_alpha" : 0.05,
+		"smooth_iter": 100,
+		"save_surfaces": "True",
+		"save_figures": "False",
+		"atlas_groupsync": "True",
+		"atlas_fname": "/data/atlas.mat",
+		"test_all": "True",
+		"colvar_main": "LogAge",
+		"colvar_reg1": "Age",
+		"colvar_reg2": "Sex",
+		"colvar_exclude": "Exclude",
+        "colvar_atlas": "Atlas",
+        "out_dir": "/output/stats"
+      }
+	}
+}

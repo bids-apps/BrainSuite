@@ -1,0 +1,52 @@
+{
+	"BrainSuite": {
+	  "Structural":{
+        "tsv_fname": "/nafs/shattuck/yeunkim/processing/AOMIC_PIOP/aomic_piop_nansdel_tbv_mf.tsv",
+        "measure": "roi",
+		"test": "anova",
+		"main_effect": "ravenscore",
+		"covariates": [
+			"age"
+		],
+		"corr_var": "age",
+		"group_var": "sex",
+		"paired": "False",
+		"smooth": 2.0,
+		"mult_comp": "fdr",
+		"pvalue":"parametric",
+		"niter":2000,
+		"roiid": [120,142],
+		"hemi": "left",
+		"maskfile": "",
+		"atlas": "",
+		"roimeas": "gmthickness",
+		"dbmmeas": "" ,
+		"exclude_col": "ExcludeMsvreg",
+	  	"out_dir": "/nafs/shattuck/yeunkim/AOMIC-PIOP2_all_output/stats_roi_ravenscore_F_gmthick/"},
+
+	"Functional":{
+        "tsv_fname": "/nafs/shattuck/yeunkim/processing/AOMIC_PIOP/aomic-piop_10192021.tsv",
+		"file_ext": "_task-restingstate_bold.32k.GOrd.filt.mat",
+		"lentime": 480,
+		"matchT": "False",
+		"stat_test": "atlas-linear" ,
+		"pw_pairs": 10000,
+		"pw_fdr": "False",
+		"pw_perm": 10000,
+		"outname": "fmri_atlas_linear_F",
+        "sig_alpha" : 0.05,
+		"smooth_iter": 10,
+		"save_surfaces": "True",
+		"save_figures": "False",
+		"atlas_groupsync": "True",
+		"atlas_fname": "",
+		"test_all": "True",
+		"colvar_main": "ravenscore",
+		"colvar_reg1": "age",
+		"colvar_reg2": "scanner",
+		"colvar_exclude": "Fonly",
+        "colvar_atlas": "AtlasF",
+        "out_dir": "/nafs/shattuck/yeunkim/AOMIC-PIOP2_all_output/stats/fmri_atlas_linear_F"
+      }
+	}
+}

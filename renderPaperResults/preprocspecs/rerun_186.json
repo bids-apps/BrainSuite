@@ -1,0 +1,62 @@
+{
+	"BrainSuite": {
+		"Structural": {
+			"autoParameters": 1,
+			"diffusionIterations": 3,
+			"diffusionConstant": 25,
+			"edgeDetectionConstant": 0.64,
+			"skipBSE": 0,
+			"iterativeMode": 0,
+			"spatialPrior": 0.1,
+			"costFunction": 0,
+			"useCentroids": 0,
+			"linearConvergence": 0.1,
+			"warpConvergence": 100,
+			"warpLevel": 3,
+			"tissueFractionThreshold": 50.0,
+			"atlas": "BCI",
+			"singleThread": 1,
+			"cacheFolder": "/nafs/shattuck/yeunkim/AOMIC-PIOP1_all_output/"
+		},
+		"Diffusion": {
+			"skipDistortionCorr": 0,
+			"phaseEncodingDirection": "y",
+			"echoSpacing": "",
+			"fieldmapCorrection": "",
+			"estimateODF_3DShore": 0,
+			"diffusion_time_ms": "",
+			"estimateODF_GQI": 0,
+			"generateStats": 0,
+			"forcePartialROIStats": 0
+		},
+		"PostProc": {
+			"smoothSurf": 2.0,
+			"smoothVol": 3.0
+		},
+		"Functional": {
+			"task-name": ["restingstate", "faces", "emomatching", "gstroop"],
+			"TR": 2,
+			"EnabletNLMPdfFiltering": 1,
+			"fpr": 0.001,
+			"FSLOUTPUTTYPE": "NIFTI_GZ",
+			"FWHM": 6,
+			"HIGHPASS":0.005,
+			"LOWPASS": 0.1,
+			"memory": 16,
+			"EnableShapeMeasures": 0,
+			"T1SpaceProcessing": 1,
+			"FSLRigid": 0,
+			"SimRef": 1,
+			"RunDetrend": 1,
+			"RunNSR": 1,
+			"scbPath": "/output/SCB.mat",
+			"T1mask": 1,
+			"epit1corr": 1,
+        "epit1corr_mask": 2,
+        "epit1corr_rigidsim": "mi",
+        "epit1corr_bias": 1,
+        "epit1corr_numthreads": 60,
+"BPoption":1
+		}
+	}
+}
