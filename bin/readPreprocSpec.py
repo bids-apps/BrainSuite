@@ -161,13 +161,26 @@ class preProcSpec(object):
         self.estimateODF_3DShore = bool(specs['BrainSuite']['Diffusion']['estimateODF_3DShore'])
         self.estimateODF_GQI = bool(specs['BrainSuite']['Diffusion']['estimateODF_GQI'])
         self.estimateODF_ERFO = bool(specs['BrainSuite']['Diffusion']['estimateODF_ERFO'])
+        self.diffusion_time_ms = specs['BrainSuite']['Diffusion']['diffusion_time_ms']
+        if self.estimateODF_ERFO or self.estimateODF_3DShore or self.estimateODF_GQI:
+            if not self.diffusion_time_ms:
+                sys.exit('##############################################\n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '************ ARGUMENT ERROR!!! ************\n '
+                             'Estimation of ODF using 3DSHORE, GQI, or ERFO was \n'
+                             'turned on but diffusion_time_ms was not set. Please.\n'
+                             'set a numerical value for this parameter. \n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '##############################################\n'
+                             '\n')
 
         self.echoSpacing = undefined if (specs['BrainSuite']['Diffusion']['echoSpacing'] == '' ) \
             else specs['BrainSuite']['Diffusion']['echoSpacing']
         self.fieldmapCorrection = undefined if (specs['BrainSuite']['Diffusion']['fieldmapCorrection']  == '') \
             else specs['BrainSuite']['Diffusion']['fieldmapCorrection']
-        self.diffusion_time_ms = undefined if (specs['BrainSuite']['Diffusion']['diffusion_time_ms'] == '') \
-            else specs['BrainSuite']['Diffusion']['diffusion_time_ms']
+
         self.sigma_GQI = undefined if (specs['BrainSuite']['Diffusion']['sigma_GQI'] == '') \
             else specs['BrainSuite']['Diffusion']['sigma_GQI']
         self.ERFO_SNR = undefined if (specs['BrainSuite']['Diffusion']['ERFO_SNR'] == '') \

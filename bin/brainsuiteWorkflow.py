@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Author: Jason Wong
-Edit: Yeun Kim, Clayton Jerlow
+This class connects BrainSuite nodes to form pipelines.
+ 
+Authors: Yeun Kim, Jason Wong, Clayton Jerlow
+
+Copyright (C) 2022 The Regents of the University of California and the University of Southern California
+Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
+Dept. of Neurology, David Geffen School of Medicine, UCLA.
+
 """
 from __future__ import unicode_literals, print_function
 import subprocess
@@ -632,9 +638,11 @@ class subjLevelProcessing(object):
             bdpObj.inputs.skipDistortionCorr = self.skipDistortionCorr
 
             bdpObj.inputs.phaseEncodingDirection = self.phaseEncodingDirection
-            bdpObj.inputs.estimateODF_3DShore = self.diffusion_time_ms
+            bdpObj.inputs.estimateODF_3DShore = self.estimateODF_3DShore
             bdpObj.inputs.estimateODF_GQI = self.estimateODF_GQI
             bdpObj.inputs.estimateODF_ERFO = self.estimateODF_ERFO
+            if self.estimateODF_ERFO or self.estimateODF_3DShore or self.estimateODF_GQI:
+                bdpObj.inputs.diffusion_time_ms = self.diffusion_time_ms
             bdpObj.inputs.echoSpacing = self.echoSpacing
             bdpObj.inputs.fieldmapCorrection = self.fieldmapCorrection
             bdpObj.inputs.sigma_GQI = self.sigma_GQI

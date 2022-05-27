@@ -1,6 +1,6 @@
 {
 	"BrainSuite": {
-	  "Anatomical":{
+	  "Structural":{
         "tsv_fname": "/data/participants.tsv",
         "measure": "cbm",
 		"test": "anova",
@@ -11,7 +11,7 @@
 		],
 		"corr_var": "",
 		"group_var": "",
-		"paired": 1,
+		"paired": 0,
 		"smooth": 2.0,
 		"mult_comp": "fdr",
 		  "pvalue": "parametric",
@@ -22,6 +22,7 @@
 		"atlas": "",
 		"roimeas": "",
 		"dbmmeas": "" ,
+		  "exclude_col": "",
 	  	"out_dir": "/output/stats"},
 
 	"Functional":{

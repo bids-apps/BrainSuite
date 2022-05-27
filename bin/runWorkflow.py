@@ -4,7 +4,7 @@ import os
 import glob
 
 def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwis, funcs,
-            subject_label, configini, args, layout):
+            subject_label, configini, args):
     # try:
     TR = preprocspecs.TR
     if args.TR:
@@ -53,6 +53,8 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
             sess_inputs = []
             fmris = []
             tasknames = layout.get_tasks()
+            if args.preprocspec:
+                tasknames = preprocspecs.taskname
             if args.fmri_task_name:
                 tasknames = args.fmri_task_name
             print('Will be running the following fMRI with task-names', tasknames)

@@ -4,7 +4,7 @@
 			"cacheFolder": "/tmp"
 		},
 		"Anatomical": {
-			"autoParameters": 0,
+			"autoParameters": 1,
 			"diffusionIterations": 3,
 			"diffusionConstant": 25,
 			"edgeDetectionConstant": 0.64,
@@ -17,7 +17,7 @@
 			"warpConvergence": 100,
 			"warpLevel": 5,
 			"tissueFractionThreshold": 50.0,
-			"atlas": "BSA",
+			"atlas": "BCI",
 			"singleThread": 0
 		},
 		"Diffusion": {
@@ -58,7 +58,7 @@
         	"epit1corr_rigidsim": "mi",
         	"epit1corr_bias": 0,
 			"SimRef": 1,
-        	"epit1corr_numthreads": 60
+        	"epit1corr_numthreads": 6
 		}
 	}
 }

@@ -9,11 +9,16 @@ from ..traits_extension import str
 from ... import config, logging, LooseVersion, __version__
 iflogger = logging.getLogger('interface')
 
-"""This script provides interfaces for BrainSuite command line tools.
+"""
+This script provides interfaces for BrainSuite command line tools.
 Please see brainsuite.org for more information.
 
-Author: Jason Wong
-Edit: Clayton Jerlow
+Authors: Yeun Kim, Jason Wong, Clayton Jerlow
+
+Copyright (C) 2022 The Regents of the University of California and the University of Southern California
+Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
+Dept. of Neurology, David Geffen School of Medicine, UCLA.
+
 """
 
 class BrainSuiteCommandLine(CommandLine):
@@ -1220,8 +1225,8 @@ class BDPInputSpec(CommandLineInputSpec):
              'The derived generalized-FA (GFA) maps are also saved in the output '
              'directory. '
     )
-    estimateODF_3DShore = traits.Float(
-        argstr='--3dshore --diffusion_time_ms %f',
+    estimateODF_3DShore = traits.Bool(
+        argstr='--3dshore ',
         desc='Estimates ODFs using 3Dshore. Pass in diffusion time, in ms'
     )
     estimateODF_GQI = traits.Bool(
@@ -1248,6 +1253,10 @@ class BDPInputSpec(CommandLineInputSpec):
         desc='Estimates ODFs using the ERFO method. The outputs are saved in a'
              'separate directory with name "ERFO" and the ODFs can be visualized by '
              'loading the saved ".odf" file in BrainSuite.'
+    )
+    diffusion_time_ms = traits.Float(
+        argstr='--diffusion_time_ms %f',
+        desc='Estimates ODFs using 3Dshore and ERFO. Pass in diffusion time, in ms'
     )
     ERFO_SNR = traits.Float(
         argstr='--snr %f',

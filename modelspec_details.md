@@ -3,7 +3,7 @@ To run group-level analysis, a JSON format model specification is required. A sa
 
 To run group-level mode:
 
-```bash
+```
 docker run -ti --rm 
   -v /path/to/local/bids/input/dataset/:/data 
   -v /path/to/local/output/:/output 
