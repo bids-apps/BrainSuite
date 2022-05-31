@@ -70,13 +70,13 @@ def parser():
 
     parser.add_argument('--stages',
                         help='Participant-level processing stage to be run. Space delimited list. Default is ALL '
-                             'which does not include WEBSERVER. CSE runs Cortical Surface Extractor. SVREG runs'
+                             'which does not include DASHBOARD. CSE runs Cortical Surface Extractor. SVREG runs'
                              ' Surface-constrained Volumetric registration. BDP runs BrainSuite Diffusion Pipeline.'
                              ' BFP runs BrainSuite Functional Pipeline. QC runs BrainSuite QC and generates status codes'
-                             ' and snapshots. WEBSERVER runs the real-time monitoring that is required for BrainSuite '
+                             ' and snapshots. DASHBOARD runs the real-time monitoring that is required for BrainSuite '
                              'Dashboard to update real-time.',
                         nargs="+",
-                        choices=['CSE', 'SVREG', 'BDP', 'BFP', 'QC', 'WEBSERVER', 'ALL'], default='ALL')
+                        choices=['CSE', 'SVREG', 'BDP', 'BFP', 'QC', 'DASHBOARD', 'ALL'], default='ALL')
     parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing parameters.'
                                               'Path to JSON file that contains preprocessing '
                                               'specifications.',
@@ -210,13 +210,13 @@ def main():
     if args.skipBSE:
         stages.append('noBSE')
 
-    if ('WEBSERVER' in stages) and (not args.localWebserver):
+    if ('DASHBOARD' in stages) and (not args.localWebserver):
         if args.QCdir is None:
             sys.stdout.write('If you would like not to launch a local webserver, please provide the directory where'
                                 'you would like to store the QC data using --QCdir. E.g. --QCdir /home/yeun/public_html')
 
     runProcessing = True
-    if 'WEBSERVER' in stages:
+    if 'DASHBOARD' in stages:
         if args.bindLocalHostOnly:
             bind = '--bind 127.0.0.1'
         else:
@@ -294,7 +294,7 @@ def main():
         if os.path.exists(args.bids_dir + '/dataset_description.json'):
             dataset_description = args.bids_dir + '/dataset_description.json'
         # preprocspecs.write_preproc_params(args.output_dir, stages, dataset_description)
-        if 'WEBSERVER' in stages:
+        if 'DASHBOARD' in stages:
             preprocspecs.write_subjectIDsJSON(allt1ws, args, WEBDIR)
             preprocspecs.write_preproc_params(WEBDIR, stages, dataset_description)
             if not os.path.exists(WEBDIR + '/brainsuite_dashboard_config.json'):
@@ -305,7 +305,7 @@ def main():
                 subprocess.call(cmd, shell=True)
 
 
-        if not 'WEBSERVER' in stages:
+        if not 'DASHBOARD' in stages:
             if 'QC' not in stages:
                 stages.append('QC')
             for subject_label in subjects_to_analyze:

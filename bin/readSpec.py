@@ -68,23 +68,17 @@ class bssrSpec(object):
                                 "\nPlease check that the format of the file is JSON.")
             return
 
-        # self.session = specs['level']
         self.tsv = os.path.join(self.outputdir, specs['BrainSuite']['Structural']['tsv_fname'])
         self.test = specs['BrainSuite']['Structural']['test']
-        # self.full_model = specs['full_model']
-        # self.null_model = specs['null_model']
-
         self.mult_comp = specs['BrainSuite']['Structural']['mult_comp']
         self.niter = specs['BrainSuite']['Structural']['niter']
         self.measure = specs['BrainSuite']['Structural']['measure']
         self.main_effect = specs['BrainSuite']['Structural']['main_effect']
-        # self.covariates = ['"' + item + '"' for item in specs['BrainSuite']['covariates']]
         self.corr_var = specs['BrainSuite']['Structural']['corr_var']
         self.covariates = specs['BrainSuite']['Structural']['covariates']
         self.group_var = specs['BrainSuite']['Structural']['group_var']
         self.paired = bool(specs['BrainSuite']['Structural']['paired'])
         self.smooth = specs['BrainSuite']['Structural']['smooth']
-        # self.roi = ['"' + str(item) + '"' for item in specs['BrainSuite']['roiid']]
         self.roi = specs['BrainSuite']['Structural']['roiid'] # bssr roi read in list
         self.hemi = specs['BrainSuite']['Structural']['hemi']
         self.maskfile = specs['BrainSuite']['Structural']['maskfile']
@@ -105,7 +99,6 @@ class bssrSpec(object):
                                 "\nPlease check that the format of the file is JSON.")
             return
 
-        # self.data_dir = specs['BrainSuite']['Functional']['data_dir']
         self.file_ext = specs['BrainSuite']['Functional']['file_ext']
         self.lentime = specs['BrainSuite']['Functional']['lentime']
         self.matchT= str(bool(specs['BrainSuite']['Functional']['matchT']))
@@ -130,7 +123,6 @@ class bssrSpec(object):
         self.pw_perm =specs['BrainSuite']['Functional']['pw_perm']
 
 
-        # self.resultdir = specs['BrainSuite']['results']
         config = configparser.ConfigParser()
         config.read('/bfp_config_stats.ini')
         config.set('inputs', 'file_ext', str(self.file_ext))
@@ -161,19 +153,5 @@ class bssrSpec(object):
         with open('{0}/bfp_config_stats.ini'.format(self.outputdir), 'w') as configfile:
             config.write(configfile)
 
-
-        ## TODO: add parameters for fmri group analysis
-
-        # if self.filtered == 'True':
-        #     self.fileext = '_{0}_bold.32k.GOrd.filt.mat'.format(self.sessionid)
-        # elif self.filtered == 'False':
-        #     self.fileext = '_{0}_bold.32k.GOrd.mat'.format(self.sessionid)
-    # def create_subjectList(self):
-        # if self.session:
-        #     subjects = []
-        #     for fname in os.listdir(self.outputdir):
-        #         path = os.path.join(self.outputdir, fname)
-        #         if os.path.isdir(path) and "ses-{0}".format(self.session) in fname:
-        #             subjects.append(path)
 
 

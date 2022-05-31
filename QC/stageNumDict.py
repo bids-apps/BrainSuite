@@ -14,13 +14,12 @@ stageNumDict = OrderedDict({
     'HEMISPLIT': 11,
     'THICKPVC' : 12,
 
-    'BDP': 13,
+    'SVREG': 13,
+    'SMOOTHSURFLEFT': 14,
+    'SMOOTHSURFRIGHT': 15,
+    'SMOOTHVOLJAC': 16,
 
-    'SVREG': 14,
-    'SMOOTHSURFLEFT': 15,
-    'SMOOTHSURFRIGHT': 16,
-    'SMOOTHVOLJAC': 17,
-
+    'BDP': 17,
     'APPLYMAPFA' : 18,
     'APPLYMAPMD' : 19,
     'APPLYMAPAXIAL' : 20,

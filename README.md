@@ -65,7 +65,7 @@ yeunkim/brainsuitebidsapp:stable
 ```bash
 usage: run.py [-h]
               [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
-              [--stages {CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} [{CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} ...]]
+              [--stages {CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} [{CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} ...]]
               [--atlas {BSA,BCI-DNI,USCBrain}]
               [--analysistype {STRUCT,FUNC,ALL}] [--modelspec MODELSPEC]
               [--preprocspec PREPROCSPEC] [--rmarkdown RMARKDOWN]
@@ -100,9 +100,9 @@ optional arguments:
                         parameter is not provided all subjects should be
                         analyzed. Multiple participants can be specified with
                         a space separated list.
-  --stages {CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} [{CSE,SVREG,BDP,BFP,QC,WEBSERVER,ALL} ...]
+  --stages {CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} [{CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} ...]
                         Processing stage to be run. Space delimited list.
-                        Default is ALL which does not include WEBSERVER.
+                        Default is ALL which does not include DASHBOARD.
   --atlas {BSA,BCI-DNI,USCBrain}
                         Atlas that is to be used for labeling in SVReg.
                         Default atlas: BCI-DNI. Options: BSA, BCI-DNI,
@@ -200,10 +200,10 @@ docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
   bids/brainsuite \
-  /data /output participant --stages WEBSERVER --localWebserver  
+  /data /output participant --stages DASHBOARD --localWebserver
 ```
 where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
-Stages include WEBSERVER, which indicates that the BIDS App will launch the BrainSuite Dashboard.
+Stages include DASHBOARD, which indicates that the BIDS App will launch the BrainSuite Dashboard.
 
 ### Running real-time QC and BrainSuite Dashboard with an existing web server ###
 If your institution has a running web server and you would like to serve using this web server, you do not need to expose ports or start a local web server. 
@@ -214,7 +214,7 @@ docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
   bids/brainsuite \
-  /data /output participant --stages WEBSERVER --QCdir /path/to/QC/output
+  /data /output participant --stages DASHBOARD --QCdir /path/to/QC/output
 ```
 
 You can also specify a list of subjects you would like to selectively QC by using the --QCsubjList argument (see usage above).

@@ -10,7 +10,6 @@ fi;
 
 WEBDIR=$1
 OUTDIR=$2
-#subjects=($(ls ${WEBDIR} | grep sub- ))
 
 numstages=30
 
@@ -33,15 +32,6 @@ echo '"status": "'${@}'",'
 echo '"start_time": "'${startTime}'",'
 echo '"update_time": "'${updateTime}'",'
 echo '"runtime": "'${runtime}'",'
-#printf '"subjectIDs": ['
-#local j=0;
-#local subjidtext="";
-#for subjidtext in ${subjects[@]}; do
-#    if ((j>0)); then printf ','; fi;
-#    printf ${subjidtext};
-#    ((j++))
-#done;
-#echo '],';
 printf '"process_states": ['
 local i=0;
 local subjID="";
@@ -71,15 +61,6 @@ echo '"status": "'${@}'",'
 echo '"start_time": "'${startTime}'",'
 echo '"update_time": "'${updateTime}'",'
 echo '"runtime": "'${runtime}'",'
-#printf '"subjectIDs": ['
-#local j=0;
-#local subjidtext="";
-#for subjidtext in ${subjects[@]}; do
-#    if ((j>0)); then printf ','; fi;
-#    printf ${subjidtext};
-#    ((j++))
-#done;
-#echo '],';
 printf '"process_states": ['
 local i=0;
 local subjID="";
@@ -107,15 +88,6 @@ echo '"status": "'${@}'",'
 echo '"start_time": "'${startTime}'",'
 echo '"update_time": "'${updateTime}'",'
 echo '"runtime": "'${runtime}'",'
-#printf '"subjectIDs": ['
-#local j=0;
-#local subjidtext="";
-#for subjidtext in ${subjects[@]}; do
-#    if ((j>0)); then printf ','; fi;
-#    printf ${subjidtext};
-#    ((j++))
-#done;
-#echo '],';
 printf '"process_states": ['
 local i=0;
 local subjID="";

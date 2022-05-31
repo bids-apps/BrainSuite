@@ -44,15 +44,6 @@ def printDesc(dataDesc, specs):
 
     print(struct)
 
-
-    bdp = ''.format(
-
-    )
-
-    func = ''.format(
-
-    )
-
     datadesc = json.load(open(dataDesc))
 
 

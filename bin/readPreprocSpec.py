@@ -85,7 +85,7 @@ class preProcSpec(object):
 
 
         self.echoSpacing = undefined
-        self.fieldmapCorrection = undefined
+        self.fieldmapCorrection = None
         self.diffusion_time_ms = undefined
 
         self.estimateODF_ERFO = False
@@ -178,7 +178,7 @@ class preProcSpec(object):
 
         self.echoSpacing = undefined if (specs['BrainSuite']['Diffusion']['echoSpacing'] == '' ) \
             else specs['BrainSuite']['Diffusion']['echoSpacing']
-        self.fieldmapCorrection = undefined if (specs['BrainSuite']['Diffusion']['fieldmapCorrection']  == '') \
+        self.fieldmapCorrection = None if (specs['BrainSuite']['Diffusion']['fieldmapCorrection']  == '') \
             else specs['BrainSuite']['Diffusion']['fieldmapCorrection']
 
         self.sigma_GQI = undefined if (specs['BrainSuite']['Diffusion']['sigma_GQI'] == '') \

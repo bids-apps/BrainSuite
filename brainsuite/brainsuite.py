@@ -2008,7 +2008,7 @@ class GenerateXls(BrainSuiteCommandLine):
         return super(GenerateXls, self)._format_arg(name, spec, value)
 
 
-class VolblendInputSpec(CommandLineInputSpec):
+class VolsliceInputSpec(CommandLineInputSpec):
     inFile = File(argstr='-i %s', mandatory=True, desc='Input file.')
     outFile = File(argstr='-o %s', mandatory=True, desc='Output file.')
     Overlay = File(argstr='-r %s', mandatory=False, desc='Overlay image file name.')
@@ -2035,13 +2035,13 @@ class VolblendInputSpec(CommandLineInputSpec):
     )
 
 
-class VolblendOutputSpec(TraitedSpec):
+class VolsliceOutputSpec(TraitedSpec):
     outFile = File(desc='Output file.')
 
 
-class Volblend(BrainSuiteCommandLine):
-    input_spec = VolblendInputSpec
-    output_spec = VolblendOutputSpec
+class Volslice(BrainSuiteCommandLine):
+    input_spec = VolsliceInputSpec
+    output_spec = VolsliceOutputSpec
     _cmd = 'volslice'
 
     def _gen_filename(self, name):
@@ -2057,10 +2057,10 @@ class Volblend(BrainSuiteCommandLine):
         if name == 'dataSinkDelay':
             return spec.argstr % ''
 
-        return super(Volblend, self)._format_arg(name, spec, value)
+        return super(Volslice, self)._format_arg(name, spec, value)
 
 
-class DfsRenderInputSpec(CommandLineInputSpec):
+class RenderDfsInputSpec(CommandLineInputSpec):
     OutFile = File(argstr='-o %s', mandatory=True, desc='Output file. Must be a png.')
     Ant = traits.Bool(argstr='--ant', mandatory=False, desc='coronal view (anterior)')
     Pos = traits.Bool(argstr='--pos', mandatory=False, desc='coronal view (posterior)')
@@ -2095,18 +2095,17 @@ class DfsRenderInputSpec(CommandLineInputSpec):
     )
 
 
-class DfsRenderOutputSpec(TraitedSpec):
+class RenderDfsOutputSpec(TraitedSpec):
     outFile = File(desc='Output file. Must be a png.')
 
 
-class DfsRender(BrainSuiteCommandLine):
-    input_spec = DfsRenderInputSpec
-    output_spec = DfsRenderOutputSpec
+class RenderDfs(BrainSuiteCommandLine):
+    input_spec = RenderDfsInputSpec
+    output_spec = RenderDfsOutputSpec
     _cmd = 'renderdfs'
 
     def _gen_filename(self, name):
         return getFileName(self.inputs.OutFile, '')
-        return None
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -2114,10 +2113,8 @@ class DfsRender(BrainSuiteCommandLine):
     def _format_arg(self, name, spec, value):
         if (name=='bilteral') or (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
             return spec.argstr % os.path.expanduser(value)
-        # if name == 'dataSinkDelay':
-        #     return spec.argstr % os.path.expanduser(value)
 
-        return super(DfsRender, self)._format_arg(name, spec, value)
+        return super(RenderDfs, self)._format_arg(name, spec, value)
 
 
 class QCStateInputSpec(CommandLineInputSpec):
@@ -2143,12 +2140,7 @@ class QCState(BrainSuiteCommandLine):
 
     def _format_arg(self, name, spec, value):
         if (name == 'Run'):
-            # return spec.argstr % \
-            #        {"prefix": self.inputs.prefix, "stagenum": self.inputs.stagenum,
-            #         "state": self.inputs.state}
             return ' %s %s %s ' % (self.inputs.prefix,self.inputs.stagenum,self.inputs.state)
-            # return spec.argstr % os.path.expanduser(value)
-        # return super(QCState, self)._format_arg(name, spec, value)
         return ' %s %s %s ' % (self.inputs.prefix, self.inputs.stagenum, self.inputs.state)
 
 

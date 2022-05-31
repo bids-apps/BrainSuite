@@ -1,7 +1,6 @@
-import subprocess
+
 from bin.brainsuiteWorkflow import subjLevelProcessing
 import os
-import glob
 
 def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwis, funcs,
             subject_label, configini, args):
@@ -43,9 +42,7 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
                 WEBPATH = os.path.join(args.output_dir, 'QC', subjectID, subjectID)
             if not os.path.exists(WEBDIRsub):
                 os.makedirs(WEBDIRsub)
-            # if os.environ['runJustQC'] == 'False':
-            #     cmd = '/BrainSuite/QC/qcState.sh {0} {1}'.format(WEBPATH, 0)
-            #     subprocess.call(cmd, shell=True)
+
         else:
             QCdir = None
 
