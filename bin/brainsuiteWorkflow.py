@@ -2,10 +2,8 @@
 """
 This class connects BrainSuite nodes to form pipelines.
  
-Authors: Yeun Kim, Jason Wong, Clayton Jerlow
 
 Copyright (C) 2022 The Regents of the University of California and the University of Southern California
-Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
 Dept. of Neurology, David Geffen School of Medicine, UCLA.
 
 """

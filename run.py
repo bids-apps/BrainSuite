@@ -21,7 +21,7 @@ from run_rmarkdown import run_rmarkdown
 from bin.runWorkflow import runWorkflow
 
 ########################################################################
-### Authored by https://github.com/BIDS-Apps/HCPPipelines/blob/master/run.py
+### Adapted from https://github.com/BIDS-Apps/HCPPipelines/blob/master/run.py
 
 def run(command, env={}, cwd=None):
     merged_env = os.environ
@@ -54,7 +54,6 @@ def parser():
 
     parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI, rs-fMRI). '
                                                  'Copyright (C) 2022 The Regents of the University of California and the University of Southern California '
-                                                'Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center '
                                                 'Dept. of Neurology, David Geffen School of Medicine, UCLA.'.format(BrainsuiteVersion))
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
