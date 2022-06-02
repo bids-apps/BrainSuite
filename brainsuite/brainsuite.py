@@ -9,15 +9,18 @@ from ..traits_extension import str
 from ... import config, logging, LooseVersion, __version__
 iflogger = logging.getLogger('interface')
 
-"""
+'''
 This script provides interfaces for BrainSuite command line tools.
 Please see brainsuite.org for more information.
 
 
-Copyright (C) 2022 The Regents of the University of California and the University of Southern California
+Authors: Yeun Kim, Jason Wong, Clayton Jerlow
+
+Copyright (C) 2022 The Regents of the University of California 
+Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
 Dept. of Neurology, David Geffen School of Medicine, UCLA.
 
-"""
+'''
 
 class BrainSuiteCommandLine(CommandLine):
     def _check_mandatory_inputs(self):

@@ -1,6 +1,15 @@
 #!/usr/local/miniconda/bin/python
 # -*- coding: utf-8 -*-
 
+'''
+Authors: Yeun Kim, Jason Wong, Clayton Jerlow
+
+Copyright (C) 2022 The Regents of the University of California 
+Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
+Dept. of Neurology, David Geffen School of Medicine, UCLA.
+
+'''
+
 from __future__ import unicode_literals, print_function
 
 import argparse
@@ -53,7 +62,7 @@ def parser():
     BrainsuiteVersion = '21a'
 
     parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI, rs-fMRI). '
-                                                 'Copyright (C) 2022 The Regents of the University of California and the University of Southern California '
+                                                 'Copyright (C) 2022 The Regents of the University of California '
                                                 'Dept. of Neurology, David Geffen School of Medicine, UCLA.'.format(BrainsuiteVersion))
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-"""
-This class connects BrainSuite nodes to form pipelines.
- 
+'''
+This is the main executable script (and entry point) for BrainSuite BIDS App.
 
-Copyright (C) 2022 The Regents of the University of California and the University of Southern California
+Authors: Yeun Kim, Jason Wong, Clayton Jerlow
+
+Copyright (C) 2022 The Regents of the University of California 
+Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
 Dept. of Neurology, David Geffen School of Medicine, UCLA.
 
-"""
+'''
 from __future__ import unicode_literals, print_function
 import subprocess
 from nipype import config #Set configuration before importing nipype pipeline
