@@ -1,9 +1,10 @@
 
 from bin.brainsuiteWorkflow import subjLevelProcessing
 import os
+import shutil
 
 def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwis, funcs,
-            subject_label, configini, args):
+            subject_label, args):
     '''
     This function is a wrapper that runs the appropriate pipelines in brainsuiteWorkflow.py. 
 
@@ -17,11 +18,10 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
     TR = preprocspecs.TR
     if args.TR:
         TR = args.TR
-    BFP = {'configini': configini,
-                       'func': [],
-                       'studydir': args.output_dir,
-                       'subjID': '',
-                       'TR': TR}
+    BFP = {'func': [],
+           'studydir': args.output_dir,
+           'subjID': '',
+           'TR': TR}
 
 
     assert (len(t1ws) > 0), "No T1w files found for subject %s!" % subject_label
@@ -61,8 +61,13 @@ def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwi
             tasknames = layout.get_tasks()
             if args.preprocspec:
                 tasknames = preprocspecs.taskname
+                configini = '{0}/{1}/config.ini'.format(args.output_dir, subjectID)
+            else:
+                shutil.copyfile('/config.ini', '{0}/{1}/config.ini'.format(args.output_dir, subjectID))
+                configini = '{0}/{1}/config.ini'.format(args.output_dir, subjectID)
             if args.fmri_task_name:
                 tasknames = args.fmri_task_name
+            BFP.update({'configini': configini})
             print('Will be running the following fMRI with task-names', tasknames)
             if (len(funcs) > 0):
                 for f in range(0, len(funcs)):

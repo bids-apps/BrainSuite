@@ -1383,7 +1383,9 @@ class subjLevelProcessing(object):
 
         # try:
         brainsuite_workflow_return = \
-        brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': 2}, updatehash=False)
+        brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': int(os.environ['NCPUS']),
+                                                                 'memory_gb': int(os.environ['MAXMEM'])},
+                                updatehash=False)
 
         if 'QC' in STAGES:
             err = False

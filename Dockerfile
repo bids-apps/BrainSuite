@@ -13,7 +13,8 @@ RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite21a.BIDS.tgz && \
     cd / && \
     rm BrainSuite${BrainSuiteVersion}.BIDS.tgz
 
-RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/12/bssr_0.3.2.tar.gz
+RUN cd / && curl http://brainsuite.org/wp-content/uploads/2021/12/bssr_0.3.2.tar.gz > /bssr_0.3.2.tar.gz && \
+    tar xvfz /bssr_0.3.2.tar.gz
 #RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/11/bssr_0.3.2.tar.gz
 RUN wget http://brainsuite.org/data/BIDS/21a/install_bssr.py && python install_bssr.py
 
@@ -24,8 +25,8 @@ ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVer
 #RUN cd / && wget -qO- http://brainsuite.org/data/BIDS/21a/bfp_083121c.tar.gz | tar xvz
 #RUN cd / && wget -qO- http://brainsuite.org/data/BIDS/21a/bfp_ver4p01_t1distcorr.tar.gz| tar xvz
 #RUN rm -rf bfp_ver4p01_t1distcorr/supp_data && mv bfp_ver4p01_t1distcorr/* bfp
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver5p01.tar.gz | tar xvz
-RUN mv /bfp_ver5p01.tar.gz /bfp
+RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver5p05.tar.gz | tar xvz
+RUN mv /bfp_ver5p05 /bfp
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
 

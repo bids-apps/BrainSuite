@@ -167,7 +167,12 @@ def parser():
                         required=False)
 
     parser.add_argument_group('Miscellaneous options')
-    parser.add_argument('--cache', help='Nipype cache output folder', required=False)
+    parser.add_argument('--cache', help='Nipype cache output folder.', required=False)
+    parser.add_argument('--ncpus', help='Number of cpus allocated for running subject-level processing.', required=False,
+                        default=2)
+    parser.add_argument('--maxmem', help='Maximum memory (in GB) that can be used at once.',
+                        required=False,
+                        default=16)
     parser.add_argument('-v', '--version', action='version',
                         version='BrainSuite{0} Pipelines BIDS App version {1}'.format(BrainsuiteVersion,BrainsuiteVersion))
 
@@ -210,7 +215,8 @@ def main():
     else:
         thread=False
 
-    os.environ['runJustQC'] = 'False'
+    os.environ['NCPUS'] = str(args.ncpus)
+    os.environ['MAXMEM'] = str(args.maxmem)
     stages = args.stages
 
     if ('ALL' in args.stages):
@@ -256,18 +262,6 @@ def main():
 
         cacheset =False
         preprocspecs = preProcSpec(args.bids_dir, args.output_dir)
-        if args.preprocspec:
-            preprocspecs.read_preprocfile(args.preprocspec)
-            atlas = atlases[str(preprocspecs.atlas)]
-            cache = preprocspecs.cache
-            thread = preprocspecs.singleThread
-            if preprocspecs.cache:
-                cacheset = True
-                args.cache = preprocspecs.cache
-            configini = '{0}/config.ini'.format(args.output_dir)
-        else:
-            shutil.copyfile('/config.ini', '{0}/config.ini'.format(args.output_dir))
-            configini = '{0}/config.ini'.format(args.output_dir)
 
         allt1ws = []
         for subject_label in subjects_to_analyze:
@@ -297,11 +291,20 @@ def main():
                 else:
                     t1ws = [f.filename for f in layout.get(subject=subject_label,
                                                            type='T1w', extensions=["nii.gz", "nii"])]
+            subjectID = t1ws[0].split('/')[-1].split('_T1w')[0]
+            if not os.path.exists('{0}/{1}/'.format(args.output_dir, subjectID)):
+                os.makedirs('{0}/{1}/'.format(args.output_dir, subjectID))
+            if args.preprocspec:
+                preprocspecs.read_preprocfile(args.preprocspec, subjectID)
+                atlas = atlases[str(preprocspecs.atlas)]
+                thread = preprocspecs.singleThread
+                if preprocspecs.cache:
+                    cacheset = True
+                    args.cache = preprocspecs.cache
             allt1ws.extend(t1ws)
         dataset_description = None
         if os.path.exists(args.bids_dir + '/dataset_description.json'):
             dataset_description = args.bids_dir + '/dataset_description.json'
-        # preprocspecs.write_preproc_params(args.output_dir, stages, dataset_description)
         if 'DASHBOARD' in stages:
             preprocspecs.write_subjectIDsJSON(allt1ws, args, WEBDIR)
             preprocspecs.write_preproc_params(WEBDIR, stages, dataset_description)
@@ -341,7 +344,7 @@ def main():
                                                                         type='bold', session=sessions[ses],
                                                                         extensions=["nii.gz", "nii"])]
                                 runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                            dwis, funcs, subject_label, configini, args)
+                                            dwis, funcs, subject_label, args)
 
                         else:
                             t1ws = [f.filename for f in layout.get(subject=subject_label,
@@ -354,7 +357,7 @@ def main():
                                                                     type='bold', session=sessions[ses],
                                                                     extensions=["nii.gz", "nii"])]
                             runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                    dwis, funcs, subject_label, configini, args)
+                                    dwis, funcs, subject_label, args)
                 else:
                     runs = layout.get(target='run', return_type='id',
                                       subject=subject_label, type='T1w', extensions=["nii.gz", "nii"])
@@ -370,7 +373,7 @@ def main():
                                                                     type='bold',
                                                                     extensions=["nii.gz", "nii"])]
                             runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                        dwis, funcs, subject_label, configini, args)
+                                        dwis, funcs, subject_label, args)
                     else:
                         t1ws = [f.filename for f in layout.get(subject=subject_label,
                                                                type='T1w', extensions=["nii.gz", "nii"])]
@@ -383,7 +386,7 @@ def main():
                                                                 type='bold',
                                                                 extensions=["nii.gz", "nii"])]
                         runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout,
-                                dwis, funcs, subject_label, configini, args)
+                                dwis, funcs, subject_label, args)
 
     if args.analysis_level == "group":
 

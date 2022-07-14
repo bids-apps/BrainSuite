@@ -96,7 +96,7 @@ class preProcSpec(object):
         self.smoothvol = 3.0
         self.smoothsurf = 2.0
 
-    def read_preprocfile(self, preprocfile):
+    def read_preprocfile(self, preprocfile, subjectID):
         if not os.path.isfile(preprocfile):
             sys.stdout.write('##############################################\n'
                              '##############################################\n'
@@ -259,12 +259,12 @@ class preProcSpec(object):
         config.set('main', 'scbPath', str(self.scbpath))
         config.set('main', 'T1mask', str(self.T1mask))
 
-        with open('{0}/config.ini'.format(self.outputdir), 'w') as configfile:
+        with open('{0}/config.ini'.format(self.outputdir + '/' + subjectID), 'w') as configfile:
             config.write(configfile)
 
-        with open('{0}/config.ini'.format(self.outputdir), 'r') as fin:
+        with open('{0}/config.ini'.format(self.outputdir + '/' + subjectID), 'r') as fin:
             data = fin.read().splitlines(True)
-        with open('{0}/config.ini'.format(self.outputdir), 'w') as fout:
+        with open('{0}/config.ini'.format(self.outputdir + '/' + subjectID), 'w') as fout:
             fout.writelines(data[1:])
 
         self.read_file = True
