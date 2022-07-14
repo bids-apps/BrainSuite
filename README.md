@@ -64,20 +64,22 @@ yeunkim/brainsuitebidsapp:stable
 ### Command line arguments
 ```bash
 usage: run.py [-h]
-              [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
               [--stages {CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} [{CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} ...]]
-              [--atlas {BSA,BCI-DNI,USCBrain}]
-              [--analysistype {STRUCT,FUNC,ALL}] [--modelspec MODELSPEC]
-              [--preprocspec PREPROCSPEC] [--rmarkdown RMARKDOWN]
-              [--singleThread] [--cache CACHE] [--TR TR]
-              [--fmri_task_name FMRI_TASK_NAME [FMRI_TASK_NAME ...]]
-              [--skipBSE] [--ignoreSubjectConsistency]
-              [--bidsconfig [BIDSCONFIG]] [--ignore_suffix IGNORE_SUFFIX]
-              [--QCdir QCDIR] [--QCsubjList QCSUBJLIST] [--localWebserver]
-              [--port PORT] [--bindLocalHostOnly] [-v]
+              [--preprocspec PREPROCSPEC]
+              [--participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]]
+              [--skipBSE] [--atlas {BSA,BCI-DNI,USCBrain}] [--singleThread]
+              [--TR TR] [--fmri_task_name FMRI_TASK_NAME [FMRI_TASK_NAME ...]]
+              [--ignore_suffix IGNORE_SUFFIX] [--QCdir QCDIR]
+              [--QCsubjList QCSUBJLIST] [--localWebserver] [--port PORT]
+              [--bindLocalHostOnly] [--modelspec MODELSPEC]
+              [--analysistype {STRUCT,FUNC,ALL}] [--rmarkdown RMARKDOWN]
+              [--ignoreSubjectConsistency] [--bidsconfig [BIDSCONFIG]]
+              [--cache CACHE] [--ncpus NCPUS] [--maxmem MAXMEM] [-v]
               bids_dir output_dir {participant,group}
 
-BrainSuite21a BIDS-App (T1w, dMRI, rs-fMRI)
+BrainSuite21a BIDS-App (T1w, dMRI, rs-fMRI). Copyright (C) 2022 The Regents of
+the University of California Dept. of Neurology, David Geffen School of
+Medicine, UCLA.
 
 positional arguments:
   bids_dir              The directory with the input dataset formatted
@@ -93,6 +95,26 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --stages {CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} [{CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} ...]
+                        Participant-level processing stage to be run. Space
+                        delimited list. Default is ALL which does not include
+                        DASHBOARD. CSE runs Cortical Surface Extractor. SVREG
+                        runs Surface-constrained Volumetric registration. BDP
+                        runs BrainSuite Diffusion Pipeline. BFP runs
+                        BrainSuite Functional Pipeline. QC runs BrainSuite QC
+                        and generates status codes and snapshots. DASHBOARD
+                        runs the real-time monitoring that is required for
+                        BrainSuite Dashboard to update real-time.
+  --preprocspec PREPROCSPEC
+                        Optional. BrainSuite preprocessing parameters.Path to
+                        JSON file that contains preprocessing specifications.
+  --cache CACHE         Nipype cache output folder.
+  --ncpus NCPUS         Number of cpus allocated for running subject-level
+                        processing.
+  --maxmem MAXMEM       Maximum memory (in GB) that can be used at once.
+  -v, --version         show program's version number and exit
+
+Options for selectively running specific datasets:
   --participant_label PARTICIPANT_LABEL [PARTICIPANT_LABEL ...]
                         The label of the participant that should be analyzed.
                         The label corresponds to sub-<participant_label> from
@@ -100,49 +122,25 @@ optional arguments:
                         parameter is not provided all subjects should be
                         analyzed. Multiple participants can be specified with
                         a space separated list.
-  --stages {CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} [{CSE,SVREG,BDP,BFP,QC,DASHBOARD,ALL} ...]
-                        Processing stage to be run. Space delimited list.
-                        Default is ALL which does not include DASHBOARD.
+
+Command line arguments for BrainSuite Anatomical Pipeline (BAP). For more parameter options, please edit the preprocspecs.json file:
+  --skipBSE             Skips BSE stage when running CSE. Please make sure
+                        there are sub-ID_T1w.mask.nii.gz files in the subject
+                        folders.
   --atlas {BSA,BCI-DNI,USCBrain}
                         Atlas that is to be used for labeling in SVReg.
                         Default atlas: BCI-DNI. Options: BSA, BCI-DNI,
                         USCBrain.
-  --analysistype {STRUCT,FUNC,ALL}
-                        Group analysis type: structural (T1 or DWI)or
-                        functional (fMRI). Options: STRUCT, FUNC, ALL.
-  --modelspec MODELSPEC
-                        Optional. Only for group analysis level.Path to JSON
-                        file that contains statistical models pecifications.
-  --preprocspec PREPROCSPEC
-                        Optional. BrainSuite preprocessing parameters.Path to
-                        JSON file that contains preprocessing specifications.
-  --rmarkdown RMARKDOWN
-                        Optional. Executable Rmarkdown file that uses bssr
-                        forgroup analysis stage. If this argument is
-                        specified, BrainSuite BIDS-App will run this Rmarkdown
-                        instead of using the content found in
-                        modelspec.json.Path to R Markdown file that contains
-                        bssr analysis commands.
   --singleThread        Turns on single-thread mode for SVReg.This option can
                         be useful when machines run into issues with the
                         parallel processing tool from Matlab (Parpool).
-  --cache CACHE         Nipype cache output folder
+
+Command line arguments for BrainSuite Functional Pipeline (BFP). For more parameter options, please edit the preprocspecs.json file:
   --TR TR               Repetition time of MRI (in seconds).
   --fmri_task_name FMRI_TASK_NAME [FMRI_TASK_NAME ...]
                         fMRI task name to be processed during BFP. The name
                         should only containthe contents after "task-". E.g.,
                         restingstate.
-  --skipBSE             Skips BSE stage when running CSE. Please make sure
-                        there are sub-ID_T1w.mask.nii.gz files in the subject
-                        folders.
-  --ignoreSubjectConsistency
-                        Reduces down the BIDS validator log and the associated
-                        memory needs. This is often helpful forlarge datasets.
-  --bidsconfig [BIDSCONFIG]
-                        Configuration of the severity of errors for BIDS
-                        validator. If no path is specified, a default path of
-                        .bids-validator-config.json(relative to the input bids
-                        directory) file is used.
   --ignore_suffix IGNORE_SUFFIX
                         Optional. Users can define which suffix to ignore in
                         the output folder. E.g., if input T1w is sub-01_ses-
@@ -150,6 +148,8 @@ optional arguments:
                         ignore the "acq-highres" suffix portion, then user can
                         type "--ignore_suffix acq", which will render
                         sub-01_ses-A_run-01 output folders.
+
+Options for BrainSuite QC and Dashboard:
   --QCdir QCDIR         Designate directory for QC Dashboard.
   --QCsubjList QCSUBJLIST
                         For QC purposes, optional subject list (txt format,
@@ -163,7 +163,31 @@ optional arguments:
                         server binds to all of the IPs on the machine. If you
                         would like to only bind to the local host, please use
                         this flag.
-  -v, --version         show program's version number and exit
+
+Arguments and options for group-level stage. --modelspec is required for groupmode:
+  --modelspec MODELSPEC
+                        Optional. Only for group analysis level.Path to JSON
+                        file that contains statistical model specifications.
+  --analysistype {STRUCT,FUNC,ALL}
+                        Group analysis type: structural (T1 or DWI)or
+                        functional (fMRI). Options: STRUCT, FUNC, ALL.
+  --rmarkdown RMARKDOWN
+                        Optional. Executable Rmarkdown file that uses bssr
+                        forgroup analysis stage. If this argument is
+                        specified, BrainSuite BIDS-App will run this Rmarkdown
+                        instead of using the content found in
+                        modelspec.json.Path to R Markdown file that contains
+                        bssr analysis commands.
+
+Options for bids-validator:
+  --ignoreSubjectConsistency
+                        Reduces down the BIDS validator log and the associated
+                        memory needs. This is often helpful forlarge datasets.
+  --bidsconfig [BIDSCONFIG]
+                        Configuration of the severity of errors for BIDS
+                        validator. If no path is specified, a default path of
+                        .bids-validator-config.json(relative to the input bids
+                        directory) file is used
 
 ```
 ### Participant-level usage ###
