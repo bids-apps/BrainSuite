@@ -13,20 +13,18 @@ RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite21a.BIDS.tgz && \
     cd / && \
     rm BrainSuite${BrainSuiteVersion}.BIDS.tgz
 
-RUN cd / && curl http://brainsuite.org/wp-content/uploads/2021/12/bssr_0.3.2.tar.gz > /bssr_0.3.2.tar.gz && \
-    tar xvfz /bssr_0.3.2.tar.gz
-#RUN cd / && wget http://brainsuite.org/wp-content/uploads/2021/11/bssr_0.3.2.tar.gz
+RUN cd / && curl http://brainsuite.org/wp-content/uploads/2022/08/bssr_0.3.3.tar.gz > /bssr_0.3.3.tar.gz && \
+    tar xvfz /bssr_0.3.3.tar.gz
 RUN wget http://brainsuite.org/data/BIDS/21a/install_bssr.py && python install_bssr.py
 
 RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
 
 ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
 
-#RUN cd / && wget -qO- http://brainsuite.org/data/BIDS/21a/bfp_083121c.tar.gz | tar xvz
-#RUN cd / && wget -qO- http://brainsuite.org/data/BIDS/21a/bfp_ver4p01_t1distcorr.tar.gz| tar xvz
-#RUN rm -rf bfp_ver4p01_t1distcorr/supp_data && mv bfp_ver4p01_t1distcorr/* bfp
-RUN cd / && wget -qO- http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/bfp_ver5p05.tar.gz | tar xvz
-RUN mv /bfp_ver5p05 /bfp
+RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver5p05/bfp_ver5p05_release.tar.gz | tar xvz
+RUN mv /bfp_ver5p05_release/* / && tar xvfz bfp_ver5p05.tar.gz && tar xvfz bfp_source.tar.gz 
+RUN rm bfp_source.tar.gz bfp_ver5p05.tar.gz
+RUN mv /bfp_source /bfp && mv /bfp_ver5p05/* /bfp/
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
 
@@ -42,7 +40,6 @@ COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 COPY ./bfp_sample_config_preproc.ini /config.ini
 COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
 
-#COPY bfp/standard/MNI152_T1_2mm.nii.gz /usr/share/fsl/5.0/data/standard/
 RUN chmod -R ugo+rx /jq-linux64
 
 COPY . /BrainSuite
