@@ -84,8 +84,3 @@ For parameters whose options are Boolean values, 1 (True) and 0 (False) are used
 * **RunNSR** : Enables nuisance signal regression. Options: {0,1}. Default: 1
 * **scbPath** : SCB file is used by tNLM filtering. Set this path somewhere there is a lot of space.
 * **T1mask** : If enabled, BFP uses the T1w mask to threshold fMRI data, which may be useful for data with high signal dropout. Options: {0,1}. Default: 1
-* **epit1corr** : If enabled, BFP performs distortion correction using constrained non-linear registration between the nonuniformity-corrected T1w-image and the reference fMRI image. This is useful for data in cases where a B0 field map is not available. Options: {0,1}. Default: 1
-* **epit1corr_mask** : Specifies the EPI masking method used by BFP during EPI distortion correction. 0: use T1w-based mask; 1: use BDP liberal; 2: use BDP aggressive; 3: use AFNI 3dAutomask plus two-voxel dilation. Options: {0,1,2,3}. Default: 2
-* **epit1corr_rigidsim** : Specifies the cost function(s) used by BFP during EPI distortion correction. Available methods are INVERSION (inversion), INVERSION followed by normalized mutual-information based refinement (Bhushan et al., 2015) (bdp), mutual information (mi), correlation ratio (cr), and squared difference (sd). Options: {bdp, inversion, mi, cr, sd}. Default: mi
-* **epit1corr_bias** : If enabled, BFP performs bias field correction on the distortion-corrected data. Options: {0,1}. Default: 1
-* **epit1corr_numthreads** : Specifies the number of threads used for T1w-based distortion correction.

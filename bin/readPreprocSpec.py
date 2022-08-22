@@ -49,7 +49,7 @@ class preProcSpec(object):
 
         self.scbpath = ''
         self.T1mask = True
-        self.epit1corr = 1
+        self.epit1corr = 0
         self.epit1corr_mask = 3
         self.epit1corr_rigidsim = 'mi'
         self.epit1corr_bias = 1
@@ -217,11 +217,11 @@ class preProcSpec(object):
         self.runnsr = specs['BrainSuite']['Functional']['RunNSR']
         self.scbpath = specs['BrainSuite']['Functional']['scbPath']
         self.T1mask = specs['BrainSuite']['Functional']['T1mask']
-        self.epit1corr = specs['BrainSuite']['Functional']['epit1corr']
-        self.epit1corr_mask = specs['BrainSuite']['Functional']['epit1corr_mask']
-        self.epit1corr_rigidsim = specs['BrainSuite']['Functional']['epit1corr_rigidsim']
-        self.epit1corr_bias = specs['BrainSuite']['Functional']['epit1corr_bias']
-        self.epit1corr_numthreads = specs['BrainSuite']['Functional']['epit1corr_numthreads']
+        # self.epit1corr = specs['BrainSuite']['Functional']['epit1corr']
+        # self.epit1corr_mask = specs['BrainSuite']['Functional']['epit1corr_mask']
+        # self.epit1corr_rigidsim = specs['BrainSuite']['Functional']['epit1corr_rigidsim']
+        # self.epit1corr_bias = specs['BrainSuite']['Functional']['epit1corr_bias']
+        # self.epit1corr_numthreads = specs['BrainSuite']['Functional']['epit1corr_numthreads']
         self.simref = specs['BrainSuite']['Functional']['SimRef']
 
         ini_str = u'[main]\n' + open('/config.ini', 'r').read()
@@ -248,11 +248,11 @@ class preProcSpec(object):
         config.set('main','T1SpaceProcessing', str(self.t1space))
         config.set('main','FSLRigid', str(self.fslrigid))
         config.set('main','SimRef', str(self.simref))
-        config.set('main', 'epit1corr', str(self.epit1corr))
-        config.set('main', 'epit1corr_mask', str(self.epit1corr_mask))
-        config.set('main', 'epit1corr_rigidsim', str(self.epit1corr_rigidsim))
-        config.set('main', 'epit1corr_bias', str(self.epit1corr_bias))
-        config.set('main', 'epit1corr_numthreads', str(self.epit1corr_numthreads))
+        # config.set('main', 'epit1corr', str(self.epit1corr))
+        # config.set('main', 'epit1corr_mask', str(self.epit1corr_mask))
+        # config.set('main', 'epit1corr_rigidsim', str(self.epit1corr_rigidsim))
+        # config.set('main', 'epit1corr_bias', str(self.epit1corr_bias))
+        # config.set('main', 'epit1corr_numthreads', str(self.epit1corr_numthreads))
 
         config.set('main','RunDetrend', str(self.rundetrend))
         config.set('main','RunNSR', str(self.runnsr))
