@@ -51,6 +51,7 @@
 			"BPoption": 1,
 			"RunDetrend": 1,
 			"RunNSR": 1,
+			"uscrigid_similarity": "inversion",
 			"scbPath": "/output/SCB.mat",
 			"T1mask": 1
 		}

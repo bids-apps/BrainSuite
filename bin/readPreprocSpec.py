@@ -44,6 +44,7 @@ class preProcSpec(object):
         self.bpoption = 1
         self.rundetrend = 1
         self.runnsr = 1
+        self.uscrigid_similarity = 'inversion'
         self.bids_dir = bids_dir
         self.outputdir = outputdir
 
@@ -222,6 +223,7 @@ class preProcSpec(object):
         # self.epit1corr_rigidsim = specs['BrainSuite']['Functional']['epit1corr_rigidsim']
         # self.epit1corr_bias = specs['BrainSuite']['Functional']['epit1corr_bias']
         # self.epit1corr_numthreads = specs['BrainSuite']['Functional']['epit1corr_numthreads']
+        self.uscrigid_similarity = specs['BrainSuite']['Functional']['uscrigid_similarity']
         self.simref = specs['BrainSuite']['Functional']['SimRef']
 
         ini_str = u'[main]\n' + open('/config.ini', 'r').read()
@@ -258,6 +260,7 @@ class preProcSpec(object):
         config.set('main','RunNSR', str(self.runnsr))
         config.set('main', 'scbPath', str(self.scbpath))
         config.set('main', 'T1mask', str(self.T1mask))
+        config.set('main', 'uscrigid_similarity', str(self.uscrigid_similarity))
 
         with open('{0}/config.ini'.format(self.outputdir + '/' + subjectID), 'w') as configfile:
             config.write(configfile)
