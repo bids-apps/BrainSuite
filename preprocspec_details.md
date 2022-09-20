@@ -82,5 +82,6 @@ For parameters whose options are Boolean values, 1 (True) and 0 (False) are used
 * **BPoption** : If enabled, BFP applies 3dBandpass (updated function with quadratic detrending). If not enabled, BFP applies 3dFourier and linear detrending. Details are found in the AFNI documentation 3 . Options: {0,1}. Default: 1
 * **RunDetrend** : Enables detrending. Options: {0,1}. Default: 1
 * **RunNSR** : Enables nuisance signal regression. Options: {0,1}. Default: 1
+* **uscrigid_similarity** : Specifies the cost function(s) used by BFP during USC rigid registration. Available methods are INVERSION (inversion), INVERSION followed by normalized mutual-information based refinement (bdp), mutual information (mi), correlation ratio (cr), and squared difference (sd). Options: {bdp, inversion, mi, cr, sd}. Default: inversion
 * **scbPath** : SCB file is used by tNLM filtering. Set this path somewhere there is a lot of space.
 * **T1mask** : If enabled, BFP uses the T1w mask to threshold fMRI data, which may be useful for data with high signal dropout. Options: {0,1}. Default: 1

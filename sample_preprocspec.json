@@ -1,7 +1,7 @@
 {
 	"BrainSuite": {
 		"Global Settings": {
-			"cacheFolder": "/tmp"
+			"cacheFolder": ""
 		},
 		"Anatomical": {
 			"autoParameters": 1,
