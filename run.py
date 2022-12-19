@@ -266,41 +266,21 @@ def main():
         allt1ws = []
         for subject_label in subjects_to_analyze:
 
-            sessions = layout.get(target='session', return_type='id',
-                                  subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
-            if len(sessions) > 0:
-                for ses in range(0, len(sessions)):
-                    runs = layout.get(target='run', return_type='id', session=sessions[ses],
-                                  subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
-                    if len(runs) > 0:
-                        for r in range(0, len(runs)):
-                            t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                                   type='T1w', session=sessions[ses],
-                                                                   extensions=["nii.gz", "nii"])]
-                    else:
-                        t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                               type='T1w', session=sessions[ses],
-                                                               extensions=["nii.gz", "nii"])]
-            else:
-                runs = layout.get(target='run', return_type='id',
-                                  subject=subject_label, type='T1w', extensions=["nii.gz", "nii"])
-                if len(runs) > 0:
-                    for r in range(0, len(runs)):
-                        t1ws = [f.filename for f in layout.get(subject=subject_label, run=runs[r],
-                                                               type='T1w', extensions=["nii.gz", "nii"])]
-                else:
-                    t1ws = [f.filename for f in layout.get(subject=subject_label,
-                                                           type='T1w', extensions=["nii.gz", "nii"])]
-            subjectID = t1ws[0].split('/')[-1].split('_T1w')[0]
-            if not os.path.exists('{0}/{1}/'.format(args.output_dir, subjectID)):
-                os.makedirs('{0}/{1}/'.format(args.output_dir, subjectID))
-            if args.preprocspec:
-                preprocspecs.read_preprocfile(args.preprocspec, subjectID)
-                atlas = atlases[str(preprocspecs.atlas)]
-                thread = preprocspecs.singleThread
-                if preprocspecs.cache:
-                    cacheset = True
-                    args.cache = preprocspecs.cache
+            t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                   type='T1w', extensions=["nii.gz", "nii"])]
+
+
+            for t1w in t1ws:
+                subjectID = t1w.split('/')[-1].split('_T1w')[0]
+                if not os.path.exists('{0}/{1}/'.format(args.output_dir, subjectID)):
+                    os.makedirs('{0}/{1}/'.format(args.output_dir, subjectID))
+                if args.preprocspec:
+                    preprocspecs.read_preprocfile(args.preprocspec, subjectID)
+                    atlas = atlases[str(preprocspecs.atlas)]
+                    thread = preprocspecs.singleThread
+                    if preprocspecs.cache:
+                        cacheset = True
+                        args.cache = preprocspecs.cache
             allt1ws.extend(t1ws)
         dataset_description = None
         if os.path.exists(args.bids_dir + '/dataset_description.json'):
