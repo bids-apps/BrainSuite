@@ -84,5 +84,3 @@ class bssrSpec(object):
         #         path = os.path.join(self.outputdir, fname)
         #         if os.path.isdir(path) and "ses-{0}".format(self.session) in fname:
         #             subjects.append(path)
-
-

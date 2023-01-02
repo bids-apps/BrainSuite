@@ -18,7 +18,7 @@ ENV PATH /opt/conda/bin:$PATH
 # MATLAB MCR
 RUN mkdir mcr_install && \
     cd mcr_install && \
-    wget -q https://www.mathworks.com/supportfiles/downloads/R2015b/deployment_files/R2015b/installers/glnxa64/MCR_R2015b_glnxa64_installer.zip && \ 
+    wget -q https://www.mathworks.com/supportfiles/downloads/R2015b/deployment_files/R2015b/installers/glnxa64/MCR_R2015b_glnxa64_installer.zip && \
     unzip -q MCR_R2015b_glnxa64_installer.zip && \
     ./install -agreeToLicense yes -mode silent && \
     cd / && \
@@ -92,4 +92,3 @@ RUN conda install libgcc
 RUN chmod +x /BrainSuite/run.py
 
 ENTRYPOINT ["/BrainSuite/run.py"]
-

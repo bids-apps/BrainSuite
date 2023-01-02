@@ -1,25 +1,25 @@
-# BrainSuite BIDS-App 
+# BrainSuite BIDS-App
 This is the BIDS-App version of BrainSuite18a (http://brainsuite.org/). This BIDS-App version of BrainSuite provides a portable, streamlined method of performing primary BrainSuite analysis workflows.
 
 ## Description
-BrainSuite is an open-source collection of software for processing structural and diffusion MRI, with planned enhancements to support functional MRI.  
-These stages include: 
+BrainSuite is an open-source collection of software for processing structural and diffusion MRI, with planned enhancements to support functional MRI.
+These stages include:
 * Extracting cortical surface models from T1-weighted (T1w) MRI ([CSE](http://brainsuite.org/processing/surfaceextraction/)).
 * Performing surface-constrained volumetric registration ([SVReg](http://brainsuite.org/processing/svreg/)) to rpoduce consistent surface and colume reigstrations to a labeled atlas.
-* Processing diffusion weighted imaging (DWI) to correct image distortion, co-registering the DWI to the T1w scan, and fitting diffusion models to the DWI data ([BDP](http://brainsuite.org/processing/diffusion/)). 
+* Processing diffusion weighted imaging (DWI) to correct image distortion, co-registering the DWI to the T1w scan, and fitting diffusion models to the DWI data ([BDP](http://brainsuite.org/processing/diffusion/)).
 * Group-level statistical analysis using BrainSuite Statistics Toolbox in R (bssr).
 
 ## Usage
 ### Data input requirements
-This App requires at least one T1w image. If no corresponding DWI data is found, the App will only run CSE and SVReg on the T1w(s). If there are corresponding DWI data (DWI image data, bval file, and bvec file), the App will grab the nearest DWI data (i.e. within sub-ID/ directory or sub-ID/ses directory) and will perform CSE, SVReg, and BDP. 
+This App requires at least one T1w image. If no corresponding DWI data is found, the App will only run CSE and SVReg on the T1w(s). If there are corresponding DWI data (DWI image data, bval file, and bvec file), the App will grab the nearest DWI data (i.e. within sub-ID/ directory or sub-ID/ses directory) and will perform CSE, SVReg, and BDP.
 
-If there are unequal number of T1w data and DWI data, the App will process the T1w and DWI data in pairs until there are no matched pairs left. The pairs will be matched according to the run numbers (i.e. run-01). 
+If there are unequal number of T1w data and DWI data, the App will process the T1w and DWI data in pairs until there are no matched pairs left. The pairs will be matched according to the run numbers (i.e. run-01).
 
 * **Required**: T1w image (BIDS/NIFTI format).
 * (Optional): DWI image (BIDS/NIFTI format).
 
-### Pre-requisites 
-* Make sure the imaging data are formatted and organized with respect to the [BIDS standard](http://bids.neuroimaging.io/bids_spec1.1.0.pdf). 
+### Pre-requisites
+* Make sure the imaging data are formatted and organized with respect to the [BIDS standard](http://bids.neuroimaging.io/bids_spec1.1.0.pdf).
 * If you have not yet installed Docker, install Docker from [here](https://docs.docker.com/install/).
 
 ### Command line arguments
@@ -76,9 +76,9 @@ docker run -ti --rm \
   bids/brainsuite \
   /data /output participant --participant_label 01
 ```
-Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages. 
+Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages.
 
-User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
+User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed.
 All sessions will be processed. The output files will be located in the output folder specified.
 
 ### Group level usage ###
@@ -117,11 +117,11 @@ docker run -ti --rm \
 * **results** : Output folder path for results. The path has to be relative to the path inside the Docker container.
 
 ## Support
-Questions about usage can be submitted to http://forums.brainsuite.org/. 
+Questions about usage can be submitted to http://forums.brainsuite.org/.
 Issues or suggestions can be directly submitted as an issue to this Github Repository.
 
 ## FYI
-* BDP requires at least 6GB of memory. You may have to increase memory when you run the container. 
+* BDP requires at least 6GB of memory. You may have to increase memory when you run the container.
 * Turn on single thread mode (``` --singleThread ```) if your machine cannot support MATLAB's parpool.
 * BDP estimates tensors, FRT ODF, and FRACT ODF.
 

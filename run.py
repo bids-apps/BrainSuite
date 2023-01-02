@@ -206,6 +206,3 @@ if args.analysis_level == "group":
     bss_data = load_bss_data(specs)
     bss_model = run_model(specs, bss_data)
     save_bss(bss_data, bss_model, specs.resultdir)
-
-
-

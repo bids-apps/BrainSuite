@@ -1663,36 +1663,36 @@ class SVRegSmoothSurf(CommandLine):
     """
         SVRegApplyMap (SVRegApplyMap)
         This program applies an SVReg deformation file to an input volume.
-        
+
         http://brainsuite.org/processing/svreg/
-        
+
         Examples
         --------
-        
+
         >>> from nipype.interfaces import brainsuite
         >>> from nipype.testing import example_data
         >>> svregSmoothSurf = brainsuite.SVRegSmoothSurf()
         >>> svregSmoothSurf.inputs.inputMRIFile = example_data('structural.nii')
         >>> results = svregApplyMap.run() #doctest: +SKIP
         """
-    
+
     input_spec = SVRegSmoothSurfInputSpec
     output_spec = SVRegSmoothSurfOutputSpec
     _cmd = 'svreg_smooth_surf_function.sh'
-    
+
     def _gen_filename(self, name):
         return getFileName(self.inputs.outSurface, '')
         return None
-    
+
     def _list_outputs(self):
         return l_outputs(self)
-    
+
     def _format_arg(self, name, spec, value):
         if name == 'inputSurface':
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
             return spec.argstr % ''
-        
+
         return super(SVRegSmoothSurf, self)._format_arg(name, spec, value)
 
 
@@ -1779,7 +1779,7 @@ class SVRegSmoothVol(CommandLine):
     >>> svregSmoothVol.inputs.inFile = example_data('structural.nii')
     >>> results = svregSmoothVol.run() #doctest: +SKIP
     """
-    
+
     input_spec = SVRegSmoothVolInputSpec
     output_spec = SVRegSmoothVolOutputSpec
     _cmd = 'svreg_smooth_vol_function.sh'
@@ -1817,4 +1817,3 @@ def l_outputs(self):
             outputs[key] = name
 
     return outputs
-

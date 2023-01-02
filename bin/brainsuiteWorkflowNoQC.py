@@ -158,29 +158,29 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         thickPVCObj = pe.Node(interface=bs.ThicknessPVC(), name='ThickPVC')
         thickPVCInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
         thickPVCObj.inputs.subjectFilePrefix = thickPVCInputBase
-        
+
         brainsuite_workflow.connect(ds2, 'out_file', thickPVCObj, 'dataSinkDelay')
-        
+
         ds3 = pe.Node(io.DataSink(), name='DATASINK3')
         ds3.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
-        
+
         brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', ds3, '@')
         brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', ds3, '@1')
-        
+
         smoothSurfInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + 'atlas.pvc-thickness_0-6mm'
-        
+
         smoothSurfLeftObj = pe.Node(interface=bs.SVRegSmoothSurf(), name='SMOOTHSURFLEFT')
         smoothSurfLeftObj.inputs.inputSurface = smoothSurfInputBase + '.left.mid.cortex.dfs'
         smoothSurfLeftObj.inputs.funcFile = smoothSurfInputBase + '.left.mid.cortex.dfs'
         smoothSurfLeftObj.inputs.outSurface = smoothSurfInputBase + '.smooth5.0mm.left.mid.cortex.dfs'
         smoothSurfLeftObj.inputs.param = 5
-        
+
         smoothSurfRightObj = pe.Node(interface=bs.SVRegSmoothSurf(), name='SMOOTHSURFRIGHT')
         smoothSurfRightObj.inputs.inputSurface = smoothSurfInputBase + '.right.mid.cortex.dfs'
         smoothSurfRightObj.inputs.funcFile = smoothSurfInputBase + '.right.mid.cortex.dfs'
         smoothSurfRightObj.inputs.outSurface = smoothSurfInputBase + '.smooth5.0mm.right.mid.cortex.dfs'
         smoothSurfRightObj.inputs.param = 5
-        
+
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfLeftObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds3, 'out_file', smoothSurfRightObj, 'dataSinkDelay')
 
@@ -190,7 +190,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
             atlasFilePrefix = keyword_parameters['ATLAS']
 
         ######## Apply Map ########
-        applyMapInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID 
+        applyMapInputBase = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID
         applyMapMapFile = applyMapInputBase + '.svreg.inv.map.nii.gz'
         applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
 
@@ -204,7 +204,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         applyMapMDObj.inputs.mapFile = applyMapMapFile
         applyMapMDObj.inputs.dataFile = applyMapInputBase + '.dwi.RAS.correct.MD.T1_coord.nii.gz'
         applyMapMDObj.inputs.outFile = applyMapInputBase + '.dwi.RAS.correct.atlas.MD.nii.gz'
-        applyMapMDObj.inputs.targetFile = applyMapTargetFile        
+        applyMapMDObj.inputs.targetFile = applyMapTargetFile
 
         applyMapAxialObj = pe.Node(interface=bs.SVRegApplyMap(), name='APPLYMAP_AXIAL')
         applyMapAxialObj.inputs.mapFile = applyMapMapFile
@@ -242,7 +242,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
 
         ds4 = pe.Node(io.DataSink(), name='DATASINK4')
         ds4.inputs.base_directory = WORKFLOW_BASE_DIRECTORY
-    
+
         brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', ds4, '@')
         brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', ds4, '@1')
         brainsuite_workflow.connect(applyMapAxialObj, 'mappedFile', ds4, '@2')
@@ -262,39 +262,39 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         smoothVolFAObj.inputs.outFile = smoothVolInputBase + 'FA.smooth6.0mm.nii.gz'
 
         smoothVolMDObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_MD')
-        smoothVolMDObj.inputs.inFile = smoothVolInputBase + 'MD.nii.gz'       
+        smoothVolMDObj.inputs.inFile = smoothVolInputBase + 'MD.nii.gz'
         smoothVolMDObj.inputs.stdx = 6
         smoothVolMDObj.inputs.stdy = 6
         smoothVolMDObj.inputs.stdz = 6
-        smoothVolMDObj.inputs.outFile = smoothVolInputBase + 'MD.smooth6.0mm.nii.gz'   
+        smoothVolMDObj.inputs.outFile = smoothVolInputBase + 'MD.smooth6.0mm.nii.gz'
 
         smoothVolAxialObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_AXIAL')
-        smoothVolAxialObj.inputs.inFile = smoothVolInputBase + 'axial.nii.gz'       
+        smoothVolAxialObj.inputs.inFile = smoothVolInputBase + 'axial.nii.gz'
         smoothVolAxialObj.inputs.stdx = 6
         smoothVolAxialObj.inputs.stdy = 6
         smoothVolAxialObj.inputs.stdz = 6
-        smoothVolAxialObj.inputs.outFile = smoothVolInputBase + 'axial.smooth6.0mm.nii.gz'   
+        smoothVolAxialObj.inputs.outFile = smoothVolInputBase + 'axial.smooth6.0mm.nii.gz'
 
         smoothVolRadialObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_RADIAL')
-        smoothVolRadialObj.inputs.inFile = smoothVolInputBase + 'radial.nii.gz'       
+        smoothVolRadialObj.inputs.inFile = smoothVolInputBase + 'radial.nii.gz'
         smoothVolRadialObj.inputs.stdx = 6
         smoothVolRadialObj.inputs.stdy = 6
         smoothVolRadialObj.inputs.stdz = 6
-        smoothVolRadialObj.inputs.outFile = smoothVolInputBase + 'radial.smooth6.0mm.nii.gz'   
- 
+        smoothVolRadialObj.inputs.outFile = smoothVolInputBase + 'radial.smooth6.0mm.nii.gz'
+
         smoothVolmADCObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_mADC')
-        smoothVolmADCObj.inputs.inFile = smoothVolInputBase + 'mADC.nii.gz'       
+        smoothVolmADCObj.inputs.inFile = smoothVolInputBase + 'mADC.nii.gz'
         smoothVolmADCObj.inputs.stdx = 6
         smoothVolmADCObj.inputs.stdy = 6
         smoothVolmADCObj.inputs.stdz = 6
-        smoothVolmADCObj.inputs.outFile = smoothVolInputBase + 'mADC.smooth6.0mm.nii.gz'   
+        smoothVolmADCObj.inputs.outFile = smoothVolInputBase + 'mADC.smooth6.0mm.nii.gz'
 
         smoothVolFRT_GFAObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_FRT_GFA')
-        smoothVolFRT_GFAObj.inputs.inFile = smoothVolInputBase + 'FRT_GFA.nii.gz'       
+        smoothVolFRT_GFAObj.inputs.inFile = smoothVolInputBase + 'FRT_GFA.nii.gz'
         smoothVolFRT_GFAObj.inputs.stdx = 6
         smoothVolFRT_GFAObj.inputs.stdy = 6
         smoothVolFRT_GFAObj.inputs.stdz = 6
-        smoothVolFRT_GFAObj.inputs.outFile = smoothVolInputBase + 'FRT_GFA.smooth6.0mm.nii.gz'           
+        smoothVolFRT_GFAObj.inputs.outFile = smoothVolInputBase + 'FRT_GFA.smooth6.0mm.nii.gz'
 
         smoothVolJacObj = pe.Node(interface=bs.SVRegSmoothVol(), name='SMOOTHVOL_MAP')
         smoothVolJacObj.inputs.inFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '.svreg.inv.jacobian.nii.gz'
@@ -302,7 +302,7 @@ def runWorkflow(SUBJECT_ID, INPUT_MRI_FILE, WORKFLOW_BASE_DIRECTORY, BIDS_DIRECT
         smoothVolJacObj.inputs.stdy = 6
         smoothVolJacObj.inputs.stdz = 6
         smoothVolJacObj.inputs.outFile = WORKFLOW_BASE_DIRECTORY + os.sep + SUBJECT_ID + '.svreg.inv.jacobian.smooth6.0mm.nii.gz'
-        
+
         brainsuite_workflow.connect(ds4, 'out_file', smoothVolFAObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds4, 'out_file', smoothVolMDObj, 'dataSinkDelay')
         brainsuite_workflow.connect(ds4, 'out_file', smoothVolAxialObj, 'dataSinkDelay')
