@@ -1,6 +1,6 @@
-FROM ubuntu:16.04
-RUN apt-get -y update --fix-missing && \
-    apt-get install --no-install-recommends -y \
+FROM ubuntu:18.04
+RUN apt-get -qq -y update --fix-missing && \
+    apt-get install -q --no-install-recommends -y \
                     build-essential \
                     git \
                     libxt6 \
@@ -31,7 +31,7 @@ RUN apt-get update && \
     pip install -Iv https://pypi.python.org/packages/e0/ec/c4d49fb2aecb80d1c61f89542fdc0ba9686b232bc24f490caeba69d231b6/nibabel-2.1.0.tar.gz#md5=b5ffc03962aa4875b1ce7cb597730772 && \
     pip install -Iv https://pypi.python.org/packages/87/ba/54197971d107bc06f5f3fbdc0d728a7ae0b10cafca46acfddba65a0899d8/setuptools-27.2.0.tar.gz#md5=b39715612fdc0372dbfd7b3fcf5d4fe5 && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN pip install git+https://github.com/INCF/pybids.git
+RUN pip install pybids
 ENV PYTHONPATH=""
 
 # Nipype
@@ -73,13 +73,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
                     gfortran \
                     pandoc
-#RUN conda install -y -c r r-base
 
-
-#RUN apt-get install -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id.mzEonjpe
-#RUN  apt-get update &&  apt-get clean &&  apt-get autoremove &&  apt-get update && apt-get upgrade -y && \
-#    dpkg --configure -a && apt-get install -y -f
-#RUN apt-get install -y aptitude && aptitude install -f
 RUN install -d /opt/conda/var/lib/dbus/
 RUN apt-get install --no-install-recommends -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id
 RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
@@ -87,9 +81,6 @@ RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/a
     apt-get update && apt-get install -y --no-install-recommends r-base
 
 RUN bash /BrainSuite/R/installR.sh
-#RUN wget https://pypi.python.org/packages/75/a4/182f9dc82934768680b663968115cc3e7e4a1be24478cbb2e1ed44e22b60/rpy2-2.4.0.tar.gz && \
-#    tar -xvf rpy2-2.4.0.tar.gz && \
-#    cd rpy2-2.4.0 && python setup.py install
 
 RUN conda install -y -c r rpy2
 RUN conda install libgcc
