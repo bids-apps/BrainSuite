@@ -7,11 +7,11 @@ RUN apt-get -qq -y update --fix-missing && \
                     unzip \
                     wget
 
-# Anaconda
+# conda
 RUN mkdir conda_install
 WORKDIR /conda_install
-RUN wget -q https://repo.continuum.io/archive/Anaconda2-4.4.0-Linux-x86_64.sh && \
-    bash Anaconda2-4.4.0-Linux-x86_64.sh -b -p /opt/conda
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-py37_22.11.1-1-Linux-x86_64.sh && \
+    bash Miniconda3-py37_22.11.1-1-Linux-x86_64.sh -b -p /opt/conda
 WORKDIR /
 RUN rm -rf conda_install && \
     echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh
