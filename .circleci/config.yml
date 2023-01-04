@@ -7,26 +7,20 @@ jobs:
     steps:
     - checkout
     - run:
-        name: 'Get test data: ds114_test1'
+        name: Get test data ds114_test1
         command: |
-          if [[ ! -d ~/data/ds114_test1 ]]; \
-            then wget -c -O ${HOME}/ds114_test1.tar "https://osf.io/download/zerfq/" && \
-            mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test1.tar -C ${HOME}/data;
-          fi
+          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test1.sh
+          bash get_ds114_test1.sh 
     - run:
-        name: 'Get test data: ds114_test2'
+        name: Get test data ds114_test2
         command: |
-          if [[ ! -d ~/data/ds114_test2 ]]; \
-            then wget -c -O ${HOME}/ds114_test2.tar "https://osf.io/download/eg4ma/" && \
-            mkdir -p ${HOME}/data && tar xf ${HOME}/ds114_test2.tar -C ${HOME}/data;
-          fi
+          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test2.sh
+          bash get_ds114_test2.sh 
     - run:
         name: Build Docker image
         command: |
-          git describe --tags --always > version
-          docker build -t bids/${CIRCLE_PROJECT_REPONAME,,} .
-          mkdir -p ${HOME}/docker
-          docker save "bids/${CIRCLE_PROJECT_REPONAME,,}" > ~/docker/image.tar
+          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/build_docker.sh
+          bash build_docker.sh   
     - persist_to_workspace:
         root: /home/circleci
         paths:
@@ -128,17 +122,13 @@ jobs:
     steps:
     - attach_workspace:
         at: /tmp/workspace
-
     - run: docker load -i /tmp/workspace/docker/image.tar
     - run:
         name: push to dockerhub
         command: |
-          docker login --username ${DOCKER_USER} --password ${DOCKER_PASS}
-          docker push bids/${CIRCLE_PROJECT_REPONAME,,}:latest
-          if [[ -n "${CIRCLE_TAG}" ]]; then
-            docker tag bids/${CIRCLE_PROJECT_REPONAME,,} bids/${CIRCLE_PROJECT_REPONAME,,}:${CIRCLE_TAG}
-            docker push bids/${CIRCLE_PROJECT_REPONAME,,}:${CIRCLE_TAG}
-          fi
+          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/push_docker.sh
+          bash push_docker.sh  
+          
 workflows:
   build-test-deploy:
     jobs:
