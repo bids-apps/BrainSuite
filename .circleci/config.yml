@@ -31,6 +31,8 @@ jobs:
     parameters:
       participant:
         type: string
+      dataset:
+        type: string        
 
     steps:
       - attach_workspace:
@@ -44,7 +46,7 @@ jobs:
           command: |
             docker load -i /tmp/workspace/docker/image.tar
             docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
               -v ${HOME}/outputs1:/outputs \
                 bids/${CIRCLE_PROJECT_REPONAME,,} \
                   /bids_dataset \
@@ -52,11 +54,11 @@ jobs:
 
       - run:
           name:
-            "participant level tests for dataset with no session level - participant << parameters.participant >>"
+            "participant level tests - participant << parameters.participant >>"
           command: |
             docker load -i /tmp/workspace/docker/image.tar
             docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
               -v ${HOME}/outputs1:/outputs \
                 bids/${CIRCLE_PROJECT_REPONAME,,} \
                   /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
@@ -66,7 +68,7 @@ jobs:
           command: |
             docker load -i /tmp/workspace/docker/image.tar
             docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
               -v ${HOME}/outputs1:/outputs \
                 bids/${CIRCLE_PROJECT_REPONAME,,} \
                   /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
@@ -76,47 +78,15 @@ jobs:
           command: |
             docker load -i /tmp/workspace/docker/image.tar
             docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
               -v ${HOME}/outputs1:/outputs \
-                bids/${CIRCLE_PROJECT_REPONAME,,} \
-                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
-          no_output_timeout: 6h
-
-      - run:
-          name:
-            "participant level tests for dataset with session level - participant << parameters.participant >>"
-          command: |
-            docker load -i /tmp/workspace/docker/image.tar
-            docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test2:/bids_dataset \
-              -v ${HOME}/outputs2:/outputs \
-                bids/${CIRCLE_PROJECT_REPONAME,,} \
-                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
-          no_output_timeout: 6h
-
-      - run:
-          command: |
-            docker load -i /tmp/workspace/docker/image.tar
-            docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test2:/bids_dataset \
-              -v ${HOME}/outputs2:/outputs \
-                bids/${CIRCLE_PROJECT_REPONAME,,} \
-                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
-          no_output_timeout: 6h
-
-      - run:
-          command: |
-            docker load -i /tmp/workspace/docker/image.tar
-            docker run -ti --rm --read-only \
-              -v /tmp/workspace/data/ds114_test2:/bids_dataset \
-              -v ${HOME}/outputs2:/outputs \
                 bids/${CIRCLE_PROJECT_REPONAME,,} \
                   /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
           no_output_timeout: 6h
 
   deploy:
-    docker:
-      - image: ubuntu-2204:2022.10.2
+    machine:
+      image: ubuntu-2204:2022.10.2
     steps:
       - attach_workspace:
           at: /tmp/workspace
@@ -137,6 +107,7 @@ workflows:
           matrix:
             parameters:
               participant: ["01", "02"]
+              dataset: ["1", "2"]
       - deploy:
           requires:
             - test
