@@ -5,28 +5,28 @@ jobs:
     machine:
       image: ubuntu-2204:2022.10.2
     steps:
-    - checkout
-    - run:
-        name: Get test data ds114_test1
-        command: |
-          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test1.sh
-          bash get_ds114_test1.sh 
-    - run:
-        name: Get test data ds114_test2
-        command: |
-          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test2.sh
-          bash get_ds114_test2.sh 
-    - run:
-        name: Build Docker image
-        command: |
-          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/build_docker.sh
-          bash build_docker.sh   
-    - persist_to_workspace:
-        root: /home/circleci
-        paths:
-        - data/ds114_test1
-        - data/ds114_test2
-        - docker/image.tar
+      - checkout
+      - run:
+          name: Get test data ds114_test1
+          command: |
+            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test1.sh
+            bash get_ds114_test1.sh
+      - run:
+          name: Get test data ds114_test2
+          command: |
+            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test2.sh
+            bash get_ds114_test2.sh
+      - run:
+          name: Build Docker image
+          command: |
+            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/build_docker.sh
+            bash build_docker.sh
+      - persist_to_workspace:
+          root: /home/circleci
+          paths:
+            - data/ds114_test1
+            - data/ds114_test2
+            - docker/image.tar
 
   test:
     machine:
@@ -37,112 +37,114 @@ jobs:
         type: string
 
     steps:
-    - attach_workspace:
-        at: /tmp/workspace
+      - attach_workspace:
+          at: /tmp/workspace
 
-    - run: mkdir -p ${HOME}/outputs1
-    - run: mkdir -p ${HOME}/outputs2
+      - run: mkdir -p ${HOME}/outputs1
+      - run: mkdir -p ${HOME}/outputs2
 
-    - run:
-        name: print version
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset \
-                /outputs participant --version
+      - run:
+          name: print version
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v ${HOME}/outputs1:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset \
+                  /outputs participant --version
 
-    - run:
-        name: participant level tests for dataset with no session level - participant << parameters.participant >>
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
-        no_output_timeout: 6h
+      - run:
+          name:
+            "participant level tests for dataset with no session level - participant << parameters.participant >>"
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v ${HOME}/outputs1:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
+          no_output_timeout: 6h
 
-    - run:
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
-        no_output_timeout: 6h
+      - run:
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v ${HOME}/outputs1:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
+          no_output_timeout: 6h
 
-    - run:
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test1:/bids_dataset \
-            -v ${HOME}/outputs1:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
-        no_output_timeout: 6h
+      - run:
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test1:/bids_dataset \
+              -v ${HOME}/outputs1:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
+          no_output_timeout: 6h
 
-    - run:
-        name: participant level tests for dataset with session level - participant << parameters.participant >>
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test2:/bids_dataset \
-            -v ${HOME}/outputs2:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
-        no_output_timeout: 6h
+      - run:
+          name:
+            "participant level tests for dataset with session level - participant << parameters.participant >>"
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test2:/bids_dataset \
+              -v ${HOME}/outputs2:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
+          no_output_timeout: 6h
 
-    - run:
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test2:/bids_dataset \
-            -v ${HOME}/outputs2:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
-        no_output_timeout: 6h
+      - run:
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test2:/bids_dataset \
+              -v ${HOME}/outputs2:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
+          no_output_timeout: 6h
 
-    - run:
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test2:/bids_dataset \
-            -v ${HOME}/outputs2:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
-        no_output_timeout: 6h
+      - run:
+          command: |
+            docker load -i /tmp/workspace/docker/image.tar
+            docker run -ti --rm --read-only \
+              -v /tmp/workspace/data/ds114_test2:/bids_dataset \
+              -v ${HOME}/outputs2:/outputs \
+                bids/${CIRCLE_PROJECT_REPONAME,,} \
+                  /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
+          no_output_timeout: 6h
 
   deploy:
     docker:
-    - image: circleci/buildpack-deps:stretch
+      - image: circleci/buildpack-deps:stretch
     steps:
-    - attach_workspace:
-        at: /tmp/workspace
-    - run: docker load -i /tmp/workspace/docker/image.tar
-    - run:
-        name: push to dockerhub
-        command: |
-          wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/push_docker.sh
-          bash push_docker.sh  
-          
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: docker load -i /tmp/workspace/docker/image.tar
+      - run:
+          name: push to dockerhub
+          command: |
+            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/push_docker.sh
+            bash push_docker.sh
+
 workflows:
   build-test-deploy:
     jobs:
-    - build
-    - test:
-        requires:
-        - build
-        matrix:
-          parameters:
-            participant: ['01', '02']
-    - deploy:
-        requires:
-        - test
-        filters:
-          tags:
-            only: /.*/
-# VS Code Extension Version: 1.5.1
+      - build
+      - test:
+          requires:
+            - build
+          matrix:
+            parameters:
+              participant: ["01", "02"]
+      - deploy:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
+
