@@ -10,7 +10,7 @@ jobs:
           name: Get test data ds114_test1
           command: |
             wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/utils/get_data_from_osf.sh
-            bash get_data_from_osf ds114_test1
+            bash get_data_from_osf.sh ds114_test1
       - run:
           name: Get test data ds114_test2
           command: |
