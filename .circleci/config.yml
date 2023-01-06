@@ -14,7 +14,7 @@ jobs:
       - run:
           name: Get test data ds114_test2
           command: |
-            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/circleci/get_ds114_test2.sh
+            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/utils/get_data_from_osf.sh
             bash get_ds114_test2.sh
       - run:
           name: Build Docker image
