@@ -7,14 +7,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Get test data ds114_test1
+          name: Get test data ds114_test*
           command: |
             wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/utils/get_data_from_osf.sh
             bash get_data_from_osf.sh ds114_test1
-      - run:
-          name: Get test data ds114_test2
-          command: |
-            wget https://raw.githubusercontent.com/bids-apps/maintenance-tools/main/utils/get_data_from_osf.sh
             bash get_data_from_osf.sh ds114_test2
       - run:
           name: Build Docker image
@@ -148,3 +144,5 @@ workflows:
             tags:
               only: /.*/
 
+
+# VS Code Extension Version: 1.5.1
