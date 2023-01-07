@@ -108,6 +108,8 @@ workflows:
             participant: ['01', '02']
             dataset: ['1', '2']
     - deploy:
+        context:
+        - dockerhub:
         requires:
         - test
         filters:
