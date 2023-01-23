@@ -1,89 +1,61 @@
-FROM ubuntu:18.04
-RUN apt-get -qq -y update --fix-missing && \
-    apt-get install -q --no-install-recommends -y \
-                    build-essential \
-                    git \
-                    libxt6 \
-                    unzip \
-                    wget
+FROM yeunkim/bidsapphead
 
-# conda
-RUN mkdir conda_install
-WORKDIR /conda_install
-RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-py37_22.11.1-1-Linux-x86_64.sh && \
-    bash Miniconda3-py37_22.11.1-1-Linux-x86_64.sh -b -p /opt/conda
-WORKDIR /
-RUN rm -rf conda_install && \
-    echo 'export PATH=/opt/conda/bin:$PATH' > /etc/profile.d/conda.sh
-ENV PATH /opt/conda/bin:$PATH
-
-# MATLAB MCR
-RUN mkdir mcr_install && \
-    cd mcr_install && \
-    wget -q https://www.mathworks.com/supportfiles/downloads/R2015b/deployment_files/R2015b/installers/glnxa64/MCR_R2015b_glnxa64_installer.zip && \
-    unzip -q MCR_R2015b_glnxa64_installer.zip && \
-    ./install -agreeToLicense yes -mode silent && \
-    cd / && \
-    rm -rf mcr_install
-
-RUN apt-get update && \
-    pip install -Iv https://pypi.python.org/packages/b3/b2/238e2590826bfdd113244a40d9d3eb26918bd798fc187e2360a8367068db/six-1.10.0.tar.gz#md5=34eed507548117b2ab523ab14b2f8b55 && \
-    pip install -Iv https://pypi.python.org/packages/e0/ec/c4d49fb2aecb80d1c61f89542fdc0ba9686b232bc24f490caeba69d231b6/nibabel-2.1.0.tar.gz#md5=b5ffc03962aa4875b1ce7cb597730772 && \
-    pip install -Iv https://pypi.python.org/packages/87/ba/54197971d107bc06f5f3fbdc0d728a7ae0b10cafca46acfddba65a0899d8/setuptools-27.2.0.tar.gz#md5=b39715612fdc0372dbfd7b3fcf5d4fe5 && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN pip install pybids
-ENV PYTHONPATH=""
-
-# Nipype
-RUN git clone https://github.com/nipy/nipype && \
-    cd nipype && \
-    git checkout bdb7afc && \
-    pip install -r requirements.txt && \
-    python setup.py develop
+ENV BrainSuiteVersion="21a"
+RUN wget http://brainsuite.org/data/BIDS/21a/install_dep.py
+RUN python install_dep.py
 
 # BrainSuite
-RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite18a.BIDS.tgz && \
-    tar -xf BrainSuite18a.BIDS.tgz && \
-    mv /BrainSuite18a /opt && \
-    cd /opt/BrainSuite18a/bin && \
-    chmod -R ugo+r /opt/BrainSuite18a && \
+RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite21a.BIDS.tgz && \
+    tar -xzf /BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
+    mv /BrainSuite${BrainSuiteVersion} /opt && \
+    cd /opt/BrainSuite${BrainSuiteVersion}/bin && \
+    chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion} && \
     cd / && \
-    rm BrainSuite18a.BIDS.tgz
+    rm BrainSuite${BrainSuiteVersion}.BIDS.tgz
 
-RUN chmod -R ugo+r /opt/BrainSuite18a
+RUN cd / && curl http://brainsuite.org/wp-content/uploads/2022/08/bssr_0.3.3.tar.gz > /bssr_0.3.3.tar.gz && \
+    tar xvfz /bssr_0.3.3.tar.gz
+RUN wget http://brainsuite.org/data/BIDS/21a/install_bssr.py && python install_bssr.py
 
+RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
 
-## Install the validator
-RUN apt-get update && \
-    apt-get install --no-install-recommends -y curl && \
-    curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
-    apt-get remove -y curl && \
-    apt-get install --no-install-recommends -y nodejs && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN npm install -g bids-validator@0.19.2
+ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
 
-ENV PATH=/opt/BrainSuite18a/bin/:/opt/BrainSuite18a/svreg/bin/:/opt/BrainSuite18a/bdp/:${PATH}
+RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver5p05/bfp_ver5p05_release.tar.gz | tar xvz
+RUN mv /bfp_ver5p05_release/* / && tar xvfz bfp_ver5p05.tar.gz && tar xvfz bfp_source.tar.gz 
+RUN rm bfp_source.tar.gz bfp_ver5p05.tar.gz
+RUN mv /bfp_source /bfp && mv /bfp_ver5p05/* /bfp/
+RUN wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver22RC2_Matlab2019b/bfp_ver22RC2_Matlab2019b.tar.gz | tar xvz
+RUN rm -r /bfp/supp_data/ && mv /bfp_ver22RC2_Matlab2019b/* /bfp
+ENV BFP=/bfp
+ENV PATH="${BFP}:$PATH"
+
+RUN apt-get install -y xvfb libosmesa6-dev
+
+COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
+COPY QC/makeMask.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
+RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh makeMask.sh
 
 COPY brainsuite/brainsuite.py /nipype/nipype/interfaces/brainsuite/
 COPY brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
 
+COPY ./bfp_sample_config_preproc.ini /config.ini
+COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
+
+RUN chmod -R ugo+rx /jq-linux64
+
 COPY . /BrainSuite
+RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ && chmod -R ugo+rx *
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && chmod -R ugo+rx *
+RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-                    gfortran \
-                    pandoc
+ENV PATH=/BrainSuite/QC/:${PATH}
 
-RUN install -d /opt/conda/var/lib/dbus/
-RUN apt-get install --no-install-recommends -y dbus && dbus-uuidgen > /opt/conda/var/lib/dbus/machine-id
-RUN echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" |  tee -a /etc/apt/sources.list && \
-    gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 && gpg -a --export E084DAB9 | apt-key add - && \
-    apt-get update && apt-get install -y --no-install-recommends r-base
-
-RUN bash /BrainSuite/R/installR.sh
-
-RUN conda install -y -c r rpy2
-RUN conda install libgcc
 RUN chmod +x /BrainSuite/run.py
+RUN chmod a+x /bfp/*
+
+RUN echo "set enable-bracketed-paste off" >> ~/.inputrc
 
 ENTRYPOINT ["/BrainSuite/run.py"]
+

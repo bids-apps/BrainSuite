@@ -27,7 +27,7 @@ wget https://cran.r-project.org/src/contrib/Archive/plyr/plyr_1.8.3.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/reshape2/reshape2_1.4.1.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/tibble/tibble_1.3.3.tar.gz
 wget https://cran.r-project.org/src/contrib/Archive/lazyeval/lazyeval_0.2.0.tar.gz
-wget https://cran.r-project.org/src/contrib/R6_2.2.2.tar.gz
+wget https://cran.r-project.org/src/contrib/Archive/R6/R6_2.2.2.tar.gz
 
 # for scales:
 wget https://cran.r-project.org/src/contrib/Archive/dichromat/dichromat_1.2-4.tar.gz
@@ -77,3 +77,7 @@ wget https://cran.r-project.org/src/contrib/Archive/backports/backports_1.0.5.ta
 for i in `cat /BrainSuite/R/Rpackages.txt`; do
     R CMD INSTALL $i;
 done
+
+python /BrainSuite/R/install_dep.py
+
+rm *.tar.gz
