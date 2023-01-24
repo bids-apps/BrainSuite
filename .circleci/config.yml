@@ -33,6 +33,8 @@ jobs:
         type: string
       dataset:
         type: string
+      stages:
+        type: string
 
     steps:
     - attach_workspace:
@@ -54,7 +56,7 @@ jobs:
                 --version
 
     - run:
-        name: participant level CSE tests - participant << parameters.participant >>
+        name: participant level << parameters.stages >> tests - participant << parameters.participant >>
         command: |
           docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
@@ -64,22 +66,7 @@ jobs:
                 /outputs \
                 participant \
                 --participant_label << parameters.participant >> \
-                --stages CSE \
-                --cache /outputs
-        no_output_timeout: 6h
-
-    - run:
-        name: participant level BDP tests - participant << parameters.participant >>
-        command: |
-          docker run -ti --rm \
-            -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
-            -v ${HOME}/outputs<< parameters.participant >>:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset \
-                /outputs \
-                participant \
-                --participant_label << parameters.participant >> \
-                --stages CSE BDP \
+                --stages << parameters.stages >> \
                 --cache /outputs
         no_output_timeout: 6h
 
@@ -107,6 +94,7 @@ workflows:
           parameters:
             participant: ['01', '02']
             dataset: ['1', '2']
+            stages: [CSE, CSE BDP]
     - deploy:
         context:
         - dockerhub
