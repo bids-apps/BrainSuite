@@ -53,34 +53,25 @@ jobs:
                 /outputs participant --version
 
     - run:
-        name: participant level tests - participant << parameters.participant >>
+        name: participant level CSE tests - participant << parameters.participant >>
         command: |
           docker load -i /tmp/workspace/docker/image.tar
           docker run -ti --rm --read-only \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
             -v ${HOME}/outputs<< parameters.participant >>:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE
+                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE --cache /outputs
         no_output_timeout: 6h
 
     - run:
+        name: participant level BDP tests - participant << parameters.participant >>
         command: |
           docker load -i /tmp/workspace/docker/image.tar
           docker run -ti --rm --read-only \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
             -v ${HOME}/outputs<< parameters.participant >>:/outputs \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages BDP
-        no_output_timeout: 6h
-
-    - run:
-        command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
-            -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
-            -v ${HOME}/outputs<< parameters.participant >>:/outputs \
-              bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP
+                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP --cache /outputs
         no_output_timeout: 6h
 
   deploy:
