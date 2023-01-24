@@ -47,8 +47,6 @@ jobs:
           docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
             -v ${HOME}/outputs<< parameters.participant >>:/outputs \
-            -v /tmp:/tmp \
-            -v /var/tmp:/var/tmp \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset \
                 /outputs \
@@ -60,9 +58,7 @@ jobs:
         command: |
           docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
-            -v ${HOME}/outputs<< parameters.participant >>:/outputs \
-            # -v /tmp:/tmp \
-            # -v /var/tmp:/var/tmp \            
+            -v ${HOME}/outputs<< parameters.participant >>:/outputs \         
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset \
                 /outputs \
@@ -77,9 +73,7 @@ jobs:
         command: |
           docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
-            -v ${HOME}/outputs<< parameters.participant >>:/outputs \
-            # -v /tmp:/tmp \
-            # -v /var/tmp:/var/tmp \                
+            -v ${HOME}/outputs<< parameters.participant >>:/outputs \               
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset \
                 /outputs \
