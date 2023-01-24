@@ -94,7 +94,7 @@ workflows:
           parameters:
             participant: ['01', '02']
             dataset: ['1', '2']
-            stages: [CSE, CSE BDP]
+            stages: [CSE]
     - deploy:
         context:
         - dockerhub
