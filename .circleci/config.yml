@@ -44,34 +44,49 @@ jobs:
     - run:
         name: print version
         command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
+          docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
             -v ${HOME}/outputs<< parameters.participant >>:/outputs \
+            -v /tmp:/tmp \
+            -v /var/tmp:/var/tmp \
               bids/${CIRCLE_PROJECT_REPONAME,,} \
                 /bids_dataset \
-                /outputs participant --version
+                /outputs \
+                participant \
+                --version
 
     - run:
         name: participant level CSE tests - participant << parameters.participant >>
         command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
+          docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
             -v ${HOME}/outputs<< parameters.participant >>:/outputs \
+            # -v /tmp:/tmp \
+            # -v /var/tmp:/var/tmp \            
               bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE --cache /outputs
+                /bids_dataset \
+                /outputs \
+                participant \
+                --participant_label << parameters.participant >> \
+                --stages CSE \
+                --cache /outputs
         no_output_timeout: 6h
 
     - run:
         name: participant level BDP tests - participant << parameters.participant >>
         command: |
-          docker load -i /tmp/workspace/docker/image.tar
-          docker run -ti --rm --read-only \
+          docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
             -v ${HOME}/outputs<< parameters.participant >>:/outputs \
+            # -v /tmp:/tmp \
+            # -v /var/tmp:/var/tmp \                
               bids/${CIRCLE_PROJECT_REPONAME,,} \
-                /bids_dataset /outputs participant --participant_label << parameters.participant >> --stages CSE BDP --cache /outputs
+                /bids_dataset \
+                /outputs \
+                participant \
+                --participant_label << parameters.participant >> \
+                --stages CSE BDP \
+                --cache /outputs
         no_output_timeout: 6h
 
   deploy:
