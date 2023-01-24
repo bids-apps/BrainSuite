@@ -1,36 +1,6 @@
-FROM yeunkim/bidsapphead
+FROM yeunkim/brainsuitebidsapp:stable
 
 ENV BrainSuiteVersion="21a"
-RUN wget http://brainsuite.org/data/BIDS/21a/install_dep.py
-RUN python install_dep.py
-
-# BrainSuite
-RUN wget -q http://brainsuite.org/data/BIDS/BrainSuite21a.BIDS.tgz && \
-    tar -xzf /BrainSuite${BrainSuiteVersion}.BIDS.tgz && \
-    mv /BrainSuite${BrainSuiteVersion} /opt && \
-    cd /opt/BrainSuite${BrainSuiteVersion}/bin && \
-    chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion} && \
-    cd / && \
-    rm BrainSuite${BrainSuiteVersion}.BIDS.tgz
-
-RUN cd / && curl http://brainsuite.org/wp-content/uploads/2022/08/bssr_0.3.3.tar.gz > /bssr_0.3.3.tar.gz && \
-    tar xvfz /bssr_0.3.3.tar.gz
-RUN wget http://brainsuite.org/data/BIDS/21a/install_bssr.py && python install_bssr.py
-
-RUN chmod -R ugo+r /opt/BrainSuite${BrainSuiteVersion}
-
-ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
-
-RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver5p05/bfp_ver5p05_release.tar.gz | tar xvz
-RUN mv /bfp_ver5p05_release/* / && tar xvfz bfp_ver5p05.tar.gz && tar xvfz bfp_source.tar.gz 
-RUN rm bfp_source.tar.gz bfp_ver5p05.tar.gz
-RUN mv /bfp_source /bfp && mv /bfp_ver5p05/* /bfp/
-RUN wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver22RC2_Matlab2019b/bfp_ver22RC2_Matlab2019b.tar.gz | tar xvz
-RUN rm -r /bfp/supp_data/ && mv /bfp_ver22RC2_Matlab2019b/* /bfp
-ENV BFP=/bfp
-ENV PATH="${BFP}:$PATH"
-
-RUN apt-get install -y xvfb libosmesa6-dev
 
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 COPY QC/makeMask.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
