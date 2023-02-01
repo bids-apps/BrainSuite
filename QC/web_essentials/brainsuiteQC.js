@@ -394,7 +394,7 @@ function generateSlideRow(sid) {
 	var subject = subjects[sid];
 	if (subjstatus[sid] == null) return "";
 	if (subjstatus[sid][0] == pendingCode) return "";
-	var loadingGIF = "<img width=25% SRC='https://c.tenor.com/hQz0Kl373E8AAAAi/loading-waiting.gif'>";
+	var loadingGIF = "<img width=25% SRC='gears.gif'>";
 	var showCount = 0;
 	if (contents.filter(e => e.show == true).length == 0) { return "no stages selected."; }
 	for (var i = 0; i < contents.length; i++) {
