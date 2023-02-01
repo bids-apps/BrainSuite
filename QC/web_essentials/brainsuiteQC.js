@@ -270,8 +270,10 @@ function updateState() {
 		success: function (data) {
 			subjstatus = data.process_states;
 			var infotext = "";
-			infotext += " start time: " + data.start_time + "<br/>";
-			infotext += " last update: " + data.update_time + "<br/>";
+			var start=new Date(data.start_time);
+			var update=new Date(data.update_time);
+			infotext += " start time: " + start + "<br/>";
+			infotext += " last update: " + update + "<br/>";
 			infotext += " run time: " + data.runtime;
 			infotext += ((data.end) ? " (processing has concluded)" : " (processing is active)") + "<br/>";
 			infotext += processStats();
