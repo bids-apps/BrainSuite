@@ -48,43 +48,28 @@ h6 { font-size: 12px; }
   min-height: 100px;
   height: auto;
   border: 1px solid red;
-  /* IMPORTANT -- always set 'height: auto;' immediately after the min-height attribute */
 }
-/* .multiselect {
-  width: 300px;
-  white-space: normal;
-  }
-  
-  .selectBox {
-	position: relative;
-  }
-  
-  .selectBox select {
-	width: 100%;
-	font-weight: bold;
-  } */
-  
-  /* .bootstrap-select.btn-group .dropdown-toggle .filter-option { white-space: normal; } */
-  .overSelect {
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
-  }
-  
-  #checkboxes {
-	display: none;
-	border: 1px #dadada solid;
-  }
-  
-  #checkboxes label {
-	display: block;
-  }
-  
-  #checkboxes label:hover {
-	background-color: #1e90ff;
-  }
+
+.overSelect {
+position: absolute;
+left: 0;
+right: 0;
+top: 0;
+bottom: 0;
+}
+
+#checkboxes {
+display: none;
+border: 1px #dadada solid;
+}
+
+#checkboxes label {
+display: block;
+}
+
+#checkboxes label:hover {
+background-color: #1e90ff;
+}
 
 pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
 .string { color: green; }
@@ -136,8 +121,6 @@ div.desc {
   text-align: center;
   border-radius: 6px;
   padding: 5px 0;
-  
-  /* Position the tooltip */
   position: absolute;
   z-index: 1;
   bottom: 100%;
@@ -153,7 +136,6 @@ div.desc {
   min-height: 256px;
   height: auto;
   border: 1px solid red;
-  /* IMPORTANT -- always set 'height: auto;' immediately after the min-height attribute */
 }
 
 #bottom {
@@ -209,75 +191,22 @@ div.desc {
   display: inline-block;
 }
 
-/* #outer {
-  border: 1px solid black;
-  width: 258px;
-  height: 320px;
-  text-align: right;
-  vertical-align: bottom;
-  }
-  */
-  div.img {
-  width: 100%;
-  height: auto;
-  }
-  /* .thumbnail {
-    padding:0px;
-  }
-  .thumbnail:hover {
-      position:relative;
-      top:-25px;
-      left:-35px;
-      width:500px;
-      height:auto;
-      display:block;
-      z-index:999;
-  } */
+div.img {
+width: 100%;
+height: auto;
+}
 
 span.multiselect {
   padding: 4px 4px;
   height: 31px;
   font-weight: 400;
   cursor: pointer;
-    /* white-space: normal; */
-}
-
-/* #navbarCollapse > span > div > span */
-.xcustom-select {
-  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='currentColor' fill='currentColor' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
-  /* background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%ff00ff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") right .75rem center/8px 10px no-repeat; */
-}
-.xxcustom-select {
-  background:url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='blue' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right .75rem center/8px 10px !important;
 }
 
 .grow {
-  /* padding: 5px 5px 5px 5px; */
-  /* border-radius: 10px; */
-  height: 256px;
-  /* width: 22%; */
-  /* margin: 5px 1% 5px 1%; */
-  /* float: left; */
-  /* position: relative; */
-  /* transition: height 0.5s; */
-  /* -webkit-transition: height 0.5s; */
-  /* text-align: center; */
   overflow: hidden;
 }
 .grow:hover {
   transform: scale(4);
 }
 
-
-/* .zoom {
-  position:relative;
-  left:0px;
-  top:0px; 
-} */
-
-.zoom:hover
-{
-  transform: scale(4);
-  overflow:visible;
-  z-index:10000;
-}
