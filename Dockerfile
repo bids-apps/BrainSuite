@@ -16,6 +16,7 @@ RUN chmod -R ugo+rx /jq-linux64
 
 COPY . /BrainSuite
 RUN cd /BrainSuite/QC/ && chmod -R ugo+rx *
+RUN rm /BrainSuite/QC/web_essentials/sample_brainsuite_dashboard_config.json
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bin/ && chmod -R ugo+rx *
 RUN cd /opt/BrainSuite${BrainSuiteVersion}/bdp/ && chmod -R ugo+rx *
