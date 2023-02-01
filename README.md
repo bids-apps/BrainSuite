@@ -1,10 +1,10 @@
-# BrainSuite BIDS-App 
+# BrainSuite BIDS App 
 ## Overview
-BrainSuite BIDS-App provides a portable, streamlined method for performing BrainSuite (http://brainsuite.org) analysis workflows for processing and analyzing anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](http://brainsuite.org/brainsuite21a).
+The BrainSuite BIDS App provides a portable, streamlined method for performing BrainSuite (http://brainsuite.org) workflows to processing and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](http://brainsuite.org/brainsuite21a).
 The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
 
 ### Subject-Level Analysis
-The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP comprise:
+The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP include:
 
 * Cortical surface extraction ([CSE](http://brainsuite.org/processing/surfaceextraction/)).
 * Cortical thickness estimation based on partial volume estimates and the anisotropic diffusion equation ().
@@ -12,20 +12,20 @@ The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to gene
 * Mapping of cortical thickness estimates to the atlas space
 * Computation of subject-level statistics (e.g., mean GM volume within ROIs, cortical thickness within surface ROIs)
 
-The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffusion/)) performs several steps to process diffusion MRI. these include:
+The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffusion/)) performs several steps to process diffusion MRI. These include:
 
-* Processing of diffusion weighted imaging (DWI) to correct image distortion (based on either field maps or nonlinear registration to a corresponding T1-weighted MRI)
-* Coregistration of the DWI to the T1w scan
-* Fitting of diffusion tensor models to the DWI data
-* Fitting of orientation distribution functions to the DWI data (using FRT, FRACT, GQI, 3D-SHORE, or ERFO as appropriate)
-* Computation of diffusion indices (FA, MD, AxD, RD, GFA)
+* Processing of diffusion weighted imaging (DWI) to correct image distortion (based on either field maps or nonlinear registration to a corresponding T1-weighted MRI).
+* Coregistration of the DWI to the T1w scan.
+* Fitting of diffusion tensor models to the DWI data.
+* Fitting of orientation distribution functions to the DWI data (using FRT, FRACT, GQI, 3D-SHORE, or ERFO as appropriate).
+* Computation of diffusion indices (FA, MD, AxD, RD, GFA).
 
 The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes resting-state and task-based fMRI data.
 
-* BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite
-* Performs motion correction and outlier detection
-* Registers the fMRI data to the corresponding T1w anatomical data
-* Generates a representation of the fMRI data in grayordinate space in preparation for group-level analysis
+* BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite.
+* Performs motion correction and outlier detection.
+* Registers the fMRI data to the corresponding T1w anatomical data.
+* Generates a representation of the fMRI data in grayordinate space in preparation for group-level analysis.
 
 ### Group-level Statistical Analysis
 * Group-level statistical analysis of structural data is performed using the BrainSuite Statistics Toolbox in R ([bssr](http://brainsuite.org/bssr/)). Bssr supports the following analyses:
@@ -34,22 +34,22 @@ The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes
     * diffusion parameter maps analysis (e.g., fractional anisotropy, mean diffusivity, radial diffusivity)
     * region of interest (ROI)-based analysis of average gray matter thickness, surface area, and gray matter volume within cortical ROIs
 * Group-level statistical analysis of fMRI data (functional connectivity) is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), a tool that temporally aligns spatially registered fMRI datasets for direct timeseries comparisons between subjects.
-    * atlas-based linear modeling using a reference dataset created from multiple input datasets
-    * atlas-free pairwise testing of all pairs of subjects is performed and used as test statistics for regression or group difference studies
+    * atlas-based linear modeling using a reference dataset created from multiple input datasets.
+    * atlas-free pairwise testing of all pairs of subjects is performed and used as test statistics for regression or group difference studies.
 
-### QC and BrainSuite Dashboard
-* Quality check (QC) component of the BrainSuite BIDS App generates snapshots of key stages in the participant-level workflows for quick visualization and assessment
-* BrainSuite Dashboard is an interactive web-page that is updated in real time while BrainSuite BIDS App
+### BrainSuite Dashboard
+* The Quality Control (QC) component of the BrainSuite BIDS App generates snapshots of key stages in the participant-level workflows for quick visualization and assessment.
+* The BrainSuite Dashboard provides a browser-based interface for visualizing the QC outputs in real-time while a set of BrainSuite BIDS App instances are running.
 
 
 # Usage
 ### Data input requirements
-This App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
+The BrainSuite BIDS App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
 
 * **Required**: T1w NIFTI image (BIDS format).
 * (Optional): DWI NIFTI image, fMRI NIFTI image (BIDS format).
 
-### Pre-requisites
+### Prerequisites
 * Imaging data must be formatted and organized according to the [BIDS standard](https://bids-specification.readthedocs.io/en/stable/).
 * If you have not yet installed Docker, install Docker from [here](https://docs.docker.com/install/).
 * (Optional but may be required for multi-user computers). Install [Singularity](https://sylabs.io/guides/3.5/user-guide/quick_start.html). This will allow you to run the Singularity version of the BIDS-App. Then, convert the Docker image to Singularity image:
@@ -270,4 +270,4 @@ Issues or suggestions can be directly submitted as an issue to this Github Repos
 This project is supported by NIH Grant R01-NS074980.
 
 ## Licenses ## 
-The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.  
+The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.
