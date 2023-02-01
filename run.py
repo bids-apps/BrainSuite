@@ -289,7 +289,7 @@ def main():
             preprocspecs.write_subjectIDsJSON(allt1ws, args, WEBDIR)
             preprocspecs.write_preproc_params(WEBDIR, stages, dataset_description)
             if not os.path.exists(WEBDIR + '/brainsuite_dashboard_config.json'):
-                shutil.copyfile('/BrainSuite/QC/web_essentials/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
+                shutil.copyfile('/BrainSuite/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
             if args.localWebserver:
                 print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}'\n".format(args.port))
                 cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, bind)
