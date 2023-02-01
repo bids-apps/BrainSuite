@@ -268,3 +268,6 @@ Issues or suggestions can be directly submitted as an issue to this Github Repos
 
 ## Acknowledgments ##
 This project is supported by NIH Grant R01-NS074980.
+
+## Licenses ## 
+The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.  
