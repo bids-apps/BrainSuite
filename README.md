@@ -206,7 +206,7 @@ All sessions will be processed. The output files will be located in the output f
 
 For the functional pipeline, you will need to define the TR (repetition time in seconds for the fMRI data) using ```--TR``` command. If this is not called, then the default value of 2 will be used. 
 
-If you would like to **modify parameters** for the participant-level run, you can do so by modifying the parameters in a preprocspecs.json file. [Full instructions and details are written here](preprocspec_details.md).
+If you would like to **modify parameters** for the participant-level run, you can do so by modifying the parameters in a preprocspecs.json file. [Full instructions and details are provided here](preprocspec_details.md).
 
 ### QC and BrainSuite Dashboard usage ###
 Adding "QC" to the stages (```--stages QC```) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
@@ -248,7 +248,7 @@ You can also specify a list of subjects you would like to selectively QC by usin
 
 #### Pre-requisite ####
 * A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](sample_demographics.tsv). 
-* A JSON file containing the specifications for group level analysis. Sample JSON file is provided with the source code ([BrainSuite/sample_modelspec.json](sample_modelspec.json))
+* A JSON file containing the specifications for group level analysis. Sample JSON file is provided with the source code [sample_modelspec.json](BrainSuite/sample_modelspec.json).
 
 Explanation on all the fields in the modelspec.json file are found [here](modelspec_details.md).
 
@@ -270,4 +270,7 @@ Issues or suggestions can be directly submitted as an issue to this Github Repos
 This project is supported by NIH Grant R01-NS074980.
 
 ## Licenses 
+The primary BrainSuite BIDS App source code is licensed under the [GNU Public License v2.0 only 
+(GPL-2.0-only)](https://spdx.org/licenses/GPL-2.0.html)
+
 The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.
