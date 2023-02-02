@@ -4,7 +4,7 @@
 #
 # Created by Yeun Kim and David W. Shattuck
 #
-# This file is part of the BrainSuite BIDS App
+# This file is part of the BrainSuite BIDS App.
 #
 # The BrainSuite BIDS App is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License
