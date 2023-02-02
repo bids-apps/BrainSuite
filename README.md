@@ -1,18 +1,18 @@
 # BrainSuite BIDS App 
 ## Overview
-The BrainSuite BIDS App provides a portable, streamlined method for performing BrainSuite (http://brainsuite.org) workflows to processing and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](http://brainsuite.org/brainsuite21a).
+The BrainSuite BIDS App provides a portable, streamlined method for performing BrainSuite (https://brainsuite.org) workflows to processing and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](https://brainsuite.org/brainsuite21a).
 The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
 
 ### Subject-Level Analysis
 The BrainSuite Anatomical Pipeline (BAP) processes T1-weighted (T1w) MRI to generate brain surfaces and volumes that are consistently registered and labeled according to a reference anatomical atlas. The major stages in BAP include:
 
-* Cortical surface extraction ([CSE](http://brainsuite.org/processing/surfaceextraction/)).
+* Cortical surface extraction ([CSE](https://brainsuite.org/processing/surfaceextraction/)).
 * Cortical thickness estimation based on partial volume estimates and the anisotropic diffusion equation ().
-* Surface-constrained volumetric registration ([SVReg](http://brainsuite.org/processing/svreg/)) to generate a mapping to a labeled reference atlas and label the cortical surface and brain volume.
+* Surface-constrained volumetric registration ([SVReg](https://brainsuite.org/processing/svreg/)) to generate a mapping to a labeled reference atlas and label the cortical surface and brain volume.
 * Mapping of cortical thickness estimates to the atlas space
 * Computation of subject-level statistics (e.g., mean GM volume within ROIs, cortical thickness within surface ROIs)
 
-The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffusion/)) performs several steps to process diffusion MRI. These include:
+The BrainSuite Diffusion Pipeline ([BDP](https://brainsuite.org/processing/diffusion/)) performs several steps to process diffusion MRI. These include:
 
 * Processing of diffusion weighted imaging (DWI) to correct image distortion (based on either field maps or nonlinear registration to a corresponding T1-weighted MRI).
 * Coregistration of the DWI to the T1w scan.
@@ -20,7 +20,7 @@ The BrainSuite Diffusion Pipeline ([BDP](http://brainsuite.org/processing/diffus
 * Fitting of orientation distribution functions to the DWI data (using FRT, FRACT, GQI, 3D-SHORE, or ERFO as appropriate).
 * Computation of diffusion indices (FA, MD, AxD, RD, GFA).
 
-The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes resting-state and task-based fMRI data.
+The BrainSuite Functional Pipeline ([BFP](https://brainsuite.org/bfp/)) processes resting-state and task-based fMRI data.
 
 * BFP processes 4D fMRI datasets using a combination of tools from AFNI, FSL, BrainSuite and additional in-house tools developed for BrainSuite.
 * Performs motion correction and outlier detection.
@@ -28,7 +28,7 @@ The BrainSuite Functional Pipeline ([BFP](http://brainsuite.org/bfp/)) processes
 * Generates a representation of the fMRI data in grayordinate space in preparation for group-level analysis.
 
 ### Group-level Statistical Analysis
-* Group-level statistical analysis of structural data is performed using the BrainSuite Statistics Toolbox in R ([bssr](http://brainsuite.org/bssr/)). Bssr supports the following analyses:
+* Group-level statistical analysis of structural data is performed using the BrainSuite Statistics Toolbox in R ([bssr](https://brainsuite.org/bssr/)). Bssr supports the following analyses:
     * tensor based morphometry (TBM) analysis of voxel-wise magnitudes of the 3D deformation fields of MRI images registered to the atlas
     * cortical surface analysis of the vertex-wise thickness in the atlas space
     * diffusion parameter maps analysis (e.g., fractional anisotropy, mean diffusivity, radial diffusivity)
