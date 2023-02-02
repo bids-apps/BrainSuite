@@ -1,6 +1,6 @@
 # BrainSuite BIDS App 
 ## Overview
-The BrainSuite BIDS App provides a portable, streamlined method for performing BrainSuite (https://brainsuite.org) workflows to processing and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](https://brainsuite.org/brainsuite21a).
+The BrainSuite BIDS App provides a portable, streamlined method for performing BrainSuite (https://brainsuite.org) workflows to process and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](https://brainsuite.org/brainsuite21a).
 The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
 
 ### Subject-Level Analysis
