@@ -1,7 +1,7 @@
 ﻿BrainSuite BIDS App
 Copyright (C) 2023 The Regents of the University of California
 
-Created by Yeun Kim, XXXXXXXXXXX, David W. Shattuck
+Created by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck
 
 Except where otherwise noted, the source files contained within the
 BrainSuite BIDS App are licenced under the GNU General Public License

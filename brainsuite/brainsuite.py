@@ -1,4 +1,25 @@
 # -*- coding: utf-8 -*-
+'''
+Copyright (C) 2023 The Regents of the University of California
+
+Created by Yeun Kim, Jason Wong, Clayton Jerlow
+
+This file is part of the BrainSuite BIDS App
+
+The BrainSuite BIDS App is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public License
+as published by the Free Software Foundation, version 2.1.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+'''
+
 from __future__ import print_function, division, unicode_literals, absolute_import
 
 import os
@@ -10,16 +31,8 @@ from ... import config, logging, LooseVersion, __version__
 iflogger = logging.getLogger('interface')
 
 '''
-This script provides interfaces for BrainSuite command line tools.
+This class provides interfaces for BrainSuite command line tools.
 Please see brainsuite.org for more information.
-
-
-Authors: Yeun Kim, Jason Wong, Clayton Jerlow
-
-Copyright (C) 2022 The Regents of the University of California 
-Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
-Dept. of Neurology, David Geffen School of Medicine, UCLA.
-
 '''
 
 class BrainSuiteCommandLine(CommandLine):
