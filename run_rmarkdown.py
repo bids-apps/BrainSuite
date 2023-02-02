@@ -5,7 +5,7 @@ Copyright (C) 2023 The Regents of the University of California
 
 Created by Yeun Kim
 
-This file is part of the BrainSuite BIDS App
+This file is part of the BrainSuite BIDS App.
 
 The BrainSuite BIDS App is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public License
