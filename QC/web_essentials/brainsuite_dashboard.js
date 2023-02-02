@@ -26,7 +26,7 @@ var brainsuiteRunParameters;
 var expanded = false;
 var intervalID = null;
 var enableHover = true;
-var completed = "⚫";
+var completed = "🟢";
 var launched = "🔵";
 var queued = "⚪";
 var errorsymbol = "🔴";
@@ -597,15 +597,16 @@ $(function () {
 	var buttonPanel = document.getElementById("scheme buttons");
 	if (buttonPanel != null) {
 		var s = "";
-		s += emojiButton("🟢", "🔵", "🟡", "🔴");
+		s += emojiButton("🟢", "🔵", "⚪", "🔴");
 		s += emojiButton("⚫", "🔵", "⚪", "🔴");
+		s += emojiButton("🔵", "🟠", "⚪", "🔴");
 		s += emojiButton('💚', '💜', '💙', '💔');
 		s += emojiButton('🧠', '🏃', '🤷', '🔥');
 		s += emojiButton("🎉", "🍿", "💤", "💣");
 		s += emojiButton('🟩', '🟨', '⬛', '🟥');
 		s += pngButton(blackCircle, blueCircle, whiteCircle, redCircle, "black-blue png");
 		s += pngButton(greenSquare, yellowSquare, blackSquare, redSquare, "green-yellow png");
-		s += pngButton(greenCircle, blueCircle, yellowCircle, redCircle, "green-blue png");
+		s += pngButton(greenCircle, blueCircle, whiteCircle, redCircle, "green-blue png");
 		s += pngButton(blueCircle, orangeCircle, whiteCircle, redCircle, "blue-orange png");
 		s += '</div>';
 		buttonPanel.innerHTML = s;
@@ -615,7 +616,7 @@ $(function () {
 		slider.value = slideHeight;
 		slider.oninput = function () { setSlideHeight(this.value); }
 	}
-	setProgressCodes("🟢", "🔵", "🟡", "🔴");
+	setProgressCodes("🟢", "🔵", "⚪", "🔴");
 	$.getJSON("QC/subjectIDs.json", function (data) {
 		subjects = data.subjects;
 		if (subjects != undefined) expand=Array(subjects.length).fill(false);
