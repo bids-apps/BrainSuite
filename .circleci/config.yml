@@ -57,6 +57,7 @@ jobs:
 
     - run:
         name: participant level << parameters.stages >> tests - participant << parameters.participant >>
+        no_output_timeout: 30m
         command: |
           docker run -ti --rm \
             -v /tmp/workspace/data/ds114_test<< parameters.dataset >>:/bids_dataset \
@@ -67,7 +68,8 @@ jobs:
                 participant \
                 --participant_label << parameters.participant >> \
                 --stages << parameters.stages >> \
-                --cache /outputs
+                --cache /outputs \
+                --ncpus 6
 
   deploy:
     machine:
