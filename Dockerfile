@@ -10,6 +10,8 @@ RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver5p05
 RUN mv /bfp_ver5p05_release/* / && tar xvfz bfp_ver5p05.tar.gz && tar xvfz bfp_source.tar.gz
 RUN rm bfp_source.tar.gz bfp_ver5p05.tar.gz
 RUN mv /bfp_source /bfp && mv /bfp_ver5p05/* /bfp/ && mv LICENSE.txt NOTICE.txt bfp/
+RUN wget -qO- https://github.com/ajoshiusc/bfp/releases/download/ver22RC2_Matlab2019b/bfp_ver22RC2_Matlab2019b.tar.gz | tar xvz
+RUN rm -r /bfp/supp_data/ && mv /bfp_ver22RC2_Matlab2019b/* /bfp
 ENV BFP=/bfp
 ENV PATH="${BFP}:$PATH"
 
