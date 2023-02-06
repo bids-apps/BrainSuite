@@ -1,6 +1,6 @@
 
 ########################################################################
-### Authored by Chris Markiewicz (Github: effigies)
+### This top portion adapted from Chris Markiewicz (Github: effigies)
 FROM ubuntu:xenial-20200114
 
 # Pre-cache neurodebian key
