@@ -276,5 +276,5 @@ The primary BrainSuite BIDS App source code is licensed under the [GNU Public Li
 The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.
 
 ## Parent image in Dockerfile
-This BrainSuite BIDS App Dockerfile pulls from a pre-built Docker image ```yeunkim/brainsuitebids:parent```, which itself pulls from ```yeunkim/bidsapphead``. This is done to achieve a faster and more stable build.
+This BrainSuite BIDS App Dockerfile pulls from a pre-built Docker image ([yeunkim/brainsuitebids:parent](https://hub.docker.com/layers/yeunkim/brainsuitebidsapp/parent/images/sha256-9381fb7e4acd0200ee771360f9bd8de7311409474d5d481dac4794125d9a8443?context=repo)), which itself pulls from [yeunkim/bidsapphead](https://hub.docker.com/layers/yeunkim/bidsapphead/latest/images/sha256-c3b033f926a472565ab61d67567a338dbc796774cb2e1d871dddceb7c7ec68a1?context=repo). This is done to achieve a faster and more stable build.
 Several of the dependencies within the BrainSuite BIDS App are subject to updates outside of our control. By using stable layers, we are able to maintain a consistent set of packages. For more details, please see ```README_Dockerfile.md```. 
