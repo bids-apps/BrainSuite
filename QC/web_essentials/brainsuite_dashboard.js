@@ -415,7 +415,7 @@ function generateSlideRow(sid) {
 	var subject = subjects[sid];
 	if (subjstatus[sid] == null) return "";
 	if (subjstatus[sid][0] == pendingCode) return "";
-	var loadingGIF = "<img width=25% SRC='gears.gif'>";
+	var runningGIF = "<img width=25% SRC='gears.gif'>";
 	var showCount = 0;
 	if (contents.filter(e => e.show == true).length == 0) { return "no stages selected."; }
 	for (var i = 0; i < contents.length; i++) {
@@ -430,7 +430,7 @@ function generateSlideRow(sid) {
 			var para = "<p class='slidetext' style='font-size: " + slideHeight / 20 + "pt;'>";
 			switch (stagecode) {
 				case completedCode: color = "green"; bootcls = 'success'; image = path + subject + "/" + contents[i].img; imgcls+=" grow"; break;
-				case launchCode: color = "blue"; bootcls = 'primary'; imagetext = para + "running " + stagenames[stage] + "...</p><br/>" + loadingGIF; break;
+				case launchCode: color = "blue"; bootcls = 'primary'; imagetext = para + "running " + stagenames[stage] + "...<br/><br/>" + runningGIF + "</p>"; break;
 				case queuedCode: color = "black"; bootcls = 'dark'; imagetext = para + stagenames[stage] + " is queued</p>"; break;
 				case errorCode: color = "red"; bootcls = 'danger'; imagetext = para + "error in: " + stagenames[stage] + "</p>"; break;
 				case notRunCode: continue;
