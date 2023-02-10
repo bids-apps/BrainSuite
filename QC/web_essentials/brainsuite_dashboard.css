@@ -225,7 +225,7 @@ span.multiselect {
 .grow {
   overflow: hidden;
 }
-.grow:hover {
+/*.grow:hover {
   transform: scale(4);
-}
+}*/
 

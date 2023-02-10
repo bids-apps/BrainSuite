@@ -138,7 +138,7 @@ class bssrSpec(object):
         self.colvar_exclude = specs['BrainSuite']['Functional']['colvar_exclude']
         self.colvar_atlas = specs['BrainSuite']['Functional']['colvar_atlas']
         self.pw_pairs = specs['BrainSuite']['Functional']['pw_pairs']
-        self.pw_fdr = specs['BrainSuite']['Functional']['pw_fdr']
+        self.pw_fdr = str(bool(specs['BrainSuite']['Functional']['pw_fdr']))
         self.pw_perm =specs['BrainSuite']['Functional']['pw_perm']
 
 
