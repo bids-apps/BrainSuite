@@ -1,6 +1,6 @@
 # BrainSuite BIDS App 
 ## Overview
-The BrainSuite BIDS App provides a portable, streamlined method for performing BrainSuite (https://brainsuite.org) workflows to process and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](https://brainsuite.org/brainsuite21a).
+The BrainSuite BIDS App provides a portable, streamlined method for applying [BrainSuite](https://brainsuite.org) workflows to process and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](https://brainsuite.org/brainsuite21a).
 The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
 
 ### Subject-Level Analysis
@@ -42,7 +42,7 @@ The BrainSuite Functional Pipeline ([BFP](https://brainsuite.org/bfp/)) processe
 * The BrainSuite Dashboard provides a browser-based interface for visualizing the QC outputs in real-time while a set of BrainSuite BIDS App instances are running.
 
 
-# Usage
+## Usage
 ### Data input requirements
 The BrainSuite BIDS App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
 
@@ -230,8 +230,8 @@ where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 
 Stages include DASHBOARD, which indicates that the BIDS App will launch the BrainSuite Dashboard.
 
 ### Running real-time QC and BrainSuite Dashboard with an existing web server ###
-If your institution has a running web server and you would like to serve using this web server, you do not need to expose ports or start a local web server. 
-Instead, all you need to do is to set the path to the QC output directory; this location must be where the web server will be serving from.
+If your institution has a running web server and you would like to serve using that web server, you do not need to expose ports or start a local web server. 
+Instead, all you need to do is to set the path to the QC output directory; this location must be a directory that is served by your web server.
 
 ```bash
 docker run -ti --rm \
@@ -246,11 +246,11 @@ You can also specify a list of subjects you would like to selectively QC by usin
 
 ### Group-level analysis usage ###
 
-#### Pre-requisite ####
+#### Prerequisites ####
 * A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](sample_demographics.tsv). 
-* A JSON file containing the specifications for group level analysis. Sample JSON file is provided with the source code [sample_modelspec.json](BrainSuite/sample_modelspec.json).
+* A JSON file containing the specifications for group level analysis. A sample JSON file is provided with the source code [sample_modelspec.json](BrainSuite/sample_modelspec.json).
 
-Explanation on all the fields in the modelspec.json file are found [here](modelspec_details.md).
+A detailed description of all fields in the modelspec.json file is provided [here](modelspec_details.md).
 
 To run group-level mode:
 ```bash
@@ -260,6 +260,22 @@ docker run -ti --rm \
   bids/brainsuite \
   /data /output group --modelspec modelspec.json
 ```
+
+## Parent Docker images
+The Dockerfile for BrainSuite BIDS App pulls a pre-compiled parent image ([yeunkim/brainsuitebids:parent](https://hub.docker.com/layers/yeunkim/brainsuitebidsapp/parent/images/sha256-9381fb7e4acd0200ee771360f9bd8de7311409474d5d481dac4794125d9a8443?context=repo)) on Docker Hub.
+
+By developing our BrainSuite BIDS App using pre-compiled images, we are able to keep the parent image the same while changing top layers of the Docker image. 
+Since building Docker images pulls sources from third-party repositories, constant rebuilding can subject the Docker image to changes and risk consistency if these third party sources change.
+Thus, we pull from our pre-compiled parent images which act as snapshots of version-controlled dependencies and file systems that our BrainSuite BIDS App needs. 
+
+### yeunkim/brainsuitebids:parent
+The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/parent/Dockerfile) for this pre-compiled Docker image is located in the ```parent``` branch of this repository. 
+This Docker image pulls another pre-compiled parent image ([yeunkim/bidsapphead](https://hub.docker.com/layers/yeunkim/bidsapphead/latest/images/sha256-c3b033f926a472565ab61d67567a338dbc796774cb2e1d871dddceb7c7ec68a1?context=repo)). 
+
+### yeunkim/bidsapphead
+The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/head/Dockerfile) for this pre-compiled Docker image, which is used by the ```yeunkim/brainsuitebids:parent``` Docker image,
+is located in the ```head``` branch of this repository. 
+
 
 ## Support
 Questions about usage can be submitted to http://forums.brainsuite.org/. 
@@ -274,7 +290,3 @@ The primary BrainSuite BIDS App source code is licensed under the [GNU Public Li
 (GPL-2.0-only)](https://spdx.org/licenses/GPL-2.0.html)
 
 The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.
-
-## Parent image in Dockerfile
-This BrainSuite BIDS App Dockerfile pulls from a pre-built Docker image ([yeunkim/brainsuitebids:parent](https://hub.docker.com/layers/yeunkim/brainsuitebidsapp/parent/images/sha256-9381fb7e4acd0200ee771360f9bd8de7311409474d5d481dac4794125d9a8443?context=repo)), which itself pulls from [yeunkim/bidsapphead](https://hub.docker.com/layers/yeunkim/bidsapphead/latest/images/sha256-c3b033f926a472565ab61d67567a338dbc796774cb2e1d871dddceb7c7ec68a1?context=repo). This is done to achieve a faster and more stable build.
-Several of the dependencies within the BrainSuite BIDS App are subject to updates outside of our control. By using stable layers, we are able to maintain a consistent set of packages. For more details, please see ```README_Dockerfile.md```. 
