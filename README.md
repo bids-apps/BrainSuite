@@ -58,7 +58,7 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock \
 -v /tmp/test:/output \
 --privileged -t --rm \
 quay.io/singularity/docker2singularity \
-yeunkim/brainsuitebidsapp:stable
+bids/brainsuite:stable
 ```
 
 ### Command line arguments
@@ -196,7 +196,7 @@ To run it in participant level mode:
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
-  bids/brainsuite \
+  bids/brainsuite:stable \
   /data /output participant --participant_label 01
 ```
 Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages, which includes CSE, SVReg, BDP, BFP, and QC.
@@ -223,11 +223,24 @@ docker run -ti --rm \
   -p 8080:8080
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
-  bids/brainsuite \
+  bids/brainsuite:stable \
   /data /output participant --stages DASHBOARD --localWebserver
 ```
 where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
 Stages include DASHBOARD, which indicates that the BIDS App will launch the BrainSuite Dashboard.
+
+If you would like to direct all the QC outputs (i.e. thumbnail images, QC sidecar files) to a specific folder, you can indicate a specific folder by using the ```--QCdir``` flag. For example:
+
+```bash
+docker run -ti --rm \
+  -p 8080:8080
+  -v /path/to/local/bids/input/dataset/:/data \
+  -v /path/to/local/output/:/output \
+  bids/brainsuite:stable \
+  /data /output participant --stages DASHBOARD --localWebserver \
+  --QCdir /path/to/QC/output
+```
+
 
 ### Running real-time QC and BrainSuite Dashboard with an existing web server ###
 If your institution has a running web server and you would like to serve using that web server, you do not need to expose ports or start a local web server. 
@@ -237,7 +250,7 @@ Instead, all you need to do is to set the path to the QC output directory; this 
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
-  bids/brainsuite \
+  bids/brainsuite:stable \
   /data /output participant --stages DASHBOARD --QCdir /path/to/QC/output
 ```
 
@@ -257,7 +270,7 @@ To run group-level mode:
 docker run -ti --rm \
   -v /path/to/local/bids/input/dataset/:/data \
   -v /path/to/local/output/:/output \
-  bids/brainsuite \
+  bids/brainsuite:stable \
   /data /output group --modelspec modelspec.json
 ```
 
