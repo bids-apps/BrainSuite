@@ -87,7 +87,10 @@ jobs:
 workflows:
   build-test-deploy:
     jobs:
-    - build
+    - build:
+        filters:
+          tags:
+            only: /.*/
     - test:
         requires:
         - build
@@ -96,6 +99,9 @@ workflows:
             participant: ['01', '02']
             dataset: ['1', '2']
             stages: [CSE]
+        filters:
+          tags:
+            only: /.*/
     - deploy:
         context:
         - dockerhub
