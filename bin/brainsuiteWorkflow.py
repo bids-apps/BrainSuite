@@ -389,6 +389,52 @@ class subjLevelProcessing(object):
                 dfsrenderThickInfObj.inputs.Inf = True
                 dfsrenderThickInfObj.inputs.Zoom = 0.6
                 dfsrenderThickInfObj.inputs.CenterVol = bfc
+                
+                qcpvcLaunch = pe.Node(interface=bs.QCState(), name='qcpvcLaunch')
+                qcpvcLaunch.inputs.prefix = statesDir
+                qcpvcLaunch.inputs.stagenum = stageNumDict['PVC']
+                qcpvcLaunch.inputs.state = launched
+                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcpvcLaunch, 'Run')
+                qccerebroLaunch = pe.Node(interface=bs.QCState(), name='qccerebroLaunch')
+                qccerebroLaunch.inputs.prefix = statesDir
+                qccerebroLaunch.inputs.stagenum = stageNumDict['CEREBRO']
+                qccerebroLaunch.inputs.state = launched
+                brainsuite_workflow.connect(pvcObj, 'outputLabelFile', qccerebroLaunch, 'Run')
+                qccortexLaunch = pe.Node(interface=bs.QCState(), name='qccortexLaunch')
+                qccortexLaunch.inputs.prefix = statesDir
+                qccortexLaunch.inputs.stagenum = stageNumDict['CORTEX']
+                qccortexLaunch.inputs.state = launched
+                brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', qccortexLaunch, 'Run')
+                qcscrubmaskLaunch = pe.Node(interface=bs.QCState(), name='qcscrubmaskLaunch')
+                qcscrubmaskLaunch.inputs.prefix = statesDir
+                qcscrubmaskLaunch.inputs.stagenum = stageNumDict['SCRUBMASK']
+                qcscrubmaskLaunch.inputs.state = launched
+                brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', qcscrubmaskLaunch, 'Run')
+                qctcaLaunch = pe.Node(interface=bs.QCState(), name='qctcaLaunch')
+                qctcaLaunch.inputs.prefix = statesDir
+                qctcaLaunch.inputs.stagenum = stageNumDict['TCA']
+                qctcaLaunch.inputs.state = launched
+                brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', qctcaLaunch, 'Run')
+                qcdewispLaunch = pe.Node(interface=bs.QCState(), name='qcdewispLaunch')
+                qcdewispLaunch.inputs.prefix = statesDir
+                qcdewispLaunch.inputs.stagenum = stageNumDict['DEWISP']
+                qcdewispLaunch.inputs.state = launched
+                brainsuite_workflow.connect(tcaObj, 'outputMaskFile', qcdewispLaunch, 'Run')
+                qcdfsLaunch = pe.Node(interface=bs.QCState(), name='qcdfsLaunch')
+                qcdfsLaunch.inputs.prefix = statesDir
+                qcdfsLaunch.inputs.stagenum = stageNumDict['DFS']
+                qcdfsLaunch.inputs.state = launched
+                brainsuite_workflow.connect(dewispObj, 'outputMaskFile', qcdfsLaunch, 'Run')
+                qcpialmeshLaunch = pe.Node(interface=bs.QCState(), name='qcpialmeshLaunch')
+                qcpialmeshLaunch.inputs.prefix = statesDir
+                qcpialmeshLaunch.inputs.stagenum = stageNumDict['PIALMESH']
+                qcpialmeshLaunch.inputs.state = launched
+                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', qcpialmeshLaunch, 'Run')
+                qchemisplitLaunch = pe.Node(interface=bs.QCState(), name='qchemisplitLaunch')
+                qchemisplitLaunch.inputs.prefix = statesDir
+                qchemisplitLaunch.inputs.stagenum = stageNumDict['HEMISPLIT']
+                qchemisplitLaunch.inputs.state = launched
+                brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', qchemisplitLaunch, 'Run')
 
                 qcstatevolbendbseObj = pe.Node(interface=bs.QCState(), name='qcstatevolbendbseObj')
                 qcstatevolbendbseObj.inputs.prefix = statesDir
@@ -485,7 +531,7 @@ class subjLevelProcessing(object):
                 qcthickPVC.inputs.prefix = statesDir
                 qcthickPVC.inputs.stagenum = stageNumDict['THICKPVC']
                 qcthickPVC.inputs.state = completed
-                
+
                 brainsuite_workflow.connect(dsQCThick, 'out_file', qcthickPVC, 'Run')
 
 
@@ -501,6 +547,7 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(pvcObj, 'outputLabelFile', qcstatevolbendpvcObj, 'Run')
                 brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', qcstatevolbendcerebroObj, 'Run')
                 brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', qcstatevolbendcortexObj, 'Run')
+                brainsuite_workflow.connect(qccortexLaunch, 'OutStateFile', qcstatevolbendcortexObj, 'LaunchInput')
                 brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', qcstatevolbendscrubmaskObj, 'Run')
                 brainsuite_workflow.connect(tcaObj, 'outputMaskFile', qcstatevolbendtcaObj, 'Run')
                 brainsuite_workflow.connect(dewispObj, 'outputMaskFile', qcstatevolbenddewispObj, 'Run')
@@ -508,51 +555,7 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', qcstatedfsrenderpialmeshObj, 'Run')
                 brainsuite_workflow.connect(ds, 'out_file', qcstatedfsrenderhemisplitObj, 'Run')
 
-                qcpvcLaunch = pe.Node(interface=bs.QCState(), name='qcpvcLaunch')
-                qcpvcLaunch.inputs.prefix = statesDir
-                qcpvcLaunch.inputs.stagenum = stageNumDict['PVC']
-                qcpvcLaunch.inputs.state = launched
-                brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcpvcLaunch, 'Run')
-                qccerebroLaunch = pe.Node(interface=bs.QCState(), name='qccerebroLaunch')
-                qccerebroLaunch.inputs.prefix = statesDir
-                qccerebroLaunch.inputs.stagenum = stageNumDict['CEREBRO']
-                qccerebroLaunch.inputs.state = launched
-                brainsuite_workflow.connect(pvcObj, 'outputLabelFile', qccerebroLaunch, 'Run')
-                qccortexLaunch = pe.Node(interface=bs.QCState(), name='qccortexLaunch')
-                qccortexLaunch.inputs.prefix = statesDir
-                qccortexLaunch.inputs.stagenum = stageNumDict['CORTEX']
-                qccortexLaunch.inputs.state = launched
-                brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', qccortexLaunch, 'Run')
-                qcscrubmaskLaunch = pe.Node(interface=bs.QCState(), name='qcscrubmaskLaunch')
-                qcscrubmaskLaunch.inputs.prefix = statesDir
-                qcscrubmaskLaunch.inputs.stagenum = stageNumDict['SCRUBMASK']
-                qcscrubmaskLaunch.inputs.state = launched
-                brainsuite_workflow.connect(cortexObj, 'outputCerebrumMask', qcscrubmaskLaunch, 'Run')
-                qctcaLaunch = pe.Node(interface=bs.QCState(), name='qctcaLaunch')
-                qctcaLaunch.inputs.prefix = statesDir
-                qctcaLaunch.inputs.stagenum = stageNumDict['TCA']
-                qctcaLaunch.inputs.state = launched
-                brainsuite_workflow.connect(scrubmaskObj, 'outputMaskFile', qctcaLaunch, 'Run')
-                qcdewispLaunch = pe.Node(interface=bs.QCState(), name='qcdewispLaunch')
-                qcdewispLaunch.inputs.prefix = statesDir
-                qcdewispLaunch.inputs.stagenum = stageNumDict['DEWISP']
-                qcdewispLaunch.inputs.state = launched
-                brainsuite_workflow.connect(tcaObj, 'outputMaskFile', qcdewispLaunch, 'Run')
-                qcdfsLaunch = pe.Node(interface=bs.QCState(), name='qcdfsLaunch')
-                qcdfsLaunch.inputs.prefix = statesDir
-                qcdfsLaunch.inputs.stagenum = stageNumDict['DFS']
-                qcdfsLaunch.inputs.state = launched
-                brainsuite_workflow.connect(dewispObj, 'outputMaskFile', qcdfsLaunch, 'Run')
-                qcpialmeshLaunch = pe.Node(interface=bs.QCState(), name='qcpialmeshLaunch')
-                qcpialmeshLaunch.inputs.prefix = statesDir
-                qcpialmeshLaunch.inputs.stagenum = stageNumDict['PIALMESH']
-                qcpialmeshLaunch.inputs.state = launched
-                brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', qcpialmeshLaunch, 'Run')
-                qchemisplitLaunch = pe.Node(interface=bs.QCState(), name='qchemisplitLaunch')
-                qchemisplitLaunch.inputs.prefix = statesDir
-                qchemisplitLaunch.inputs.stagenum = stageNumDict['HEMISPLIT']
-                qchemisplitLaunch.inputs.state = launched
-                brainsuite_workflow.connect(pialmeshObj, 'outputSurfaceFile', qchemisplitLaunch, 'Run')
+
 
                 if 'noBSE' not in STAGES:
                     stagesRun.update({
@@ -908,6 +911,7 @@ class subjLevelProcessing(object):
 
                 brainsuite_workflow.connect(smoothSurfLeftObj, 'smoothSurfFile', qcsmoothSurfLeft, 'Run')
                 brainsuite_workflow.connect(smoothSurfRightObj, 'smoothSurfFile', qcsmoothSurfRight, 'Run')
+                brainsuite_workflow.connect(qcsmoothVolJacLaunch, 'OutStateFile', qcsmoothVolJac, 'LaunchInput')
                 brainsuite_workflow.connect(smoothVolJacObj, 'smoothFile', qcsmoothVolJac, 'Run')
 
             stagesRun.update({
@@ -1008,43 +1012,6 @@ class subjLevelProcessing(object):
             brainsuite_workflow.connect(applyMapFRT_GFAObj, 'mappedFile', smoothVolFRT_GFAObj, 'inFile')
 
             if 'QC' in STAGES:
-                qcapplyMapFA = pe.Node(interface=bs.QCState(), name='qcapplyMapFA')
-                qcapplyMapFA.inputs.prefix = statesDir
-                qcapplyMapFA.inputs.stagenum = stageNumDict['APPLYMAPFA']
-                qcapplyMapFA.inputs.state = completed
-                
-                qcapplyMapMD = pe.Node(interface=bs.QCState(), name='qcapplyMapMD')
-                qcapplyMapMD.inputs.prefix = statesDir
-                qcapplyMapMD.inputs.stagenum = stageNumDict['APPLYMAPMD']
-                qcapplyMapMD.inputs.state = completed
-                
-                qcapplyMapAxial = pe.Node(interface=bs.QCState(), name='qcapplyMapAxial')
-                qcapplyMapAxial.inputs.prefix = statesDir
-                qcapplyMapAxial.inputs.stagenum = stageNumDict['APPLYMAPAXIAL']
-                qcapplyMapAxial.inputs.state = completed
-                
-                qcapplyMapRadial = pe.Node(interface=bs.QCState(), name='qcapplyMapRadial')
-                qcapplyMapRadial.inputs.prefix = statesDir
-                qcapplyMapRadial.inputs.stagenum = stageNumDict['APPLYMAPRADIAL']
-                qcapplyMapRadial.inputs.state = completed
-                
-                qcapplyMapmADC = pe.Node(interface=bs.QCState(), name='qcapplyMapmADC')
-                qcapplyMapmADC.inputs.prefix = statesDir
-                qcapplyMapmADC.inputs.stagenum = stageNumDict['APPLYMAPMADC']
-                qcapplyMapmADC.inputs.state = completed
-                
-                qcapplyMapFRT_GFA = pe.Node(interface=bs.QCState(), name='qcapplyMapFRT_GFA')
-                qcapplyMapFRT_GFA.inputs.prefix = statesDir
-                qcapplyMapFRT_GFA.inputs.stagenum = stageNumDict['APPLYMAPFRTGFA']
-                qcapplyMapFRT_GFA.inputs.state = completed
-                
-                brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', qcapplyMapFA, 'Run')
-                brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', qcapplyMapMD, 'Run')
-                brainsuite_workflow.connect(applyMapAxialObj, 'mappedFile', qcapplyMapAxial, 'Run')
-                brainsuite_workflow.connect(applyMapRadialObj, 'mappedFile', qcapplyMapRadial, 'Run')
-                brainsuite_workflow.connect(applyMapmADCObj, 'mappedFile', qcapplyMapmADC, 'Run')
-                brainsuite_workflow.connect(applyMapFRT_GFAObj, 'mappedFile', qcapplyMapFRT_GFA, 'Run')
-
                 qcapplyMapFALaunch = pe.Node(interface=bs.QCState(), name='qcapplyMapFALaunch')
                 qcapplyMapFALaunch.inputs.prefix = statesDir
                 qcapplyMapFALaunch.inputs.stagenum = stageNumDict['APPLYMAPFA']
@@ -1093,6 +1060,49 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapRadialLaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapmADCLaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapFRT_GFALaunch, 'Run')
+                
+                qcapplyMapFA = pe.Node(interface=bs.QCState(), name='qcapplyMapFA')
+                qcapplyMapFA.inputs.prefix = statesDir
+                qcapplyMapFA.inputs.stagenum = stageNumDict['APPLYMAPFA']
+                qcapplyMapFA.inputs.state = completed
+                
+                qcapplyMapMD = pe.Node(interface=bs.QCState(), name='qcapplyMapMD')
+                qcapplyMapMD.inputs.prefix = statesDir
+                qcapplyMapMD.inputs.stagenum = stageNumDict['APPLYMAPMD']
+                qcapplyMapMD.inputs.state = completed
+                
+                qcapplyMapAxial = pe.Node(interface=bs.QCState(), name='qcapplyMapAxial')
+                qcapplyMapAxial.inputs.prefix = statesDir
+                qcapplyMapAxial.inputs.stagenum = stageNumDict['APPLYMAPAXIAL']
+                qcapplyMapAxial.inputs.state = completed
+                
+                qcapplyMapRadial = pe.Node(interface=bs.QCState(), name='qcapplyMapRadial')
+                qcapplyMapRadial.inputs.prefix = statesDir
+                qcapplyMapRadial.inputs.stagenum = stageNumDict['APPLYMAPRADIAL']
+                qcapplyMapRadial.inputs.state = completed
+                
+                qcapplyMapmADC = pe.Node(interface=bs.QCState(), name='qcapplyMapmADC')
+                qcapplyMapmADC.inputs.prefix = statesDir
+                qcapplyMapmADC.inputs.stagenum = stageNumDict['APPLYMAPMADC']
+                qcapplyMapmADC.inputs.state = completed
+                
+                qcapplyMapFRT_GFA = pe.Node(interface=bs.QCState(), name='qcapplyMapFRT_GFA')
+                qcapplyMapFRT_GFA.inputs.prefix = statesDir
+                qcapplyMapFRT_GFA.inputs.stagenum = stageNumDict['APPLYMAPFRTGFA']
+                qcapplyMapFRT_GFA.inputs.state = completed
+                
+                brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', qcapplyMapFA, 'Run')
+                brainsuite_workflow.connect(qcapplyMapFALaunch, 'OutStateFile', qcapplyMapFA, 'LaunchInput')
+                brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', qcapplyMapMD, 'Run')
+                brainsuite_workflow.connect(qcapplyMapMDLaunch, 'OutStateFile', qcapplyMapMD, 'LaunchInput')
+                brainsuite_workflow.connect(applyMapAxialObj, 'mappedFile', qcapplyMapAxial, 'Run')
+                brainsuite_workflow.connect(qcapplyMapAxialLaunch, 'OutStateFile', qcapplyMapAxial, 'LaunchInput')
+                brainsuite_workflow.connect(applyMapRadialObj, 'mappedFile', qcapplyMapRadial, 'Run')
+                brainsuite_workflow.connect(qcapplyMapRadialLaunch, 'OutStateFile', qcapplyMapRadial, 'LaunchInput')
+                brainsuite_workflow.connect(applyMapmADCObj, 'mappedFile', qcapplyMapmADC, 'Run')
+                brainsuite_workflow.connect(qcapplyMapmADCLaunch, 'OutStateFile', qcapplyMapmADC, 'LaunchInput')
+                brainsuite_workflow.connect(applyMapFRT_GFAObj, 'mappedFile', qcapplyMapFRT_GFA, 'Run')
+                brainsuite_workflow.connect(qcapplyMapFRT_GFALaunch, 'OutStateFile', qcapplyMapFRT_GFA, 'LaunchInput')
 
                 qcsmoothVolFALaunch = pe.Node(interface=bs.QCState(), name='qcsmoothVolFALaunch')
                 qcsmoothVolFALaunch.inputs.prefix = statesDir
@@ -1201,7 +1211,8 @@ class subjLevelProcessing(object):
 
             BFPObjs = []
             for task in range(len(BFP['sess'])):
-                BFPObjs.append(pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(BFP['sess'][task])))
+                taskname = BFP['sess'][task].split('task-')[-1]
+                BFPObjs.append(pe.Node(interface=bs.BFP(), name='BFP_{0}'.format(taskname)))
                 BFPObjs[task].inputs.configini = str(BFP['configini'])
                 BFPObjs[task].inputs.t1file = os.path.join(anat, t1)
                 BFPObjs[task].inputs.fmrifile = BFP['func'][task]
@@ -1239,20 +1250,21 @@ class subjLevelProcessing(object):
                 volbendFunc2T1Objs = []
                 
                 for task in range(len(BFP['sess'])):
+                    taskname = BFP['sess'][task].split('task-')[-1]
                     BFPQCPrefix = func + BFP['subjID'] + '_' + BFP['sess'][task] + "_bold"
 
                     ## Copy png files
-                    copySSIMObjs.append(pe.Node(interface=bs.copyFile(), name='CopyMCSSIM_{0}'.format(BFP['sess'][task])))
+                    copySSIMObjs.append(pe.Node(interface=bs.copyFile(), name='CopyMCSSIM_{0}'.format(taskname)))
                     copySSIMObjs[task].inputs.outFile = '{0}/ssim{1}.png'.format(WEBPATH, task)
 
-                    copyMCOObjs.append(pe.Node(interface=bs.copyFile(), name='CopyMCO_{0}'.format(BFP['sess'][task])))
+                    copyMCOObjs.append(pe.Node(interface=bs.copyFile(), name='CopyMCO_{0}'.format(taskname)))
                     copyMCOObjs[task].inputs.outFile = '{0}/mco{1}.png'.format(WEBPATH,task)
 
                     brainsuite_workflow.connect(BFPObjs[task], 'SSIMpng', copySSIMObjs[task], "inFile")
                     brainsuite_workflow.connect(BFPObjs[task], 'MCOpng', copyMCOObjs[task], "inFile")
 
                     # Func2T1 with PVC label mask
-                    volbendFunc2T1Objs.append(pe.Node(interface=bs.Volslice(), name='volblendFunc2T1_{0}'.format(BFP['sess'][task])))
+                    volbendFunc2T1Objs.append(pe.Node(interface=bs.Volslice(), name='volblendFunc2T1_{0}'.format(taskname)))
                     volbendFunc2T1Objs[task].inputs.outFile = '{0}/Func2T1{1}.png'.format(WEBPATH, task)
                     volbendFunc2T1Objs[task].inputs.view = 1  # axial
                     
@@ -1276,7 +1288,7 @@ class subjLevelProcessing(object):
         brainsuite_workflow.run(plugin='MultiProc', plugin_args={'n_procs': int(os.environ['NCPUS']),
                                                                  'memory_gb': int(os.environ['MAXMEM'])},
                                 updatehash=False)
-
+        # brainsuite_workflow.write_graph()
         if 'QC' in STAGES:
             err = False
             nodes = list(brainsuite_workflow_return.nbunch_iter())

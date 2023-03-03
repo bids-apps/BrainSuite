@@ -1982,7 +1982,8 @@ class SVRegApplyMap(BrainSuiteCommandLine):
         return super(SVRegApplyMap, self)._format_arg(name, spec, value)
 
     def _gen_filename(self, name):
-        return self.inputs.outFile
+        if name == 'mappedFile':
+            return self.inputs.outFile
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -2089,8 +2090,9 @@ class GSmooth(BrainSuiteCommandLine):
         return super(GSmooth, self)._format_arg(name, spec, value)
 
     def _gen_filename(self, name):
-        return self.inputs.outFile
-        # return None
+        if name == 'smoothFile':
+            return self.inputs.outFile
+        return None
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -2262,6 +2264,7 @@ class QCStateInputSpec(CommandLineInputSpec):
     # stage = traits.Str(mandatory=True, argstr='%s', position=2, desc='Stage character/symbol of the state.')
     state = traits.Str(mandatory=True, argstr='%s', position=2, desc='String of all states.')
     Run = traits.Any(argstr='', mandatory=False, desc='dummy arg.')
+    LaunchInput = traits.Any(argstr='', mandatory=False, desc='Waits for QC launch state.')
 
 class QCStateOutputSpec(TraitedSpec):
     OutStateFile = File(desc='State file output.')
@@ -2271,12 +2274,16 @@ class QCState(BrainSuiteCommandLine):
     output_spec = QCStateOutputSpec
     _cmd = 'qcState.sh'
 
-    def _gen_filename(self):
-        return self.inputs.prefix + os.sep + 'stage-{0}.state'.format(self.inputs.stagenum)
+    def _gen_filename(self, name):
+        if name == 'OutStateFile':
+            return self.inputs.prefix + os.sep + 'stage-{0}.state'.format(self.inputs.stagenum)
         # return getFileName(self.inputs.filename, '.state')
+    
+    def _list_outputs(self):
+        return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
-        if (name == 'Run'):
+        if (name == 'Run') or (name == 'LaunchInput'):
             return #' %s %s %s ' % (self.inputs.prefix,self.inputs.stagenum,self.inputs.state)
         return spec.argstr % value
 
