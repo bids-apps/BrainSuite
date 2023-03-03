@@ -458,6 +458,8 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', volbendbfcObj, 'inFile')
                 brainsuite_workflow.connect(pvcObj, 'outputLabelFile', volbendpvcObj, 'labelFile')
                 brainsuite_workflow.connect(cerebroObj, 'outputCerebrumMaskFile', volbendcerebroObj, 'maskFile')
+                brainsuite_workflow.connect(cerebroObj, 'outputLabelVolumeFile', volbendHemilabelObj, 'labelFile')
+                brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispObj, 'maskFile')
                 brainsuite_workflow.connect(dewispObj, 'outputMaskFile', volbenddewispCorObj, 'maskFile')
                 brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsLeftObj, 'Surfaces')
                 brainsuite_workflow.connect(dfsObj, 'outputSurfaceFile', dfsrenderdfsRightObj, 'Surfaces')
