@@ -976,7 +976,7 @@ class SVRegInputSpec(CommandLineInputSpec):
         desc='Absolute path and filename prefix of the subjects output from BrainSuite '
              'Cortical Surface Extraction Sequence'
     )
-    dataSinkDelay = traits.List(
+    dataSinkDelay = traits.Any(
         str, argstr='%s',
         desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
              'until dataSink has finished sinking CSE outputs.'
