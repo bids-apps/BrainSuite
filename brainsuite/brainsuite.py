@@ -2293,11 +2293,12 @@ class makeMask(BrainSuiteCommandLine):
     output_spec = makeMaskOutputSpec
     _cmd = 'makeMask.sh'
 
-    def _gen_filename(self):
-        return self.inputs.fileNameAndROIs.split(' ')[0].split('.')[0] + '.pvc.edge.mask.nii.gz'
+    def _gen_filename(self, name):
+        if name == 'OutFile':
+            return self.inputs.fileNameAndROIs.split(' ')[0].split('.')[0] + '.pvc.edge.mask.nii.gz'
 
-    # def _list_outputs(self):
-    #     return l_outputs(self)
+    def _list_outputs(self):
+        return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
         if name == "Run":
