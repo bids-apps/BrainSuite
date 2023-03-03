@@ -38,8 +38,8 @@
     { "img": "FA.png", "stage": 17, "desc": "FA", "group": 3, "surface": false, "show": true, "width": 0, "height": 0 },
     { "img": "colorFA.png", "stage": 17, "desc": "COLOR FA", "group": 3, "surface": false, "show": true, "width": 0, "height": 0 },
     { "img": "mADC.png", "stage": 17, "desc": "mADC", "group": 3, "surface": false, "show": true, "width": 0, "height": 0 },
-    { "img": "ssim.png", "stage": 30, "desc": "SSIM", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
-    { "img": "mco.png", "stage": 30, "desc": "MCO", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
-    { "img": "Func2T1.png", "stage": 30, "group": 4, "desc": "FUNC2T1 T1 MASK", "surface": false, "show": true, "width": 0, "height": 0 }
+    { "img": "ssim0.png", "stage": 30, "desc": "SSIM", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
+    { "img": "mco0.png", "stage": 30, "desc": "MCO", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
+    { "img": "Func2T10.png", "stage": 30, "group": 4, "desc": "FUNC2T1 T1 MASK", "surface": false, "show": true, "width": 0, "height": 0 }
 ]
 }

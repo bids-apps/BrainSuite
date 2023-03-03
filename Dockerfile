@@ -14,6 +14,8 @@ ENV PATH="${BFP}:$PATH"
 
 RUN apt-get install -y xvfb libosmesa6-dev
 
+RUN wget -O /opt/BrainSuite${BrainSuiteVersion}/bin/gsmooth http://users.bmap.ucla.edu/~yeunkim/brainsuitebids/gsmooth22a_x86_64-pc-linux-gnu 
+
 COPY QC/qcState.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 COPY QC/makeMask.sh /opt/BrainSuite${BrainSuiteVersion}/bin/
 RUN cd opt/BrainSuite${BrainSuiteVersion}/bin/  && chmod ugo+rx qcState.sh makeMask.sh

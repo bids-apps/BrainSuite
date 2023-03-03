@@ -77,10 +77,10 @@ class BseInputSpec(CommandLineInputSpec):
         mandatory=True, argstr='-i %s', desc='input MRI volume')
     outputMRIVolume = File(
         desc='output brain-masked MRI volume. If unspecified, output file name will be auto generated.',
-        argstr='-o %s', hash_files=False, genfile=True)
+        argstr='-o %s', hash_files=True, genfile=True)
     outputMaskFile = File(
         desc='save smooth brain mask. If unspecified, output file name will be auto generated.',
-        argstr='--mask %s', hash_files=False, genfile=True)
+        argstr='--mask %s', hash_files=True, genfile=True)
     autoParameters = traits.Bool(
         desc='use autobse to set extraction parameters', argstr='--auto')
     autoIterations = traits.Int(
@@ -173,14 +173,14 @@ class BfcInputSpec(CommandLineInputSpec):
     inputMRIFile = File(
         mandatory=True, desc='input skull-stripped MRI volume', argstr='-i %s')
     inputMaskFile = File(
-        desc='mask file', argstr='-m %s', hash_files=False)
+        desc='mask file', argstr='-m %s')
     outputMRIVolume = File(
         desc='output bias-corrected MRI volume.If unspecified, output file name will be auto generated.',
-        argstr='-o %s', hash_files=False, genfile=True)
+        argstr='-o %s', hash_files=True, genfile=True)
     outputBiasField = File(
-        desc='save bias field estimate', argstr='--bias %s', hash_files=False)
+        desc='save bias field estimate', argstr='--bias %s',)
     outputMaskedBiasField = File(
-        desc='save bias field estimate (masked)', argstr='--maskedbias %s', hash_files=False)
+        desc='save bias field estimate (masked)', argstr='--maskedbias %s')
     histogramRadius = traits.Int(
         desc='histogram radius (voxels)', argstr='-r %d')
     biasEstimateSpacing = traits.Int(
@@ -229,6 +229,7 @@ class BfcInputSpec(CommandLineInputSpec):
         desc='verbosity level (0=silent)', argstr='-v %d')
     timer = traits.Bool(
         desc='display timing information', argstr='--timer')
+    dummy = traits.Str(desc='dummy output')
 
 
 class BfcOutputSpec(TraitedSpec):
@@ -292,10 +293,10 @@ class PvcInputSpec(CommandLineInputSpec):
     inputMaskFile = File(desc='brain mask file', argstr='-m %s')
     outputLabelFile = File(
         desc='output label file. If unspecified, output file name will be auto generated.',
-        argstr='-o %s', genfile=True)
+        argstr='-o %s', genfile=True, hash_files=True)
     outputTissueFractionFile = File(
         desc='output tissue fraction file',
-        argstr='-f %s', genfile=True)
+        argstr='-f %s', genfile=True, hash_files=True)
     spatialPrior = traits.Float(desc='spatial prior strength', argstr='-l %f')
     verbosity = traits.Int(desc='verbosity level (0 = silent)', argstr='-v %d')
     threeClassFlag = traits.Bool(
@@ -359,17 +360,17 @@ class CerebroInputSpec(CommandLineInputSpec):
     inputBrainMaskFile = File(desc='brain mask file', argstr='-m %s')
     outputCerebrumMaskFile = File(
         desc='output cerebrum mask volume. If unspecified, output file name will be auto generated.',
-        argstr='-o %s', genfile=True)
+        argstr='-o %s', genfile=True, hash_files=True)
     outputLabelVolumeFile = File(
         desc='output labeled hemisphere/cerebrum volume. If unspecified, output file name will be auto generated.',
-        argstr='-l %s', genfile=True)
+        argstr='-l %s', genfile=True, hash_files=True)
     costFunction = traits.Int(2, usedefault=True, desc='0,1,2', argstr='-c %d')
     useCentroids = traits.Bool(
         desc='use centroids of data to initialize position', argstr='--centroids')
     outputAffineTransformFile = File(
-        desc='save affine transform to file.', argstr='--air %s', genfile=True)
+        desc='save affine transform to file.', argstr='--air %s', genfile=True, hash_files=True)
     outputWarpTransformFile = File(
-        desc='save warp transform to file.', argstr='--warp %s', genfile=True)
+        desc='save warp transform to file.', argstr='--warp %s', genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity level (0=silent)', argstr='-v %d')
     linearConvergence = traits.Float(
         desc='linear convergence', argstr='--linconv %f')
@@ -444,7 +445,7 @@ class CortexInputSpec(CommandLineInputSpec):
         mandatory=True, desc='hemisphere / lobe label volume', argstr='-h %s')
     outputCerebrumMask = File(
         desc='output structure mask. If unspecified, output file name will be auto generated.', argstr='-o %s',
-        genfile=True)
+        genfile=True, hash_files=True)
     inputTissueFractionFile = File(
         mandatory=True, desc='tissue fraction file (32-bit float)', argstr='-f %s')
     tissueFractionThreshold = traits.Float(
@@ -505,7 +506,7 @@ class ScrubmaskInputSpec(CommandLineInputSpec):
         mandatory=True, desc='input structure mask file', argstr='-i %s')
     outputMaskFile = File(
         desc='output structure mask file. If unspecified, output file name will be auto generated.', argstr='-o %s',
-        genfile=True)
+        genfile=True, hash_files=True)
     backgroundFillThreshold = traits.Int(
         2, usedefault=True, desc='background fill threshold', argstr='-b %d')
     foregroundTrimThreshold = traits.Int(
@@ -560,7 +561,7 @@ class TcaInputSpec(CommandLineInputSpec):
         mandatory=True, desc='input mask volume', argstr='-i %s')
     outputMaskFile = File(
         desc='output mask volume. If unspecified, output file name will be auto generated.', argstr='-o %s',
-        genfile=True)
+        genfile=True, hash_files=True)
     minCorrectionSize = traits.Int(
         2500, usedefault=True, desc='maximum correction size', argstr='-m %d')
     maxCorrectionSize = traits.Int(
@@ -612,7 +613,8 @@ class Tca(BrainSuiteCommandLine):
 class DewispInputSpec(CommandLineInputSpec):
     inputMaskFile = File(mandatory=True, desc='input file', argstr='-i %s')
     outputMaskFile = File(
-        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s', genfile=True)
+        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s', 
+        genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity', argstr='-v %d')
     sizeThreshold = traits.Int(desc='size threshold', argstr='-t %d')
     maximumIterations = traits.Int(
@@ -670,7 +672,7 @@ class DfsInputSpec(CommandLineInputSpec):
         mandatory=True, desc='input 3D volume', argstr='-i %s')
     outputSurfaceFile = File(
         desc='output surface mesh file. If unspecified, output file name will be auto generated.', argstr='-o %s',
-        genfile=True)
+        genfile=True, hash_files=True)
     inputShadingVolume = File(
         desc='shade surface model with data from image volume', argstr='-c %s')
     smoothingIterations = traits.Int(
@@ -752,7 +754,8 @@ class Dfs(BrainSuiteCommandLine):
 class PialmeshInputSpec(CommandLineInputSpec):
     inputSurfaceFile = File(mandatory=True, desc='input file', argstr='-i %s')
     outputSurfaceFile = File(
-        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s', genfile=True)
+        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s', 
+        genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity', argstr='-v %d')
     inputTissueFractionFile = File(
         mandatory=True, desc='floating point (32) tissue fraction image', argstr='-f %s')
@@ -834,18 +837,18 @@ class HemisplitInputSpec(CommandLineInputSpec):
         mandatory=True, desc='input hemisphere label volume', argstr='-l %s')
     outputLeftHemisphere = File(
         desc='output surface file, left hemisphere. If unspecified, output file name will be auto generated.',
-        argstr='--left %s', genfile=True)
+        argstr='--left %s', genfile=True, hash_files=True)
     outputRightHemisphere = File(
         desc='output surface file, right hemisphere. If unspecified, output file name will be auto generated.',
-        argstr='--right %s', genfile=True)
+        argstr='--right %s', genfile=True, hash_files=True)
     pialSurfaceFile = File(
         desc='pial surface file -- must have same geometry as input surface', argstr='-p %s')
     outputLeftPialHemisphere = File(
         desc='output pial surface file, left hemisphere. If unspecified, output file name will be auto generated.',
-        argstr='-pl %s', genfile=True)
+        argstr='-pl %s', genfile=True, hash_files=True)
     outputRightPialHemisphere = File(
         desc='output pial surface file, right hemisphere. If unspecified, output file name will be auto generated.',
-        argstr='-pr %s', genfile=True)
+        argstr='-pr %s', genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity (0 = silent)', argstr='-v %d')
     timer = traits.Bool(desc='timing function', argstr='--timer')
 
@@ -908,7 +911,7 @@ class SkullfinderInputSpec(CommandLineInputSpec):
     outputLabelFile = File(
         desc='output multi-colored label volume segmenting brain, scalp, inner skull & outer skull '
              'If unspecified, output file name will be auto generated.',
-        argstr='-o %s', genfile=True)
+        argstr='-o %s', genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity', argstr='-v %d')
     lowerThreshold = traits.Int(
         desc='Lower threshold for segmentation', argstr='-l %d')
@@ -1085,8 +1088,9 @@ class SVRegInputSpec(CommandLineInputSpec):
 
 
 class SVRegOutputSpec(TraitedSpec):
-    outputLabelFile = File(desc='path/name of svreg label file')
-
+    outputLabelFile = File(desc='path/name of svreg label file', hash_files=True)
+    JacDetFile = File(desc='path/name of jacobian determinant of inverse map file', hash_files=True)
+    InvMapFile = File(desc='path/name of inverse map file', hash_files=True)
 
 class SVReg(BrainSuiteCommandLine):
     """
@@ -1117,14 +1121,27 @@ class SVReg(BrainSuiteCommandLine):
     input_spec = SVRegInputSpec
     output_spec = SVRegOutputSpec
     _cmd = 'svreg.sh'
+    
+    def _gen_filename(self, name):
+        fileToSuffixMap = {
+            'outputLabelFile': '.svreg.label.nii.gz',
+            'JacDetFile': '.svreg.inv.jacobian.nii.gz',
+            'InvMapFile' : '.svreg.inv.map.nii.gz'
+        }
+        
+        if name in fileToSuffixMap:
+            return self.inputs.subjectFilePrefix + fileToSuffixMap[name]
+
+        return None
+    
+    def _list_outputs(self):
+        return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
         if name == 'subjectFilePrefix' or name == 'atlasFilePrefix' or name == 'curveMatchingInstructions':
             return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
             return spec.argstr % ''
-        if name == 'outputLabelFile':
-            return getFileName(self.inputs.subjectFilePrefix, '.svreg.label.nii.gz')
         return super(SVReg, self)._format_arg(name, spec, value)
 
 
@@ -1177,7 +1194,7 @@ class BDPInputSpec(CommandLineInputSpec):
              'diffusion-weighted image)The b-vectors file must be a plain text file and '
              'usually has an extension of .bvec '
     )
-    dataSinkDelay = traits.List(
+    dataSinkDelay = traits.Any(
         str, argstr='%s',
         desc='For use in parallel processing workflows including Brainsuite Cortical '
              'Surface Extraction sequence. Connect datasink out_file to dataSinkDelay '
@@ -1635,7 +1652,25 @@ class BDPInputSpec(CommandLineInputSpec):
 
 
 class BDPOutputSpec(TraitedSpec):
-    tensor_coord = File(desc='path/name of the tensor bst file in T1 coordinate space')
+    corrFA = File(desc='path/name of distortion corrected FA map file', hash_files=True)
+    corrColorFA = File(desc='path/name of distortion corrected color FA map file', hash_files=True)
+    corrMADC = File(desc='path/name of distortion corrected mADC map file', hash_files=True)
+    corrAxial = File(desc='path/name of distortion corrected Axial map file', hash_files=True)
+    corrRadial = File(desc='path/name of distortion corrected Radial map file', hash_files=True)
+    corrMD = File(desc='path/name of distortion corrected MD map file', hash_files=True)
+    corrFRTGFA = File(desc='path/name of distortion corrected FRT_GFA map file', hash_files=True)
+    
+    FA = File(desc='path/name of non-distortion corrected FA map file', hash_files=True)
+    ColorFA = File(desc='path/name of non-distortion corrected color FA map file', hash_files=True)
+    MADC = File(desc='path/name of non-distortion corrected mADC map file', hash_files=True)
+    Axial = File(desc='path/name of non-distortion corrected Axial map file', hash_files=True)
+    Radial = File(desc='path/name of non-distortion corrected Radial map file', hash_files=True)
+    MD = File(desc='path/name of non-distortion corrected MD map file', hash_files=True)
+    FRTGFA = File(desc='path/name of non-distortion corrected FRT_GFA map file', hash_files=True)
+    
+    PreCorrDWI = File(desc='path/name of non-distortion corrected DWI file', hash_files=True)
+    PostCorrDWI = File(desc='path/name of distortion corrected DWI file', hash_files=True)
+    tensor_coord = File(desc='path/name of the tensor bst file in T1 coordinate space', hash_files=True)
     dummy = traits.Str(desc='dummy output')
 
 
@@ -1669,8 +1704,32 @@ class BDP(BrainSuiteCommandLine):
     _cmd = 'bdp.sh'
 
     def _gen_filename(self, name):
-        if name == 'tensor_coord':
-            return getFileName(self.inputs.inputDiffusionData, '.tensor.T1_coord.bst')
+        
+        fileToSuffixMap = {
+            'corrFA': '.dwi.RAS.correct.FA.T1_coord.nii.gz',
+            'corrColorFA': '.dwi.RAS.correct.FA.color.T1_coord.nii.gz',
+            'corrMADC': '.dwi.RAS.correct.mADC.T1_coord.nii.gz',
+            'corrAxial': '.dwi.RAS.correct.axial.T1_coord.nii.gz',
+            'corrRadial': '.dwi.RAS.correct.radial.T1_coord.nii.gz',
+            'corrMD': '.dwi.RAS.correct.MD.T1_coord.nii.gz',
+            'corrFRTGFA': '.dwi.RAS.correct.FRT_GFA.T1_coord.nii.gz',
+            'FA': '.dwi.RAS.FA.T1_coord.nii.gz',
+            'ColorFA': '.dwi.RAS.FA.color.T1_coord.nii.gz',
+            'MADC': '.dwi.RAS.mADC.T1_coord.nii.gz',
+            'Axial': '.dwi.RAS.axial.T1_coord.nii.gz',
+            'Radial': '.dwi.RAS.radial.T1_coord.nii.gz',
+            'MD': '.dwi.RAS.MD.T1_coord.nii.gz',
+            'FRTGFA': '.dwi.RAS.FRT_GFA.T1_coord.nii.gz',
+            'PreCorrDWI': '.dwi.RAS.nii.gz',
+            'PostCorrDWI': '.dwi.RAS.correct.nii.gz',
+            'tensor_coord': '.tensor.T1_coord.bst'
+        }
+        
+        if name in fileToSuffixMap:
+            return getFileName(self.inputs.bfcFile, fileToSuffixMap[name])
+        
+        # if name == 'tensor_coord':
+        #     return getFileName(self.inputs.inputDiffusionData, '.tensor.T1_coord.bst')
         if name == 'dummy':
             return ''
         return None
@@ -1759,7 +1818,7 @@ class Thickness2AtlasInputSpec(CommandLineInputSpec):
         argstr='%s', mandatory=True,
         desc='Absolute path and filename prefix of the subject data'
     )
-    dataSinkDelay = traits.List(
+    dataSinkDelay = traits.Any(
         str, argstr='%s',
         desc='Connect datasink out_file to dataSinkDelay to delay execution of SVReg '
              'until dataSink has finished sinking CSE outputs.'
@@ -1805,9 +1864,9 @@ class Thickness2Atlas(BrainSuiteCommandLine):
 
     def _gen_filename(self, name):
         if name == 'atlasSurfLeftFile':
-            return 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs'
+            return os.path.join(os.path.dirname(self.inputs.subjectFilePrefix), 'atlas.pvc-thickness_0-6mm.left.mid.cortex.dfs')
         if name == 'atlasSurfRightFile':
-            return 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'
+            return os.path.join(os.path.dirname(self.inputs.subjectFilePrefix),'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs')
         return None
 
     def _list_outputs(self):
@@ -1826,7 +1885,8 @@ class SVRegSmoothSurfInputSpec(CommandLineInputSpec):
     inputSurface = File(mandatory=True, argstr='%s', position=0, desc='input surface file')
     funcFile = File(mandatory=True, argstr='%s', position=1,
                     desc='surface file with function to be smoothed in .attributes field')
-    outSurface = File(mandatory=True, argstr='%s', position=2, desc='output surface file', genfile=True)
+    outSurface = File(mandatory=True, argstr='%s', position=2, desc='output surface file', genfile=True, 
+                      hash_files=True)
     param = traits.Float(mandatory=False, argstr='%f', position=3, desc='smoothing parameter (std dev in mm)')
     dataSinkDelay = traits.List(
         str,
@@ -1862,7 +1922,7 @@ class SVRegSmoothSurf(BrainSuiteCommandLine):
     _cmd = 'svreg_smooth_surf_function.sh'
 
     def _gen_filename(self, name):
-        return getFileName(self.inputs.outSurface, '')
+        return self.inputs.outSurface
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -1880,11 +1940,11 @@ class SVRegApplyMapInputSpec(CommandLineInputSpec):
     mapFile = File(mandatory=True, argstr='%s', position=0, desc='input SVReg map file')
     dataFile = File(mandatory=True, argstr='%s', position=1, desc='input nifti datafile file')
     outFile = File(mandatory=True, argstr='%s', position=2, desc='output resampled nifti file containing warped data',
-                   genfile=True)
+                   genfile=True, hash_files=True)
     targetFile = File(mandatory=True, argstr='%s', position=3, desc='target image file for copying header')
     dataSinkDelay = traits.List(
         str,
-        argstr='%s',
+        argstr='',
         desc='Connect datasink out_file to dataSinkDelay to delay execution of '
              'SVReg apply map until dataSink has finished sinking SVReg outputs.'
     )
@@ -1922,8 +1982,7 @@ class SVRegApplyMap(BrainSuiteCommandLine):
         return super(SVRegApplyMap, self)._format_arg(name, spec, value)
 
     def _gen_filename(self, name):
-        return getFileName(self.inputs.outFile, '')
-        return None
+        return self.inputs.outFile
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -1937,7 +1996,8 @@ class SVRegSmoothVolInputSpec(CommandLineInputSpec):
                         desc='smoothing parameter (std dev in mm) in y direction')
     stdz = traits.Float(mandatory=True, argstr='%f', position=3,
                         desc='smoothing parameter (std dev in mm) in z direction')
-    outFile = File(mandatory=True, argstr='%s', position=4, desc='output smoothed vol filei', genfile=True)
+    outFile = File(mandatory=True, argstr='%s', position=4, desc='output smoothed vol filei', 
+                   genfile=True, hash_files=True)
     dataSinkDelay = traits.List(
         str,
         argstr='%s',
@@ -1978,7 +2038,58 @@ class SVRegSmoothVol(BrainSuiteCommandLine):
         return super(SVRegSmoothVol, self)._format_arg(name, spec, value)
 
     def _gen_filename(self, name):
-        return getFileName(self.inputs.outFile, '')
+        return self.inputs.outFile
+        # return None
+
+    def _list_outputs(self):
+        return l_outputs(self)
+
+class GSmoothInputSpec(CommandLineInputSpec):
+    inFile = File(mandatory=True, argstr='-i %s', desc='input MRI volume')
+    outFile = File(mandatory=True, desc='output smoothed volume file.', argstr='-o %s', genfile=True,
+                   hash_files=True)
+    sigma = traits.Str( desc='std dev of filter in x, y, and z dimensions. [default: 3 3 3]',
+        argstr='-s %s')
+    float32 = traits.Bool(desc='use float32 for all calculations and outputs', argstr='--float32')
+    delta = traits.Bool(desc='add 1e-4 to the sigma values', argstr='--delta')
+    dataSinkDelay = traits.List(
+        str,
+        argstr='%s',
+        desc='Connect datasink out_file to dataSinkDelay to delay execution of '
+             'gsmooth until dataSink has finished sinking SVReg apply map outputs.'
+    )
+
+class GSmoothOutputSpec(TraitedSpec):
+    smoothFile = File(desc='path/name of nifti file containing smooth vol data')
+
+
+class GSmooth(BrainSuiteCommandLine):
+    """
+        GSmooth
+        This program is a C++ compiled binary that applies volumetric smoothing on an input file.
+
+    Examples
+        --------
+
+    >>> from nipype.interfaces import brainsuite
+    >>> from nipype.testing import example_data
+    >>> GSmooth = brainsuite.GSmooth()
+    >>> GSmooth.inputs.inFile = example_data('structural.nii')
+    >>> results = GSmooth.run() #doctest: +SKIP
+    """
+
+    input_spec = GSmoothInputSpec
+    output_spec = GSmoothOutputSpec
+    _cmd = 'gsmooth'
+
+    def _format_arg(self, name, spec, value):
+        if name == 'dataSinkDelay':
+            return spec.argstr % ''
+
+        return super(GSmooth, self)._format_arg(name, spec, value)
+
+    def _gen_filename(self, name):
+        return self.inputs.outFile
         # return None
 
     def _list_outputs(self):
@@ -2008,7 +2119,7 @@ class GenerateXls(BrainSuiteCommandLine):
     _cmd = 'generate_stats_xls.sh'
 
     def _gen_filename(self, name):
-        return getFileName(self.inputs.subjectFilePrefix, '')
+        return self.inputs.subjectFilePrefix
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -2024,7 +2135,7 @@ class GenerateXls(BrainSuiteCommandLine):
 
 class VolsliceInputSpec(CommandLineInputSpec):
     inFile = File(argstr='-i %s', mandatory=True, desc='Input file.')
-    outFile = File(argstr='-o %s', mandatory=True, desc='Output file.')
+    outFile = File(argstr='-o %s', mandatory=True, desc='Output file.', genfile=True, hash_files=True)
     Overlay = File(argstr='-r %s', mandatory=False, desc='Overlay image file name.')
     OverlayAlpha = traits.Int(argstr='--alpha %d', mandatory=False, desc='Overlay alpha (0-255) [default: 128]')
     maskFile = File(argstr='-m %s', mandatory=False, desc='Mask filename.')
@@ -2042,11 +2153,17 @@ class VolsliceInputSpec(CommandLineInputSpec):
     flop = traits.Bool(argstr='--flop', mandatory=False, desc='flip image L/R.')
     voxelspace = traits.Bool(argstr='--voxelspace',mandatory=False,
                              desc="Use voxel coordinates (don't rescale anisotropic)")
-    dataSinkDelay = File(
+    dataSinkDelay = traits.List(
+        str,
         argstr='%s',
         desc='Connect datasink outfile to dataSinkDelay to delay execution of '
-             'qcState until dataSink has finished sinking volblend outputs.'
+             'qcState until dataSink has finished sinking volslice outputs.'
     )
+    start = traits.Str(mandatory=False,
+        # argstr='',
+        desc='Triggers volslice to render QC thumbnail pngs.'
+    )
+
 
 
 class VolsliceOutputSpec(TraitedSpec):
@@ -2059,23 +2176,25 @@ class Volslice(BrainSuiteCommandLine):
     _cmd = 'volslice'
 
     def _gen_filename(self, name):
-        return getFileName(self.inputs.outFile, '')
-        return None
+        return self.inputs.outFile
 
     def _list_outputs(self):
         return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
-        if name == 'inFile':
-            return spec.argstr % os.path.expanduser(value)
+        # if name == 'start':
+        #     return spec.argstr % os.path.expanduser(value)
+        # elif name == 'inFile':
+        #     return spec.argstr % os.path.expanduser(value)
         if name == 'dataSinkDelay':
             return spec.argstr % ''
-
-        return super(Volslice, self)._format_arg(name, spec, value)
+        else:
+            return spec.argstr % value
+        # return super(Volslice, self)._format_arg(name, spec, value)
 
 
 class RenderDfsInputSpec(CommandLineInputSpec):
-    OutFile = File(argstr='-o %s', mandatory=True, desc='Output file. Must be a png.')
+    OutFile = File(argstr='-o %s', mandatory=True, desc='Output file. Must be a png.', genfile=True, hash_files=True)
     Ant = traits.Bool(argstr='--ant', mandatory=False, desc='coronal view (anterior)')
     Pos = traits.Bool(argstr='--pos', mandatory=False, desc='coronal view (posterior)')
     Sup = traits.Bool(argstr='--sup', mandatory=False, desc='axial view (superior)')
@@ -2100,13 +2219,17 @@ class RenderDfsInputSpec(CommandLineInputSpec):
     NoColor = traits.Bool(argstr='--no-color', mandatory=False, desc='Render surfaces in greyscale')
     CenterVol = File(argstr='--vol %s', mandatory=False, desc='center based on volume')
     UseColors = traits.Str(argstr='--use-colors %s', mandatory=False, desc='r1 g1 b1 [ ... rN gN bN] (use these colors)')
-    Surfbilateral = traits.Str(argstr='%s', mandatory=False, desc='dummy argument to print bilateral hemi')
-    dataSinkDelay = traits.List(
+    Surfbilateral = traits.List(mandatory=False, desc='dummy argument to print bilateral hemi')
+    dataSinkDelay = traits.Any(
         str,
-        argstr='%s',
+        argstr='',
         desc='Connect datasink outfile to dataSinkDelay to delay execution of '
              'qcState until dataSink has finished sinking dfsrender outputs.'
     )
+    # start = traits.Str(mandatory=False,
+    #     # argstr='',
+    #     desc='Triggers renderdfs to render QC thumbnail pngs.'
+    # )
 
 
 class RenderDfsOutputSpec(TraitedSpec):
@@ -2119,7 +2242,7 @@ class RenderDfs(BrainSuiteCommandLine):
     _cmd = 'renderdfs'
 
     def _gen_filename(self, name):
-        return getFileName(self.inputs.OutFile, '')
+        return self.inputs.OutFile
 
     def _list_outputs(self):
         return l_outputs(self)
@@ -2127,6 +2250,8 @@ class RenderDfs(BrainSuiteCommandLine):
     def _format_arg(self, name, spec, value):
         if (name=='bilteral') or (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
             return spec.argstr % os.path.expanduser(value)
+        elif name == 'dataSinkDelay':
+            return 
 
         return super(RenderDfs, self)._format_arg(name, spec, value)
 
@@ -2136,7 +2261,7 @@ class QCStateInputSpec(CommandLineInputSpec):
     stagenum = traits.Int(mandatory=True, argstr='%d', position=1, desc='Stage number.')
     # stage = traits.Str(mandatory=True, argstr='%s', position=2, desc='Stage character/symbol of the state.')
     state = traits.Str(mandatory=True, argstr='%s', position=2, desc='String of all states.')
-    Run = traits.Any(argstr='%s', position=3, desc='dummy arg.')
+    Run = traits.Any(argstr='', mandatory=False, desc='dummy arg.')
 
 class QCStateOutputSpec(TraitedSpec):
     OutStateFile = File(desc='State file output.')
@@ -2147,20 +2272,18 @@ class QCState(BrainSuiteCommandLine):
     _cmd = 'qcState.sh'
 
     def _gen_filename(self):
-        return getFileName(self.inputs.filename, '.state')
-
-    # def _list_outputs(self):
-    #     return l_outputs(self)
+        return self.inputs.prefix + os.sep + 'stage-{0}.state'.format(self.inputs.stagenum)
+        # return getFileName(self.inputs.filename, '.state')
 
     def _format_arg(self, name, spec, value):
         if (name == 'Run'):
-            return ' %s %s %s ' % (self.inputs.prefix,self.inputs.stagenum,self.inputs.state)
-        return ' %s %s %s ' % (self.inputs.prefix, self.inputs.stagenum, self.inputs.state)
+            return #' %s %s %s ' % (self.inputs.prefix,self.inputs.stagenum,self.inputs.state)
+        return spec.argstr % value
 
 
 class makeMaskInputSpec(CommandLineInputSpec):
     fileNameAndROIs = traits.Str(mandatory=True, argstr='%s', position=0, desc='Input file name and ROI IDs.')
-    Run = traits.Str(argstr='%s', position=1, desc='dummy arg.')
+    Run = traits.Str(mandatory=False, position=1, desc='dummy arg.')
 
 class makeMaskOutputSpec(TraitedSpec):
     OutFile = File(desc='Output mask file name.')
@@ -2183,7 +2306,8 @@ class makeMask(BrainSuiteCommandLine):
 
 class copyFileInputSpec(CommandLineInputSpec):
     inFile = traits.Str(mandatory=True, argstr='%s', position=0, desc='Input file name to be copied.')
-    outFile = traits.Str(mandatory=True, argstr='%s', position=1, desc='Output copied file name.')
+    outFile = traits.Str(mandatory=True, argstr='%s', position=1, desc='Output copied file name.',
+                         genfile=True, hash_files=True)
     Run = traits.Str(argstr='%s', position=2, desc='dummy arg.')
 
 class copyFileOutputSpec(TraitedSpec):
@@ -2194,11 +2318,11 @@ class copyFile(BrainSuiteCommandLine):
     output_spec = copyFileOutputSpec
     _cmd = 'cp'
 
-    def _gen_filename(self):
+    def _gen_filename(self, name):
         return self.inputs.outFile
 
-    # def _list_outputs(self):
-    #     return l_outputs(self)
+    def _list_outputs(self):
+        return l_outputs(self)
 
     def _format_arg(self, name, spec, value):
         if name == "Run":
@@ -2215,16 +2339,19 @@ class BFPInputSpec(CommandLineInputSpec):
     subjID = traits.Str(mandatory=True, argstr='%s', position=4, desc='Subject ID.')
     session = traits.Str(mandatory=True, argstr='%s', position=5, desc='Session name.')
     TR = traits.Int(mandatory=True, argstr='%d', position=6, desc='Repetition time in seconds.')
-    dataSinkDelay = traits.List(
+    dataSinkDelay = traits.Any(
         str,
-        argstr='%s',
+        argstr='',
         desc='Connect datasink outfile to dataSinkDelay to delay execution of '
              'BFP until dataSink has finished sinking SVREG outputs.'
     )
 
 class BFPOutputSpec(TraitedSpec):
-    res2std = File(desc='Output file, mapped to standard atlas.')
-    preProc = File(desc='Before ')
+    SSIMpng = File(desc='SSIM plot PNG.', hash_files=True)
+    MCOpng = File(desc='MCO PNG.', hash_files=True)
+    Func2T1 = File(desc='fMRI registration to T1w space output file.', hash_files=True)
+    GOrdmat = File(desc='Grayordinate output file.', hash_files=True)
+    GOrdFiltmat = File(desc='Filtered grayordinate output file.', hash_files=True)
     dummy = traits.Str(desc='dummy output')
 
 class BFP(BrainSuiteCommandLine):
@@ -2233,8 +2360,20 @@ class BFP(BrainSuiteCommandLine):
     _cmd = 'bfp.sh'
 
     def _gen_filename(self, name):
-        if name == 'configini':
-            return self.inputs.subjID + 'task-{0}.res2standard.nii.gz'.format(self.inputs.session)
+        
+        fileToSuffixMap = {
+            'SSIMpng': '.mc.ssim.png',
+            'MCOpng': '.mco.png',
+            'Func2T1': '.example.func2t1.nii.gz',
+            'GOrdmat': '.32k.GOrd.mat',
+            'GOrdFiltmat': '.32k.GOrd.filt.mat'            
+        }
+        
+        if name in fileToSuffixMap:
+            return os.path.join(self.inputs.studydir, self.inputs.subjID, 'func', 
+                                self.inputs.subjID+'_'+self.inputs.session+'_bold'+
+                                fileToSuffixMap[name])
+        
         if name == 'dummy':
             return ''
         return None
@@ -2246,7 +2385,7 @@ class BFP(BrainSuiteCommandLine):
         if name == 'configini':
             return super(BFP, self)._format_arg(name, spec, value)
         if name == 'dataSinkDelay':
-            return spec.argstr % ''
+            return #spec.argstr % ''
         return super(BFP, self)._format_arg(name, spec, value)
 
 
@@ -2254,12 +2393,15 @@ class BFP(BrainSuiteCommandLine):
 # removes pathway and extension of inputName, returns concatenation of:
 # inputName and suffix
 def getFileName(inputName, suffix):
-    fullInput = os.path.basename(inputName)
-    dotRegex = regex.compile("[^.]+")
-    # extract between last slash and first period
-    inputNoExtension = dotRegex.findall(fullInput)[0]
-    return os.path.abspath(
-        ''.join((inputNoExtension, suffix)))
+    base_filename = os.path.basename(inputName)
+    file_prefix = base_filename.split('.')[0]
+    return os.path.join(os.path.dirname(inputName), file_prefix+suffix)
+    # fullInput = os.path.basename(inputName)
+    # dotRegex = regex.compile("[^.]+")
+    # # extract between last slash and first period
+    # inputNoExtension = dotRegex.findall(fullInput)[0]
+    # return os.path.abspath(
+    #     ''.join((inputNoExtension, suffix)))
 
 
 def l_outputs(self):

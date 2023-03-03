@@ -258,8 +258,8 @@ def main():
             os.makedirs(WEBDIR)
         cmd = 'cp -r /BrainSuite/QC/web_essentials/* {0}'.format(parentWEBDIR)
         subprocess.call(cmd, shell=True)
-        cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
-        subprocess.call(cmd, shell=True)
+        # cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
+        # subprocess.call(cmd, shell=True)
 
     atlases = { 'BCI-DNI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
                 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
@@ -303,9 +303,15 @@ def main():
             if not os.path.exists(WEBDIR + '/brainsuite_dashboard_config.json'):
                 shutil.copyfile('/BrainSuite/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
             if args.localWebserver:
+                cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
+                subprocess.call(cmd, shell=True)
                 print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}'\n".format(args.port))
                 cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, bind)
                 subprocess.call(cmd, shell=True)
+            else:
+                cmd = 'watch.sh {0} {1} '.format(WEBDIR, args.output_dir)
+                subprocess.call(cmd, shell=True)
+            
 
 
         if not 'DASHBOARD' in stages:
