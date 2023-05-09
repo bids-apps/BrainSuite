@@ -1,4 +1,4 @@
-# BrainSuite BIDS App 
+# BrainSuite BIDS App
 ## Overview
 The BrainSuite BIDS App provides a portable, streamlined method for applying [BrainSuite](https://brainsuite.org) workflows to process and analyze anatomical, diffusion, and functional MRI data. This release of BrainSuite BIDS-App is based on [version 21a of BrainSuite](https://brainsuite.org/brainsuite21a).
 The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-level analysis, as well as corresponding group-level analysis functionality.
@@ -44,7 +44,7 @@ The BrainSuite Functional Pipeline ([BFP](https://brainsuite.org/bfp/)) processe
 
 ## Usage
 ### Data input requirements
-The BrainSuite BIDS App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s). 
+The BrainSuite BIDS App requires at least one T1w image. If no corresponding DWI data or fMRI are found, the BrainSuite BIDS App will only run CSE and SVReg on the T1w(s).
 
 * **Required**: T1w NIFTI image (BIDS format).
 * (Optional): DWI NIFTI image, fMRI NIFTI image (BIDS format).
@@ -201,21 +201,21 @@ docker run -ti --rm \
 ```
 Where 01 is the "sub-01". User can supply multiple participant labels by listing them delimited by space (i.e. --participant_label 01 02). If ``` --stages ```stages is not specified, the default is to run all stages, which includes CSE, SVReg, BDP, BFP, and QC.
 
-User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed. 
+User can remove ``` --participant_label <ids-list> ``` argument to have all subjects processed.
 All sessions will be processed. The output files will be located in the output folder specified.
 
-For the functional pipeline, you will need to define the TR (repetition time in seconds for the fMRI data) using ```--TR``` command. If this is not called, then the default value of 2 will be used. 
+For the functional pipeline, you will need to define the TR (repetition time in seconds for the fMRI data) using ```--TR``` command. If this is not called, then the default value of 2 will be used.
 
 If you would like to **modify parameters** for the participant-level run, you can do so by modifying the parameters in a preprocspecs.json file. [Full instructions and details are provided here](preprocspec_details.md).
 
 ### QC and BrainSuite Dashboard usage ###
 Adding "QC" to the stages (```--stages QC```) generates snapshots of key stages in the participant-level workflow. QC is included in the participant-level workflow as a default.
 
-To run QC and BrainSuite Dashboard along with your processing for real-time updates, you will need to launch a separate instance of the BrainSuite BIDS App image. 
+To run QC and BrainSuite Dashboard along with your processing for real-time updates, you will need to launch a separate instance of the BrainSuite BIDS App image.
 
 
 ### Running real-time QC and BrainSuite Dashboard without a web server ###
-If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag ```--localWebserver```. 
+If your institution does not have a running web server, you can launch a local web server using BrainSuite BIDS App by adding the flag ```--localWebserver```.
 You will also need to expose a port to the image; for example:
 
 ```bash
@@ -226,7 +226,7 @@ docker run -ti --rm \
   bids/brainsuite:v21a \
   /data /output participant --stages DASHBOARD --localWebserver
 ```
-where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 to Docker container's port 8080. 
+where ```-p 8080:8080``` tells the Docker to expose port local host's port 8080 to Docker container's port 8080.
 Stages include DASHBOARD, which indicates that the BIDS App will launch the BrainSuite Dashboard.
 
 If you would like to direct all the QC outputs (i.e. thumbnail images, QC sidecar files) to a specific folder, you can indicate a specific folder by using the ```--QCdir``` flag. For example:
@@ -243,7 +243,7 @@ docker run -ti --rm \
 
 
 ### Running real-time QC and BrainSuite Dashboard with an existing web server ###
-If your institution has a running web server and you would like to serve using that web server, you do not need to expose ports or start a local web server. 
+If your institution has a running web server and you would like to serve using that web server, you do not need to expose ports or start a local web server.
 Instead, all you need to do is to set the path to the QC output directory; this location must be a directory that is served by your web server.
 
 ```bash
@@ -260,7 +260,7 @@ You can also specify a list of subjects you would like to selectively QC by usin
 ### Group-level analysis usage ###
 
 #### Prerequisites ####
-* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](sample_demographics.tsv). 
+* A TSV file containing data that is to be used for group analysis. The file must contain a column with a column header “**participant_id**” with the subject ID listed. An example demographics file can be found [here](sample_demographics.tsv).
 * A JSON file containing the specifications for group level analysis. A sample JSON file is provided with the source code [sample_modelspec.json](BrainSuite/sample_modelspec.json).
 
 A detailed description of all fields in the modelspec.json file is provided [here](modelspec_details.md).
@@ -276,33 +276,33 @@ docker run -ti --rm \
 
 ## Parent Docker images
 
-The BrainSuite BIDS App build process uses a set of pre-compiled parent images ([yeunkim/brainsuitebids:parent](https://hub.docker.com/layers/yeunkim/brainsuitebidsapp/parent/images/sha256-9381fb7e4acd0200ee771360f9bd8de7311409474d5d481dac4794125d9a8443?context=repo)) 
-and [yeunkim/bidsapphead](https://hub.docker.com/layers/yeunkim/bidsapphead/latest/images/sha256-c3b033f926a472565ab61d67567a338dbc796774cb2e1d871dddceb7c7ec68a1?context=repo), which are available on Docker Hub. 
-This enables us to have a faster build process and a more stable BIDS App. 
-BrainSuite BIDS App relies on multiple source software from third-party repositories. 
-Frequent rebuilding of all layers may introduce changes that impact the consistency of the software, possibly introducing instabilities or changes that affect the outcomes of the analysis software. 
-By developing our BrainSuite BIDS App using pre-compiled images, we are able to keep the parent images stable while changing only the top layers of the Docker image. 
-Our pre-compiled parent images act as snapshots of version-controlled dependencies and file systems that our BrainSuite BIDS App needs. 
+The BrainSuite BIDS App build process uses a set of pre-compiled parent images ([yeunkim/brainsuitebids:parent](https://hub.docker.com/layers/yeunkim/brainsuitebidsapp/parent/images/sha256-9381fb7e4acd0200ee771360f9bd8de7311409474d5d481dac4794125d9a8443?context=repo))
+and [yeunkim/bidsapphead](https://hub.docker.com/layers/yeunkim/bidsapphead/latest/images/sha256-c3b033f926a472565ab61d67567a338dbc796774cb2e1d871dddceb7c7ec68a1?context=repo), which are available on Docker Hub.
+This enables us to have a faster build process and a more stable BIDS App.
+BrainSuite BIDS App relies on multiple source software from third-party repositories.
+Frequent rebuilding of all layers may introduce changes that impact the consistency of the software, possibly introducing instabilities or changes that affect the outcomes of the analysis software.
+By developing our BrainSuite BIDS App using pre-compiled images, we are able to keep the parent images stable while changing only the top layers of the Docker image.
+Our pre-compiled parent images act as snapshots of version-controlled dependencies and file systems that our BrainSuite BIDS App needs.
 The dockerfiles for these parent images are available in separate branches of the BrainSuite BIDS App repository.
 
 ### yeunkim/brainsuitebids:parent
-The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/parent/Dockerfile) for this pre-compiled Docker image is located in the ```parent``` branch of this repository. 
+The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/parent/Dockerfile) for this pre-compiled Docker image is located in the ```parent``` branch of this repository.
 This Dockerfile pulls an image from ```yeunkim/bidsapphead```.
 
 #### yeunkim/bidsapphead
 The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/head/Dockerfile) for this pre-compiled Docker image, which is used by the ```yeunkim/brainsuitebids:parent``` Docker image,
-is located in the ```head``` branch of this repository. 
+is located in the ```head``` branch of this repository.
 
 ## Support
-Questions about usage can be submitted to http://forums.brainsuite.org/. 
+Questions about usage can be submitted to http://forums.brainsuite.org/.
 Issues or suggestions can be directly submitted as an issue to this Github Repository.
 
 
-## Acknowledgments 
+## Acknowledgments
 This project is supported by NIH Grant R01-NS074980.
 
-## Licenses 
-The primary BrainSuite BIDS App source code is licensed under the [GNU Public License v2.0 only 
+## Licenses
+The primary BrainSuite BIDS App source code is licensed under the [GNU Public License v2.0 only
 (GPL-2.0-only)](https://spdx.org/licenses/GPL-2.0.html)
 
 The BrainSuite BIDS App makes use of several freely available software packages. Details on the licenses for each of these are provide in the files within the LICENSES directory of this repository.

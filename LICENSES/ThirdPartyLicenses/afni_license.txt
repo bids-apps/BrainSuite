@@ -77,7 +77,7 @@
   If you use this software, please cite the paper
       T. Joachims, Making large-Scale SVM Learning Practical.
         Advances in Kernel Methods - Support Vector Learning,
-        B. Scholkopf and C. Burges and A. Smola (ed.), MIT-Press, 1999. 
+        B. Scholkopf and C. Burges and A. Smola (ed.), MIT-Press, 1999.
   The SVM-light software is free only for non-commercial use. It must not be
   distributed without prior permission of the author. The author is not
   responsible for implications from the use of this software.

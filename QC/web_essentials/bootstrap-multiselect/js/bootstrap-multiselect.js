@@ -934,11 +934,11 @@
 
         /**
          * Create a checkbox container with input and label based on given values
-         * @param {JQuery} $item 
-         * @param {String} label 
-         * @param {String} name 
-         * @param {String} value 
-         * @param {String} inputType 
+         * @param {JQuery} $item
+         * @param {String} label
+         * @param {String} name
+         * @param {String} value
+         * @param {String} inputType
          * @returns {JQuery}
          */
         createCheckbox: function ($item, labelContent, name, value, title, inputType, internalId) {
@@ -1170,7 +1170,7 @@
                     this.$filter = $(this.options.templates.filter);
                     $('input', this.$filter).attr('placeholder', this.options.filterPlaceholder);
 
-                    // Handles optional filter clear button                        
+                    // Handles optional filter clear button
                     if (!this.options.includeFilterClearBtn) {
                         this.$filter.find(".multiselect-search").attr("type", "text");
 
@@ -1950,7 +1950,7 @@
 
         /**
          * Gets a select option by its id
-         * @param {String} id 
+         * @param {String} id
          * @returns {JQuery}
          */
         getOptionById: function (id) {
@@ -2014,7 +2014,7 @@
 
         /**
          * Generate a unique identifier inside the multiselect namespace and adds it as an data attribute to the related element
-         * @param {JQuery} $relatedElement 
+         * @param {JQuery} $relatedElement
          * @returns unique id
          */
         createAndApplyUniqueId: function ($relatedElement) {

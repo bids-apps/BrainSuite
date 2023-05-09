@@ -2,10 +2,10 @@
 # BrainSuite Diffusion Pipeline (BDP)
 
 BDP enables fusion of diffusion and structural MRI information for advanced
-image and connectivity analysis. It provides various methods for distortion 
+image and connectivity analysis. It provides various methods for distortion
 correction, co-registration, diffusion modeling (DTI and ODF) and basic ROI-wise
-statistic. BDP is flexible and diverse tool which supports wide variety of 
-diffusion datasets. For more information and detailed documentation, please 
+statistic. BDP is flexible and diverse tool which supports wide variety of
+diffusion datasets. For more information and detailed documentation, please
 see BDP website: http://brainsuite.org/processing/diffusion/
 
 This is version 21a (build #0081) of BDP, released on 05-May-2021.
@@ -17,7 +17,7 @@ Created by Chitresh Bhushan, Divya Varadarajan, Justin P. Haldar,
 
 # Downloading BDP
 
-Latest pre-compiled binaries and source code of BDP can be obtained from http://brainsuite.org/ . 
+Latest pre-compiled binaries and source code of BDP can be obtained from http://brainsuite.org/ .
 
 
 
@@ -34,26 +34,26 @@ BDP requires working installations of following for building the binaries:
    - MATLAB Compiler: http://www.mathworks.com/products/compiler/
    - A supported C/C++ Compiler: http://www.mathworks.com/support/compilers/R2015b/index.html
 
-First open MATLAB and navigate to the `<BDP>/packaging_tools` folder of the 
+First open MATLAB and navigate to the `<BDP>/packaging_tools` folder of the
 source code. Then, Compile the c/mex files by running following on the MATLAB
 command prompt:
 
 >> CompileBDPMexFiles
- 
-It will compile all required mex functions. Note that you should change the 
-generated Makefile in Linux and Mac to use clang instead of gcc. 
+
+It will compile all required mex functions. Note that you should change the
+generated Makefile in Linux and Mac to use clang instead of gcc.
 
 Finally, compile the MATLAB code and generate packages by running following:
 
 >> CompileBrainSuiteDiffusionPipeline --package 99aRC9 --build 9999
-    
+
 where, `99aRC9` is the name of release and `9999` is four digit build number.
 This will generate relevant tarball/zip for distribution. Note that above step
 requires `mcc` command from MATLAB Compiler toolbox.
 
 
 
-# BDP License 
+# BDP License
 
 Please see the included license file(s) for more details.
 
@@ -292,26 +292,26 @@ http://www.mathworks.com/matlabcentral/fileexchange/28639-struct2xml
 Copyright (c) 2010, Wouter Falkena
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
 met:
 
-    * Redistributions of source code must retain the above copyright 
+    * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright 
-      notice, this list of conditions and the following disclaimer in 
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in
       the documentation and/or other materials provided with the distribution
-      
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ________________________________________________________________________________
 
@@ -407,4 +407,3 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-

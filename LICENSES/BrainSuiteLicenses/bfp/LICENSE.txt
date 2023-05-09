@@ -2,11 +2,11 @@ BFP: BrainSuite Functional Pipeline
 Copyright (C) 2023 The Regents of the University of California and the University of Southern California
 
 
-Created by Anand A. Joshi, Chitresh Bhushan, Jian Li, Soyoung Choi, David W. Shattuck, Richard M. Leahy 
+Created by Anand A. Joshi, Chitresh Bhushan, Jian Li, Soyoung Choi, David W. Shattuck, Richard M. Leahy
 
 For more information, contact: support@brainsuite.org or
     Anand A Joshi (ajoshi@usc.edu)
-    EEB 426, 3740 McClintock Ave, 
+    EEB 426, 3740 McClintock Ave,
     Los Angeles, CA 90089
 
 This program is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@ GNU GENERAL PUBLIC LICENSE
 
 Version 2, June 1991
 
-Copyright (C) 1989, 1991 Free Software Foundation, Inc.  
+Copyright (C) 1989, 1991 Free Software Foundation, Inc.
 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 Everyone is permitted to copy and distribute verbatim copies
@@ -141,7 +141,7 @@ If the program is interactive, make it output a short notice like this when it s
 Gnomovision version 69, Copyright (C) year name of author
 Gnomovision comes with ABSOLUTELY NO WARRANTY; for details
 type `show w'.  This is free software, and you are welcome
-to redistribute it under certain conditions; type `show c' 
+to redistribute it under certain conditions; type `show c'
 for details.
 The hypothetical commands `show w' and `show c' should show the appropriate parts of the General Public License. Of course, the commands you use may be called something other than `show w' and `show c'; they could even be mouse-clicks or menu items--whatever suits your program.
 
@@ -149,7 +149,7 @@ You should also get your employer (if you work as a programmer) or your school, 
 
 Yoyodyne, Inc., hereby disclaims all copyright
 interest in the program `Gnomovision'
-(which makes passes at compilers) written 
+(which makes passes at compilers) written
 by James Hacker.
 
 signature of Ty Coon, 1 April 1989

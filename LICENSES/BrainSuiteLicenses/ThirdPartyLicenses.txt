@@ -27,7 +27,7 @@ Third Party Licenses
 --------------------
 ________________________________________________________________________________
 
-BrainSuite makes use of RapidXml, developed by Marcin Kalicinski, under the 
+BrainSuite makes use of RapidXml, developed by Marcin Kalicinski, under the
 Boost Software License - Version 1.0.
 1. Boost Software License - Version 1.0 - August 17th, 2003
 ===============================================================================
@@ -58,7 +58,7 @@ DEALINGS IN THE SOFTWARE.
 
 ________________________________________________________________________________
 
-BrainSuite makes use of lodepng, developed by Lode Vandevenne, under the 
+BrainSuite makes use of lodepng, developed by Lode Vandevenne, under the
 zlib license.
 lodepng (lodepng.h and lodepng.cpp)
 Copyright (c) 2005-2018 Lode Vandevenne
@@ -403,7 +403,7 @@ ________________________________________________________________________________
 
 ________________________________________________________________________________
 
-Surface-constrained Volumetric Registration (SVReg) uses libraries or code from 
+Surface-constrained Volumetric Registration (SVReg) uses libraries or code from
 the following third party sources:
 ________________________________________________________________________________
 
@@ -777,26 +777,26 @@ struct2xml
 Copyright (c) 2010, Wouter Falkena
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without 
-modification, are permitted provided that the following conditions are 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
 met:
 
-  * Redistributions of source code must retain the above copyright 
+  * Redistributions of source code must retain the above copyright
     notice, this list of conditions and the following disclaimer.
-  * Redistributions in binary form must reproduce the above copyright 
-    notice, this list of conditions and the following disclaimer in 
+  * Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
     the documentation and/or other materials provided with the distribution
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
 available from: http://www.mathworks.com/matlabcentral/fileexchange/28639-struct2xml
@@ -1047,17 +1047,17 @@ POSSIBILITY OF SUCH DAMAGE.
 available from: https://www.mathworks.com/matlabcentral/fileexchange/7842-catstruct
 ______________________________________________________________________________
 
-Tabbed html theme 
+Tabbed html theme
 http://www.menucool.com/tabbed-content Free to use. Version 2013.7.6
 
 ______________________________________________________________________________
 
-MATLAB Highlighter 1.55, 
+MATLAB Highlighter 1.55,
 a small and lightweight JavaScript library for colorizing your MATLAB syntax.
 http://matlabtricks.com/matlab-highlighter [deprecated link]
 Licensed under the MIT license
 Copyright (c) 2013, Zoltan Fegyver
-The MATLAB Highlighter is licensed under the MIT license. 
+The MATLAB Highlighter is licensed under the MIT license.
 
 Copyright (c) 2013, Zolt谩n Fegyver
 
@@ -1108,7 +1108,7 @@ See the LICENSE  and GPL files for copyright information.
 ______________________________________________________________________________
 
  FieldTrip - the MATLAB toolbox for MEG and EEG analysis
- Copyright (C) 2002-2014 by the members of the FieldTrip team 
+ Copyright (C) 2002-2014 by the members of the FieldTrip team
 
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -1124,7 +1124,7 @@ ______________________________________________________________________________
  along with this program; if not, write to the Free Software
  Foundation Inc, 59 Temple Pl. - Suite 330, Boston, MA 02111-1307, USA.
 
-______________________________________________________________________________ 
+______________________________________________________________________________
 
  GIfTI - a MATLAB GIfTI Library
  Copyright (C) 2008-2015 Guillaume Flandin <Guillaume@artefact.tk>
@@ -1143,7 +1143,7 @@ ______________________________________________________________________________
  along with this program; if not, write to the Free Software
  Foundation Inc, 59 Temple Pl. - Suite 330, Boston, MA 02111-1307, USA.
 
-______________________________________________________________________________ 
+______________________________________________________________________________
 
  XMLTree - an XML toolbox for MATLAB
  Copyright (C) 2008 Guillaume Flandin <Guillaume@artefact.tk>
@@ -1161,4 +1161,3 @@ ______________________________________________________________________________
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation Inc, 59 Temple Pl. - Suite 330, Boston, MA 02111-1307, USA.
-
