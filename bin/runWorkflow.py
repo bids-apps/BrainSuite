@@ -27,11 +27,11 @@ import shutil
 def runWorkflow(stages, t1ws, preprocspecs, atlas, cacheset, thread, layout, dwis, funcs,
             subject_label, args):
     '''
-    This function is a wrapper that runs the appropriate pipelines in brainsuiteWorkflow.py. 
+    This function is a wrapper that runs the appropriate pipelines in brainsuiteWorkflow.py.
 
     Authors: Yeun Kim, Jason Wong, Clayton Jerlow
 
-    Copyright (C) 2022 The Regents of the University of California 
+    Copyright (C) 2022 The Regents of the University of California
     Authored by Yeun Kim, Jason Wong, Clayton Jerlow, David W. Shattuck, Ahmanson-Lovelace Brain Mapping Center
     Dept. of Neurology, David Geffen School of Medicine, UCLA.
 

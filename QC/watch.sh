@@ -191,7 +191,7 @@ for (( outerLoop=0;outerLoop<1000;outerLoop++ )); do
 
 	startTime=`date`;
 	startTimeSeconds=`date +%s`;
-	
+
 
 #    cp ${WEBPATH} ${WEBDIR}/brainsuite_state${bsjson}.json
 	for ((i=0;i<100000;i++)); do

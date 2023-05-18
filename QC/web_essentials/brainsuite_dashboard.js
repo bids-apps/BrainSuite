@@ -214,7 +214,7 @@ function progressBar(stagecodes, showAll = false) {
 		}
 		if (code != "")
 		{
-			bar += '<a href="#" style="text-decoration: none;" data-toggle="tooltip" data-delay=\'{ "show": 0, "hide": 0 }\' title="'+stagename+'">'+code+'</a>'; 
+			bar += '<a href="#" style="text-decoration: none;" data-toggle="tooltip" data-delay=\'{ "show": 0, "hide": 0 }\' title="'+stagename+'">'+code+'</a>';
 		}
 	}
 	return bar;
@@ -242,7 +242,7 @@ function updateMenus() {
 			if (data.Contents!=null) contents=data.Contents;
 			if (data.StageNames!=null) stagenames=data.StageNames;
 			if (data.GroupNames!=null) groupNames=data.GroupNames;
-			$("#userGroupDbKeyAjax2").empty(); 
+			$("#userGroupDbKeyAjax2").empty();
 			buildStageMenus();
 		},
 		error: function() { buildStageMenus(); }

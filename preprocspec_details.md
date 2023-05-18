@@ -13,7 +13,7 @@ docker run -ti --rm \
 
 
 ## Explanation of preprocspec.json fields ##
-This optional JSON file defines objects named Anatomical, Diffusion, PostProc, and Functional that can be used to specify parameters for each of those components. 
+This optional JSON file defines objects named Anatomical, Diffusion, PostProc, and Functional that can be used to specify parameters for each of those components.
 For parameters whose options are Boolean values, 1 (True) and 0 (False) are used, e.g., 1 enables an option and 0 disables it.
 
 ### Global Settings ###

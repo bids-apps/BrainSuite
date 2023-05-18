@@ -166,7 +166,7 @@ div.desc {
 #outer {
   width:10em;
   height:10em;
-  position:relative; 
+  position:relative;
 }
 
 #inner {
@@ -228,4 +228,3 @@ span.multiselect {
 /*.grow:hover {
   transform: scale(4);
 }*/
-

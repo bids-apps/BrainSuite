@@ -171,6 +171,3 @@ class bssrSpec(object):
         os.environ['CONFIG_FILE'] = '{0}/bfp_config_stats.ini'.format(self.outputdir)
         with open('{0}/bfp_config_stats.ini'.format(self.outputdir), 'w') as configfile:
             config.write(configfile)
-
-
-

@@ -1,5 +1,5 @@
 ## Overview ##
-The BrainSuite BIDS-App software includes third party libraries and tools, which are used under the licenses contained within this folder. This document describes an overview of these licenses. 
+The BrainSuite BIDS-App software includes third party libraries and tools, which are used under the licenses contained within this folder. This document describes an overview of these licenses.
 
 All third party libraries and tools are pre-installed and redistributed in the BrainSuite BIDS-App image on DockerHub.
 
@@ -20,7 +20,7 @@ MATLAB Compiler Runtime is developed by The MathWorks, Inc. and is distributed p
 
 Nibabel is a public Python package that is distributed under the MIT license. Details can be found in "nibabel_license.txt" file.
 
-Nilearn is a public Python package that is distributed under the New BSD license. Full details can be found in "nilearn_license.txt" file. 
+Nilearn is a public Python package that is distributed under the New BSD license. Full details can be found in "nilearn_license.txt" file.
 
 Nipype is a public Python package that is distributed under the Apache License, Version 2.0. A copy of the License is available at http://www.apache.org/licenses/LICENSE-2.0. Other details can be found in "nipype_license.txt".
 

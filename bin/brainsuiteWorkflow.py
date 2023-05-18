@@ -529,7 +529,7 @@ class subjLevelProcessing(object):
                 qcthickPVC.inputs.prefix = statesDir
                 qcthickPVC.inputs.stagenum = stageNumDict['THICKPVC']
                 qcthickPVC.inputs.state = completed
-                
+
                 brainsuite_workflow.connect(dsQCThick, 'out_file', qcthickPVC, 'Run')
 
 
@@ -1006,7 +1006,7 @@ class subjLevelProcessing(object):
             applyMapInputBaseSVReg = anat + os.sep + SUBJECT_ID + '_T1w'
             applyMapMapFile = applyMapInputBaseSVReg + '.svreg.inv.map.nii.gz'
             applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
-            
+
             distcorr = "correct."
             if self.skipDistortionCorr:
                 distcorr = ""
@@ -1421,4 +1421,3 @@ class subjLevelProcessing(object):
                 if fnmatch.fnmatch(file, '*_dwi.*'):
                     cmd = "rename 's/_T1w/_dwi/' {0}/{1}".format(dwi, file)
                     subprocess.call(cmd, shell=True)
-

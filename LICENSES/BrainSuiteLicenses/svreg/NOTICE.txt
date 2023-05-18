@@ -153,9 +153,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 *********
 laplacian.m
-This code is a part of the BLOPEX package: 
-http://en.wikipedia.org/wiki/BLOPEX or directly 
-http://code.google.com/p/blopex/ 
+This code is a part of the BLOPEX package:
+http://en.wikipedia.org/wiki/BLOPEX or directly
+http://code.google.com/p/blopex/
 License: BSD
 Copyright 2010-2011 Bryan C. Smith, Andrew V. Knyazev
 *********
