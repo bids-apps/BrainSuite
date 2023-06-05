@@ -609,7 +609,8 @@ class subjLevelProcessing(object):
                 bdpObj.inputs.diffusion_time_ms = self.diffusion_time_ms
             bdpObj.inputs.echoSpacing = self.echoSpacing
             if self.fieldmapCorrection:
-                bdpObj.inputs.fieldmapCorrection = bdpInputBase +  self.fieldmapCorrection
+                fieldmapdir = os.path.dirname(os.path.dirname(INPUT_DWI_BASE)) + '/fmap/'
+                bdpObj.inputs.fieldmapCorrection = fieldmapdir +  SUBJECT_ID + self.fieldmapCorrection
             bdpObj.inputs.sigma_GQI = self.sigma_GQI
             bdpObj.inputs.ERFO_SNR = self.ERFO_SNR
 
