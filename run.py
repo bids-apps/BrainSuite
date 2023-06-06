@@ -146,7 +146,10 @@ def parser():
                              'compute nodes.', required=False,
                         default=None)
     qc.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
-    qc.add_argument('--port', help='Port number for QC webserver.', default=8080)
+    qc.add_argument('--port', help='Port number for QC local webserver. This defines the port number '
+                                'inside the BrainSuite BIDS App container.'
+                                ' If using Singularity version of BrainSuite BIDS App, this argument also defines the port number '
+                                'of the local host.', default=8088)
     qc.add_argument('--bindLocalHostOnly', help='When running local web server through this app, '
                                                     'the server binds to all of the IPs on the machine. '
                                                     'If you would like to only bind to the local host, '
@@ -172,9 +175,12 @@ def parser():
     bidsval.add_argument('--ignoreSubjectConsistency', help='Reduces down the BIDS validator log and '
                                                            'the associated memory needs. This is often helpful for'
                                                            'large datasets.', action='store_true', required=False)
-    bidsval.add_argument('--bidsconfig', help='Configuration of the severity of errors for BIDS validator. '
-                                             'If no path is specified, a default path of .bids-validator-config.json'
-                                             '(relative to the input bids directory) file is used.', nargs='?',
+    bidsval.add_argument('--bidsconfig', help='Configuration of the severity of errors for BIDS validator. If this argument is used with no path specification, '
+                                             ' the bids-validator checks for a .bids-validator-config.json file at the top level of '
+                                             ' the input BIDS directory.  However, if you would like to define the path of your '
+                                             '.bids-validator-config.json file, then you can specify the path after this flag (i.e. --bidsconfig /path/to/file). '  
+                                             'For more information '
+                                             'on how to create this JSON file, please visit https://github.com/bids-standard/bids-validator#configuration.', nargs='?',
                         const='',
                         required=False)
 
@@ -293,6 +299,7 @@ def main():
                     if preprocspecs.cache:
                         cacheset = True
                         args.cache = preprocspecs.cache
+                preprocspecs.write_preprocspecs_output(subjectID, preprocspecs, stages, args.output_dir)
             allt1ws.extend(t1ws)
         dataset_description = None
         if os.path.exists(args.bids_dir + '/dataset_description.json'):
@@ -305,7 +312,8 @@ def main():
             if args.localWebserver:
                 cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
                 subprocess.call(cmd, shell=True)
-                print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}'\n".format(args.port))
+                print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}' . If you have changed the port number while "
+                     "calling the docker images, please make sure that port number you have defined matches this web address.\n".format(args.port))
                 cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, bind)
                 subprocess.call(cmd, shell=True)
             else:
