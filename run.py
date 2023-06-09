@@ -106,9 +106,13 @@ def parser():
     dataselect.add_argument('--participant_label', help='The label of the participant that should be analyzed. The label '
                        'corresponds to sub-<participant_label> from the BIDS spec '
                        '(so it does not include "sub-"). If this parameter is not '
-                       'provided all subjects should be analyzed. Multiple '
+                       'provided, all subjects will be analyzed. Multiple '
                        'participants can be specified with a space separated list.',
                        nargs="+")
+    dataselect.add_argument('--session', help='The session label of the participant that should be analyzed. The label '
+                            'corresponds to ses-<session label> from the BIDS spec (so it does not include "ses-"). If this '
+                            'parameter is not provided, all sessions will be analyzed. Multiple sessions can be specified '
+                            'with a space separated list.', nargs="+")
 
     bap = parser.add_argument_group('Command line arguments for BrainSuite Anatomical Pipeline (BAP). For more parameter '
                                     'options, please edit the preprocspecs.json file')
@@ -276,6 +280,9 @@ def main():
     if 'BFP' in stages:
         assert args.atlas != 'BSA'
 
+    if args.session:
+        print("Running only session: ", args.session)
+
     if (args.analysis_level == "participant"):
 
         cacheset =False
@@ -284,9 +291,12 @@ def main():
         allt1ws = []
         for subject_label in subjects_to_analyze:
 
-            t1ws = [f.filename for f in layout.get(subject=subject_label,
+            if args.session:
+                t1ws = [f.filename for f in layout.get(subject=subject_label, session=args.session,
                                                    type='T1w', extensions=["nii.gz", "nii"])]
-
+            else:
+                t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                   type='T1w', extensions=["nii.gz", "nii"])]
 
             for t1w in t1ws:
                 subjectID = t1w.split('/')[-1].split('_T1w')[0]
@@ -299,7 +309,6 @@ def main():
                     if preprocspecs.cache:
                         cacheset = True
                         args.cache = preprocspecs.cache
-                preprocspecs.write_preprocspecs_output(subjectID, preprocspecs, stages, args.output_dir)
             allt1ws.extend(t1ws)
         dataset_description = None
         if os.path.exists(args.bids_dir + '/dataset_description.json'):
@@ -333,8 +342,10 @@ def main():
 
                 sessions = layout.get(target='session', return_type='id',
                                       subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
+                if args.session:
+                        sessions = args.session
 
-                if len(sessions) > 0:
+                if len(sessions) > 0:                    
                     for ses in range(0, len(sessions)):
                         runs = layout.get(target='run', return_type='id', session=sessions[ses],
                                       subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
