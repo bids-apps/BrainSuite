@@ -28,6 +28,7 @@ config.update_config(cfg)
 import sys
 import nipype.pipeline.engine as pe
 import nipype.interfaces.brainsuite as bs
+from nipype.interfaces.fsl import Eddy
 import nipype.interfaces.io as io
 from nipype.interfaces.utility import Function, Merge
 from nipype import Node
@@ -62,6 +63,7 @@ class subjLevelProcessing(object):
 
         #bse
         self.autoParameters = specs.autoParameters
+        self.prescale = specs.prescale
         self.diffusionIterations = specs.diffusionIterations
         self.diffusionConstant = specs.diffusionConstant
         self.edgeDetectionConstant = specs.edgeDetectionConstant
@@ -79,6 +81,9 @@ class subjLevelProcessing(object):
         self.tissueFractionThreshold = specs.tissueFractionThreshold
 
         # bdp
+        self.fsleddy = specs.fsleddy
+        self.indexFile = specs.indexFile
+        self.acqpFile = specs.acqpFile
         self.skipDistortionCorr = specs.skipDistortionCorr
         self.phaseEncodingDirection = specs.phaseEncodingDirection
         self.estimateODF_3DShore = specs.estimateODF_3DShore
@@ -167,19 +172,27 @@ class subjLevelProcessing(object):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
             if not 'BDP' in STAGES:
-                cmd = [QCSTATE, statesDir, str(stageNumDict['BDP']), unqueued]
-                subprocess.call(' '.join(cmd), shell=True)
+                for stages in range(16,19):
+                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
+                    subprocess.call(' '.join(cmd), shell=True)
+                # cmd = [QCSTATE, statesDir, str(stageNumDict['BDP']), unqueued]
+                # subprocess.call(' '.join(cmd), shell=True)
             if not 'SVREG' in STAGES:
                 for stages in range(12, 16):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
             if (not 'BDP' in STAGES) or (not 'SVREG' in STAGES):
-                for stages in range(16, 29):
+                for stages in range(16, 31):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
             if not 'BFP' in STAGES:
                 cmd = [QCSTATE, statesDir, str(stageNumDict['BFP']), unqueued]
                 subprocess.call(' '.join(cmd), shell=True)
+            if not self.fsleddy:
+                for stages in range(16,18):
+                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
+                    subprocess.call(' '.join(cmd), shell=True)
+                
             stagesRun = {}
 
             qcstateInitObj = pe.Node(interface=bs.QCState(), name='qcstateInitObj')
@@ -210,6 +223,7 @@ class subjLevelProcessing(object):
             bseObj.inputs.diffusionConstant = self.diffusionConstant  # -d
             bseObj.inputs.edgeDetectionConstant = self.edgeDetectionConstant  # -s
             bseObj.inputs.autoParameters = self.autoParameters
+            bseObj.inputs.prescale = self.prescale
 
             bfcObj = pe.Node(interface=bs.Bfc(), name='BFC')
             pvcObj = pe.Node(interface=bs.Pvc(), name='PVC')
@@ -595,8 +609,6 @@ class subjLevelProcessing(object):
 
             # bdp inputs that will be created. We delay execution of BDP until BFC is done
             bdpObj.inputs.bfcFile = bdpInputBase + '.bfc.nii.gz'
-            bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
-            bdpObj.inputs.BVecBValPair = self.BVecBValPair
             bdpObj.inputs.estimateTensors = True
             bdpObj.inputs.estimateODF_FRACT = True
             bdpObj.inputs.estimateODF_FRT = True
@@ -625,18 +637,90 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', copyBFCtoDWI, 'inFile')
                 brainsuite_workflow.connect(bseObj, 'outputMaskFile', copyBSEMasktoDWI, 'inFile')
 
-            brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', bdpObj, 'bfcFile')
-            brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', bdpObj, 'dataSinkDelay')
+            if not self.fsleddy:
+                bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
+                bdpObj.inputs.BVecBValPair = self.BVecBValPair
+                brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', bdpObj, 'bfcFile')
+                brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', bdpObj, 'dataSinkDelay')
+            else:
+                bdpMaskObj = pe.Node(interface=bs.BDP(), name='BDPMask')
+                bdpMaskObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
+                bdpMaskObj.inputs.maskOnly = True
+                brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', bdpMaskObj, 'dataSinkDelay')
+                brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', bdpMaskObj, 'dataSinkDelay')
+                eddy = pe.Node(interface=Eddy(), name='EDDY')
+                eddy.inputs.in_file = INPUT_DWI_BASE 
+                eddy.inputs.in_index = self.indexFile
+                eddy.inputs.in_acqp = self.acqpFile
+                eddy.inputs.in_bvec = self.BVecBValPair[0]
+                eddy.inputs.in_bval = self.BVecBValPair[1]
+                eddy.inputs.out_base = bdpInputBase
+                brainsuite_workflow.connect(bdpMaskObj, 'MaskFile', eddy, 'in_mask')
+                rotbvec = bdpInputBase + '.eddy_rotated_bvecs'
+                bdpObj.inputs.BVecBValPair = [rotbvec, self.BVecBValPair[1]]
+                brainsuite_workflow.connect(eddy, 'out_corrected', bdpObj, 'inputDiffusionData')
+
 
             if 'QC' in STAGES:
                 qcbdpLaunch= pe.Node(interface=bs.QCState(), name='qcbdpLaunch')
                 qcbdpLaunch.inputs.prefix = statesDir
                 qcbdpLaunch.inputs.stagenum = stageNumDict['BDP']
                 qcbdpLaunch.inputs.state = launched
-                if not 'CSE' in STAGES:
-                    brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', qcbdpLaunch, 'Run')
+                if self.fsleddy:
+                    qcBDPMaskLaunch = pe.Node(interface=bs.QCState(), name='qcBDPMaskLaunch')
+                    qcBDPMaskLaunch.inputs.prefix = statesDir
+                    qcBDPMaskLaunch.inputs.stagenum = stageNumDict['BDPMASK']
+                    qcBDPMaskLaunch.inputs.state = launched
+                    if not 'CSE' in STAGES:
+                        brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', qcBDPMaskLaunch, 'Run')
+                    else:
+                        brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcBDPMaskLaunch, 'Run')
+                    
+                    qcBDPMaskComplete = pe.Node(interface=bs.QCState(), name='qcBDPMaskComplete')
+                    qcBDPMaskComplete.inputs.prefix = statesDir
+                    qcBDPMaskComplete.inputs.stagenum = stageNumDict['EDDY']
+                    qcBDPMaskComplete.inputs.state = completed
+                    brainsuite_workflow.connect(bdpMaskObj, 'MaskFile', qcBDPMaskComplete, 'Run')                    
+
+                    qceddyLaunch = pe.Node(interface=bs.QCState(), name='qceddyLaunch')
+                    qceddyLaunch.inputs.prefix = statesDir
+                    qceddyLaunch.inputs.stagenum = stageNumDict['EDDY']
+                    qceddyLaunch.inputs.state = launched
+
+                    brainsuite_workflow.connect(bdpMaskObj, 'MaskFile', qceddyLaunch, 'Run')
+
+                    qceddyComplete = pe.Node(interface=bs.QCState(), name='qceddyComplete')
+                    qceddyComplete.inputs.prefix = statesDir
+                    qceddyComplete.inputs.stagenum = stageNumDict['EDDY']
+                    qceddyComplete.inputs.state = completed
+                    brainsuite_workflow.connect(eddy, 'out_corrected', qceddyComplete, 'Run')
+
+                    volbendBDPMaskObj = pe.Node(interface=bs.Volslice(), name='volbendBDPMaskObj')
+                    volbendBDPMaskObj.inputs.inFile = INPUT_DWI_BASE + '.nii.gz'
+                    volbendBDPMaskObj.inputs.outFile = '{0}/dmriMask.png'.format(WEBPATH)
+                    volbendBDPMaskObj.inputs.view = 3 # sagittal
+
+                    volbendPostEddyObj = pe.Node(interface=bs.Volslice(), name='volbendPostEddyObj')
+                    volbendPostEddyObj.inputs.outFile = '{0}/PostEddy.png'.format(WEBPATH)
+                    volbendPostEddyObj.inputs.view = 3 # sagittal
+
+                    volbendPreEddyObj = pe.Node(interface=bs.Volslice(), name='volbendPreEddyObj')
+                    volbendPreEddyObj.inputs.outFile = '{0}/PreEddy.png'.format(WEBPATH)
+                    volbendPreEddyObj.inputs.view = 3 # sagittal
+
+                    brainsuite_workflow.connect(bdpMaskObj, 'MaskFile', volbendBDPMaskObj, 'maskFile')
+                    brainsuite_workflow.connect(eddy, 'out_corrected', volbendPostEddyObj, 'inFile')
+                    brainsuite_workflow.connect(eddy, 'in_file', volbendPreEddyObj, 'inFile')
+                    
+                    
                 else:
-                    brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcbdpLaunch, 'Run')
+                    if not 'CSE' in STAGES and not self.fsleddy:
+                        brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', qcbdpLaunch, 'Run')
+                    elif self.fsleddy:
+                        brainsuite_workflow.connect(eddy, 'out_corrected', qcbdpLaunch, 'Run')
+                    else:
+                        brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcbdpLaunch, 'Run')
+                    
 
                 distcorr = "correct."
                 if self.skipDistortionCorr:
@@ -705,8 +789,13 @@ class subjLevelProcessing(object):
 
                     brainsuite_workflow.connect(bdpObj, 'PostCorrDWI', volbendPostCorrDWIObj, 'inFile')
                     brainsuite_workflow.connect(bdpObj, 'PostCorrDWI', volbendPostCorrDWIsagObj, 'inFile')
-                brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIObj, 'inFile')
-                brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIsagObj, 'inFile')
+                
+                if self.fsleddy:
+                    brainsuite_workflow.connect(eddy, 'out_corrected', volbendPreCorrDWIObj, 'inFile')
+                    brainsuite_workflow.connect(eddy, 'out_corrected', volbendPreCorrDWIsagObj, 'inFile')
+                else:    
+                    brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIObj, 'inFile')
+                    brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIsagObj, 'inFile')
 
                 ###### Connect QC states with the steps ############
                 qcstateBDP = pe.Node(interface=bs.QCState(), name='qcstateBDP')

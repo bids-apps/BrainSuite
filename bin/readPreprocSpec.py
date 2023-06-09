@@ -78,6 +78,7 @@ class preProcSpec(object):
 
         # bse
         self.autoParameters = True
+        self.prescale = False
         self.diffusionIterations = 3
         self.diffusionConstant = 25
         self.edgeDetectionConstant = 0.64
@@ -96,6 +97,9 @@ class preProcSpec(object):
         self.tissueFractionThreshold = 50.0
 
         # bdp
+        self.fsleddy = False
+        self.indexFile = ''
+        self.acqpFile = ''
         self.skipDistortionCorr = False
         self.phaseEncodingDirection = "y"
         self.estimateODF_3DShore = False
@@ -158,6 +162,7 @@ class preProcSpec(object):
 
         # bse
         self.autoParameters = bool(specs['BrainSuite']['Anatomical']['autoParameters'])
+        self.prescale = bool(specs['BrainSuite']['Anatomical']['prescale'])
         self.diffusionIterations = specs['BrainSuite']['Anatomical']['diffusionIterations']
         self.diffusionConstant = specs['BrainSuite']['Anatomical']['diffusionConstant']
         self.edgeDetectionConstant = specs['BrainSuite']['Anatomical']['edgeDetectionConstant']
@@ -176,6 +181,16 @@ class preProcSpec(object):
         self.tissueFractionThreshold = specs['BrainSuite']['Anatomical']['tissueFractionThreshold']
 
         # bdp
+        self.fsleddy = bool(specs['BrainSuite']['Diffusion']['fsleddy'])
+        self.indexFile = specs['BrainSuite']['Diffusion']['indexFile']
+        self.acqpFile = specs['BrainSuite']['Diffusion']['acqpFile']
+        if self.fsleddy:
+            if not os.path.exists(self.indexFile):
+                print('Index file (indexFile field) for FSL eddy does not exist or cannot be found.')
+                sys.exit(2)
+            if not os.path.exists(self.acqpFile):
+                print('Acquisition parameter (acqpFile field) file for FSL eddy does not exist or cannot be found.')
+                sys.exit(2)
         self.skipDistortionCorr = bool(specs['BrainSuite']['Diffusion']['skipDistortionCorr'])
         self.phaseEncodingDirection = specs['BrainSuite']['Diffusion']['phaseEncodingDirection']
         self.estimateODF_3DShore = bool(specs['BrainSuite']['Diffusion']['estimateODF_3DShore'])

@@ -5,6 +5,7 @@
 		},
 		"Anatomical": {
 			"autoParameters": 1,
+			"prescale": 0,
 			"diffusionIterations": 3,
 			"diffusionConstant": 25,
 			"edgeDetectionConstant": 0.64,
@@ -21,6 +22,9 @@
 			"singleThread": 0
 		},
 		"Diffusion": {
+			"fsleddy": 0,
+			"indexFile": "",
+			"acqpFile": "",
 			"skipDistortionCorr": 0,
 			"phaseEncodingDirection": "y",
 			"echoSpacing": "",

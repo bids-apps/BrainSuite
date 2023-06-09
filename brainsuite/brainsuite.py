@@ -112,6 +112,8 @@ class BseInputSpec(CommandLineInputSpec):
     noRotate = traits.Bool(
         desc='retain original orientation(default behavior will auto-rotate input NII files to LPI orientation)',
         argstr='--norotate')
+    prescale = traits.Bool(
+        desc='prescale image to uint16', argstr='--prescale')
     timer = traits.Bool(
         desc='show timing', argstr='--timer')
     dummy = traits.Str(desc='dummy output')
@@ -1649,6 +1651,11 @@ class BDPInputSpec(CommandLineInputSpec):
              'on machines with a low amount of memory. This may result in an '
              'out-of-memory error when BDP cannot allocate sufficient memory. '
     )
+    maskOnly = traits.Bool(
+        argstr='--mask-only',
+        desc='Generates brain mask in the diffusion data only and does not perform other '
+            'processing.'
+    )
 
 
 class BDPOutputSpec(TraitedSpec):
@@ -1671,6 +1678,7 @@ class BDPOutputSpec(TraitedSpec):
     PreCorrDWI = File(desc='path/name of non-distortion corrected DWI file', hash_files=True)
     PostCorrDWI = File(desc='path/name of distortion corrected DWI file', hash_files=True)
     tensor_coord = File(desc='path/name of the tensor bst file in T1 coordinate space', hash_files=True)
+    DWIMask = File(desc='path/name of the DWI mask file in Diffusion coordinate space', hash_files=True)
     dummy = traits.Str(desc='dummy output')
 
 
@@ -1722,7 +1730,8 @@ class BDP(BrainSuiteCommandLine):
             'FRTGFA': '.dwi.RAS.FRT_GFA.T1_coord.nii.gz',
             'PreCorrDWI': '.dwi.RAS.nii.gz',
             'PostCorrDWI': '.dwi.RAS.correct.nii.gz',
-            'tensor_coord': '.tensor.T1_coord.bst'
+            'tensor_coord': '.tensor.T1_coord.bst',
+            'DWIMask': '.RAS.mask.nii.gz'
         }
         
         if name in fileToSuffixMap:
