@@ -1675,6 +1675,7 @@ class BDPOutputSpec(TraitedSpec):
     MD = File(desc='path/name of non-distortion corrected MD map file', hash_files=True)
     FRTGFA = File(desc='path/name of non-distortion corrected FRT_GFA map file', hash_files=True)
     
+    DcoordMask = File(desc='path/name of T1 brain mask file transformed into diffusion space', hash_files=True)
     PreCorrDWI = File(desc='path/name of non-distortion corrected DWI file', hash_files=True)
     PostCorrDWI = File(desc='path/name of distortion corrected DWI file', hash_files=True)
     tensor_coord = File(desc='path/name of the tensor bst file in T1 coordinate space', hash_files=True)
@@ -1729,13 +1730,19 @@ class BDP(BrainSuiteCommandLine):
             'MD': '.dwi.RAS.MD.T1_coord.nii.gz',
             'FRTGFA': '.dwi.RAS.FRT_GFA.T1_coord.nii.gz',
             'PreCorrDWI': '.dwi.RAS.nii.gz',
+            'DcoordMask' : '.D_coord.mask.nii.gz',
             'PostCorrDWI': '.dwi.RAS.correct.nii.gz',
             'tensor_coord': '.tensor.T1_coord.bst',
             'DWIMask': '.RAS.mask.nii.gz'
         }
         
-        if name in fileToSuffixMap:
-            return getFileName(self.inputs.bfcFile, fileToSuffixMap[name])
+        if name == 'DWIMask':
+            return getFileName(self.inputs.inputDiffusionData, fileToSuffixMap[name])
+        elif name in fileToSuffixMap:
+            try:
+                return getFileName(self.inputs.bfcFile, fileToSuffixMap[name])
+            except TypeError:
+                return getFileName(self.inputs.inputDiffusionData, fileToSuffixMap[name])
         
         # if name == 'tensor_coord':
         #     return getFileName(self.inputs.inputDiffusionData, '.tensor.T1_coord.bst')

@@ -29,6 +29,7 @@ import os
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
+from QC.stageNumDict import stageNumDict
 
 from bids.grabbids import BIDSLayout
 from builtins import str
@@ -153,7 +154,7 @@ def parser():
     qc.add_argument('--port', help='Port number for QC local webserver. This defines the port number '
                                 'inside the BrainSuite BIDS App container.'
                                 ' If using Singularity version of BrainSuite BIDS App, this argument also defines the port number '
-                                'of the local host.', default=8088)
+                                'of the local host.', default=63522)
     qc.add_argument('--bindLocalHostOnly', help='When running local web server through this app, '
                                                     'the server binds to all of the IPs on the machine. '
                                                     'If you would like to only bind to the local host, '
@@ -211,13 +212,12 @@ def main():
         bidsconfig = ' --config {0} '.format(args.bidsconfig)
     else:
         bidsconfig = ''
+    if not os.path.exists(args.output_dir):
+        os.mkdir(args.output_dir)
     run("bids-validator " + args.bids_dir + ignoreSubjectConsistency + bidsconfig, cwd=args.output_dir)
 
     layout = BIDSLayout(args.bids_dir)
     subjects_to_analyze = []
-
-    if not os.path.exists(args.output_dir):
-        os.mkdir(args.output_dir)
 
     # only for a subset of subjects
     if args.participant_label:
@@ -239,6 +239,7 @@ def main():
 
     os.environ['NCPUS'] = str(args.ncpus)
     os.environ['MAXMEM'] = str(args.maxmem)
+    os.environ["numstages"] = str(len(stageNumDict))
     stages = args.stages
 
     if ('ALL' in args.stages):
@@ -319,7 +320,7 @@ def main():
             if not os.path.exists(WEBDIR + '/brainsuite_dashboard_config.json'):
                 shutil.copyfile('/BrainSuite/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
             if args.localWebserver:
-                cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
+                cmd = 'watch.sh {0} {1} & echo $!'.format(WEBDIR, args.output_dir)
                 subprocess.call(cmd, shell=True)
                 print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}' . If you have changed the port number while "
                      "calling the docker images, please make sure that port number you have defined matches this web address.\n".format(args.port))

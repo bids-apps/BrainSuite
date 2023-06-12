@@ -1,6 +1,9 @@
 {
     "GroupNames": ["Cortical Surface Extraction", "Cortical Thickness", "Registration and Labeling", "Diffusion Pipeline", "Functional Pipeline"],
-    "StageNames": ["bse", "bfc", "pvc", "cerebro", "cortex", "scrub mask", "tca", "dewisp", "inner cortical surface", "pial surface", "hemisplit", "thickness", "svreg", "smooth left hemi thickness", "smooth right hemi thickness", "smooth jac det volume", "bdpmask", "eddy", "bdp", "apply deformation map to FA", "apply deformation map to MD", "apply deformation map to Ax", "apply deformation map to RD", "apply deformation map to mADC", "apply deformation map to FRTGFA", "smooth FA volume", "smooth MD volume", "smooth Ax volume"],
+    "StageNames": ["bse", "bfc", "pvc", "cerebro", "cortex", "scrub mask", "tca", "dewisp", "inner cortical surface", "pial surface", "hemisplit", "thickness",  "svreg",
+                "smooth left hemi thickness","smooth right hemi thickness","smooth jac det volume","bdpmask","eddy","bdp","apply deformation map to FA","apply deformation map to MD","apply deformation map to Ax",
+                "apply deformation map to RD", "apply deformation map to mADC", "apply deformation map to FRTGFA","smooth FA volume","smooth MD volume","smooth Ax volume",
+                "smooth RD volume","smooth mADC volume","smooth FRTGFA volume", "bfp"],
   "  Contents" : [
       { "img": "bse.png", "stage": 1, "desc": "Orig + BSE Mask", "group": 0, "surface": false, "show": true, "width": 0, "height": 0 },
       { "img": "bfc.png", "stage": 2, "desc": "BFC", "group": 0, "surface": false, "show": true, "width": 0, "height": 0 },
@@ -28,7 +31,6 @@
       { "img": "svregLabelCor.png", "stage": 13, "desc": "BFC + SVReg Label (coronal)", "group": 2, "surface": false, "show": true, "width": 0, "height": 0 },
       { "img": "svregLabelSag.png", "stage": 13, "desc": "BFC + SVReg Label (sagittal)", "group": 2, "surface": false, "show": true, "width": 0, "height": 0 },
       { "img": "dmriMask.png", "stage": 17, "desc": "dMRI mask", "group": 3, "surface": false, "show": true, "width": 256, "height": 0 },
-      { "img": "PreEddy.png", "stage": 18, "desc": "original dmri", "group": 3, "surface": false, "show": true, "width": 256, "height": 0 },
       { "img": "PostEddy.png", "stage": 18, "desc": "motion-corrected", "group": 3, "surface": false, "show": true, "width": 256, "height": 0 },
       { "img": "PreCorrDWI.png", "stage": 19, "desc": "PRECORRECT", "group": 3, "surface": false, "show": true, "width": 256, "height": 0 },
       { "img": "PreCorrDWIsag.png", "stage": 19, "desc": "PRECORRECT", "group": 3, "surface": false, "show": true, "width": 256, "height": 0 },
@@ -38,8 +40,8 @@
       { "img": "FA.png", "stage": 19, "desc": "FA", "group": 3, "surface": false, "show": true, "width": 0, "height": 0 },
       { "img": "colorFA.png", "stage": 19, "desc": "COLOR FA", "group": 3, "surface": false, "show": true, "width": 0, "height": 0 },
       { "img": "mADC.png", "stage": 19, "desc": "mADC", "group": 3, "surface": false, "show": true, "width": 0, "height": 0 },
-      { "img": "ssim.png", "stage": 32, "desc": "SSIM", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
-      { "img": "mco.png", "stage": 32, "desc": "MCO", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
-      { "img": "Func2T1.png", "stage": 32, "desc": "FUNC2T1 T1 MASK", "group": 4, "surface": false, "show": true, "width": 0, "height": 0 },
+      { "img": "ssim0.png", "stage": 32, "desc": "SSIM", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
+      { "img": "mco0.png", "stage": 32, "desc": "MCO", "group": 4, "surface": false, "show": true, "width": 256, "height": 0 },
+      { "img": "Func2T10.png", "stage": 32, "desc": "FUNC2T1 T1 MASK", "group": 4, "surface": false, "show": true, "width": 0, "height": 0 }
     ]
   }

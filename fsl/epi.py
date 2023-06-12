@@ -894,6 +894,7 @@ class EddyOutputSpec(TraitedSpec):
     )
     out_cnr_maps = File(exists=True, desc="path/name of file with the cnr_maps")
     out_residuals = File(exists=True, desc="path/name of file with the residuals")
+    # in_file = File(exists=True, desc="path/name of input file")
 
 
 class Eddy(FSLCommand):
@@ -1086,8 +1087,8 @@ class Eddy(FSLCommand):
             outputs["out_outlier_n_sqr_stdev_map"] = out_outlier_n_sqr_stdev_map
         if os.path.exists(out_outlier_report):
             outputs["out_outlier_report"] = out_outlier_report
-        if os.path.exists(in_file):
-            outputs["in_file"] = in_file
+        # if os.path.exists(in_file):
+        #     outputs["in_file"] = in_file
 
         return outputs
 

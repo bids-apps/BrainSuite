@@ -30,7 +30,7 @@ fi;
 WEBDIR=$1
 OUTDIR=$2
 
-numstages=30
+# numstages=32
 
 WEBPATH=${WEBDIR}/brainsuite_state.json
 
