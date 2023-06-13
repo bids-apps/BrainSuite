@@ -172,7 +172,7 @@ class subjLevelProcessing(object):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
             if not 'BDP' in STAGES:
-                for stages in range(16,19):
+                for stages in range(16,31):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
                 # cmd = [QCSTATE, statesDir, str(stageNumDict['BDP']), unqueued]
@@ -181,10 +181,13 @@ class subjLevelProcessing(object):
                 for stages in range(12, 16):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
-            if (not 'BDP' in STAGES) and (not 'SVREG' in STAGES):
-                for stages in range(16, 31):
+                for stages in range(19, 31):
                     cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
+            # if (not 'BDP' in STAGES) and (not 'SVREG' in STAGES):
+            #     for stages in range(16, 31):
+            #         cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
+            #         subprocess.call(' '.join(cmd), shell=True)
             if not 'BFP' in STAGES:
                 cmd = [QCSTATE, statesDir, str(stageNumDict['BFP']), unqueued]
                 subprocess.call(' '.join(cmd), shell=True)
@@ -728,13 +731,12 @@ class subjLevelProcessing(object):
                     brainsuite_workflow.connect(bdpMaskObj, 'DWIMask', volbendBDPMaskObj, 'maskFile')
                     brainsuite_workflow.connect(eddy, 'out_corrected', volbendPostEddyObj, 'inFile')
                     # brainsuite_workflow.connect(eddy, 'in_file', volbendPreEddyObj, 'inFile')
+                    brainsuite_workflow.connect(eddy, 'out_corrected', qcbdpLaunch, 'Run')
                     
                     
                 else:
-                    if not 'CSE' in STAGES and not self.fsleddy:
+                    if not 'CSE' in STAGES:
                         brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', qcbdpLaunch, 'Run')
-                    elif self.fsleddy:
-                        brainsuite_workflow.connect(eddy, 'out_corrected', qcbdpLaunch, 'Run')
                     else:
                         brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcbdpLaunch, 'Run')
                     
