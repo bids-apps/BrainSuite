@@ -72,7 +72,7 @@ BrainsuiteVersion = os.environ['BrainSuiteVersion']
 def parser():
     import argparse
 
-    BrainsuiteVersion = '21a'
+    BrainsuiteVersion = '23a'
 
     parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI, rs-fMRI). '
                                                  'Copyright (C) 2022 The Regents of the University of California '
@@ -91,13 +91,14 @@ def parser():
 
     parser.add_argument('--stages',
                         help='Participant-level processing stage to be run. Space delimited list. Default is ALL '
-                             'which does not include DASHBOARD. CSE runs Cortical Surface Extractor. SVREG runs'
-                             ' Surface-constrained Volumetric registration. BDP runs BrainSuite Diffusion Pipeline.'
-                             ' BFP runs BrainSuite Functional Pipeline. QC runs BrainSuite QC and generates status codes'
-                             ' and snapshots. DASHBOARD runs the real-time monitoring that is required for BrainSuite '
-                             'Dashboard to update real-time.',
+                             'which does not include DASHBOARD. CSE runs Cortical Surface Extractor and cortical thickness computation, '
+                             'which are the initial portions of the BrainSuite Anatomical Pipeline (BAP). SVREG runs Surface-constrained '
+                             'Volumetric registration, which is the latter portion of BAP. BDP runs BrainSuite Diffusion Pipeline.'
+                             ' BFP runs BrainSuite Functional Pipeline. DASHBOARD runs the real-time monitoring that is required for BrainSuite '
+                             'Dashboard to update real-time. However, DASHBOARD can still be run after the participant-level processing has ended to '
+                             'generate the browser-based BrainSuite Dashboard.',
                         nargs="+",
-                        choices=['CSE', 'SVREG', 'BDP', 'BFP', 'QC', 'DASHBOARD', 'ALL'], default='ALL')
+                        choices=['CSE', 'SVREG', 'BDP', 'BFP', 'DASHBOARD', 'ALL'], default='ALL')
     parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing parameters.'
                                               'Path to JSON file that contains preprocessing '
                                               'specifications.',

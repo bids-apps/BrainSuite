@@ -8,7 +8,7 @@ statistic. BDP is flexible and diverse tool which supports wide variety of
 diffusion datasets. For more information and detailed documentation, please 
 see BDP website: http://brainsuite.org/processing/diffusion/
 
-This is version 21a (build #0081) of BDP, released on 05-May-2021.
+This is version 23a (build #0081) of BDP, released on 05-May-2021.
 
 Created by Chitresh Bhushan, Divya Varadarajan, Justin P. Haldar,
            Anand A. Joshi,  David W. Shattuck, and Richard M. Leahy

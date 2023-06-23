@@ -28,7 +28,7 @@ config.update_config(cfg)
 import sys
 import nipype.pipeline.engine as pe
 import nipype.interfaces.brainsuite as bs
-from nipype.interfaces.fsl import Eddy
+from nipype.interfaces.fsl import Eddy, EddyQuad
 import nipype.interfaces.io as io
 from nipype.interfaces.utility import Function, Merge
 from nipype import Node
@@ -84,6 +84,24 @@ class subjLevelProcessing(object):
         self.fsleddy = specs.fsleddy
         self.indexFile = specs.indexFile
         self.acqpFile = specs.acqpFile
+        self.flm = specs.flm
+        self.slm = specs.slm
+        self.fep = specs.fep
+        self.interp = specs.interp
+        self.nvoxhp = specs.nvoxhp
+        self.fudge_factor = specs.fudge_factor
+        self.dont_sep_offs_move = specs.dont_sep_offs_move
+        self.dont_peas = specs.dont_peas
+        self.niter = specs.niter
+        self.eddy_final_resamp = specs.eddy_final_resamp
+        self.repol = specs.repol
+        self.eddy_num_threads = specs.eddy_num_threads
+        self.is_shelled = specs.is_shelled
+        # self.cnr_maps = specs.cnr_maps
+        # self.residuals = specs.residuals
+        self.useDerivatives = specs.useDerivatives
+        self.correctedOutputDir = specs.correctedOutputDir
+        self.correctedOutputSuffix = specs.correctedOutputSuffix
         self.skipDistortionCorr = specs.skipDistortionCorr
         self.phaseEncodingDirection = specs.phaseEncodingDirection
         self.estimateODF_3DShore = specs.estimateODF_3DShore
@@ -646,8 +664,14 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(bseObj, 'outputMaskFile', copyBSEMasktoDWI, 'inFile')
 
             if not self.fsleddy:
-                bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
-                bdpObj.inputs.BVecBValPair = self.BVecBValPair
+                if self.useDerivatives:
+                    INPUT_DWI_BASE = os.path.abspath(os.path.join(self.correctedOutputDir, SUBJECT_ID, 'dwi', SUBJECT_ID + self.correctedOutputSuffix))
+                    bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
+                    self.BVecBValPair = [INPUT_DWI_BASE + '.bval', INPUT_DWI_BASE + '.bvec']
+                    bdpObj.inputs.BVecBValPair = self.BVecBValPair
+                else:
+                    bdpObj.inputs.inputDiffusionData = INPUT_DWI_BASE + '.nii.gz'
+                    bdpObj.inputs.BVecBValPair = self.BVecBValPair
                 brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', bdpObj, 'bfcFile')
                 brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', bdpObj, 'dataSinkDelay')
             else:
@@ -674,6 +698,19 @@ class subjLevelProcessing(object):
                 eddy.inputs.in_acqp = self.acqpFile
                 eddy.inputs.in_bvec = self.BVecBValPair[0]
                 eddy.inputs.in_bval = self.BVecBValPair[1]
+                eddy.inputs.flm = self.flm
+                eddy.inputs.slm = self.slm
+                eddy.inputs.fep = self.fep
+                eddy.inputs.interp = self.interp
+                eddy.inputs.nvoxhp = self.nvoxhp
+                eddy.inputs.fudge_factor = self.fudge_factor
+                eddy.inputs.dont_sep_offs_move = self.dont_sep_offs_move
+                eddy.inputs.dont_peas = self.dont_peas
+                eddy.inputs.niter = self.niter
+                eddy.inputs.method = self.eddy_final_resamp
+                eddy.inputs.repol = self.repol
+                eddy.inputs.num_threads = self.eddy_num_threads
+                eddy.inputs.is_shelled = self.is_shelled
                 eddy.inputs.out_base = bdpInputBase
                 brainsuite_workflow.connect(bdpMaskObj, 'DWIMask', eddy, 'in_mask')
                 rotbvec = bdpInputBase + '.eddy_rotated_bvecs'
@@ -723,13 +760,22 @@ class subjLevelProcessing(object):
                     volbendPostEddyObj = pe.Node(interface=bs.Volslice(), name='volbendPostEddyObj')
                     volbendPostEddyObj.inputs.outFile = '{0}/PostEddy.png'.format(WEBPATH)
                     volbendPostEddyObj.inputs.view = 3 # sagittal
+                    
+                    eddyqc = pe.Node(interface=EddyQuad(), name='eddyqc')
+                    eddyqc.inputs.idx_file = self.indexFile
+                    eddyqc.inputs.param_file = self.acqpFile
+                    eddyqc.inputs.mask_file = eddyprepdir + INPUT_DWI_SUBJECT_ID + '.RAS.mask.nii.gz'
+                    eddyqc.inputs.bval_file = self.BVecBValPair[1]
+                    eddyqc.inputs.output_dir = '{0}/eddyqc/'.format(WEBPATH)
+
+                    brainsuite_workflow.connect(eddy, 'out_corrected', eddyqc, 'base_name')
 
                     # volbendPreEddyObj = pe.Node(interface=bs.Volslice(), name='volbendPreEddyObj')
                     # volbendPreEddyObj.inputs.outFile = '{0}/PreEddy.png'.format(WEBPATH)
                     # volbendPreEddyObj.inputs.view = 3 # sagittal
 
                     brainsuite_workflow.connect(bdpMaskObj, 'DWIMask', volbendBDPMaskObj, 'maskFile')
-                    brainsuite_workflow.connect(eddy, 'out_corrected', volbendPostEddyObj, 'inFile')
+                    # brainsuite_workflow.connect(eddy, 'out_corrected', volbendPostEddyObj, 'inFile')
                     # brainsuite_workflow.connect(eddy, 'in_file', volbendPreEddyObj, 'inFile')
                     brainsuite_workflow.connect(eddy, 'out_corrected', qcbdpLaunch, 'Run')
                     

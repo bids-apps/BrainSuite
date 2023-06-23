@@ -100,6 +100,24 @@ class preProcSpec(object):
         self.fsleddy = False
         self.indexFile = ''
         self.acqpFile = ''
+        self.flm = 'quadratic'
+        self.slm = 'none'
+        self.fep = False
+        self.interp = 'spline'
+        self.nvoxhp = 1000
+        self.fudge_factor = 10
+        self.dont_sep_offs_move = False
+        self.dont_peas = False
+        self.niter = 5
+        self.eddy_final_resamp = 'jac'
+        self.repol = False
+        self.eddy_num_threads = 1
+        self.is_shelled = False
+        self.cnr_maps = False
+        self.residuals = False
+        self.useDerivatives = False
+        self.correctedOutputDir = ''
+        self.correctedOutputSuffix = ''
         self.skipDistortionCorr = False
         self.phaseEncodingDirection = "y"
         self.estimateODF_3DShore = False
@@ -220,6 +238,26 @@ class preProcSpec(object):
             else specs['BrainSuite']['Diffusion']['sigma_GQI']
         self.ERFO_SNR = undefined if (specs['BrainSuite']['Diffusion']['ERFO_SNR'] == '') \
             else specs['BrainSuite']['Diffusion']['ERFO_SNR']
+        
+        self.flm = specs['BrainSuite']['Diffusion']['flm']
+        self.slm = specs['BrainSuite']['Diffusion']['slm']
+        self.fep = bool(specs['BrainSuite']['Diffusion']['fep'])
+        self.interp = specs['BrainSuite']['Diffusion']['interp']
+        self.nvoxhp = specs['BrainSuite']['Diffusion']['nvoxhp']
+        self.fudge_factor = specs['BrainSuite']['Diffusion']['fudge_factor']
+        self.dont_sep_offs_move = bool(specs['BrainSuite']['Diffusion']['dont_sep_offs_move'])
+        self.dont_peas = bool(specs['BrainSuite']['Diffusion']['dont_peas'])
+        self.niter = specs['BrainSuite']['Diffusion']['niter']
+        self.eddy_final_resamp = specs['BrainSuite']['Diffusion']['eddy_final_resamp']
+        self.repol = bool(specs['BrainSuite']['Diffusion']['repol'])
+        self.eddy_num_threads = bool(specs['BrainSuite']['Diffusion']['eddy_num_threads'])
+        self.is_shelled = bool(specs['BrainSuite']['Diffusion']['is_shelled'])
+        # self.cnr_maps = bool(specs['BrainSuite']['Diffusion']['cnr_maps'])
+        # self.residuals = bool(specs['BrainSuite']['Diffusion']['residuals'])
+        
+        self.useDerivatives = bool(specs['BrainSuite']['Diffusion']['useDerivatives'])
+        self.correctedOutputDir = specs['BrainSuite']['Diffusion']['correctedOutputDir']
+        self.correctedOutputSuffix = specs['BrainSuite']['Diffusion']['correctedOutputSuffix']
 
         # check diffusion_time_ms dependency
         if self.estimateODF_3DShore:

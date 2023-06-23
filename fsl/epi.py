@@ -1559,7 +1559,7 @@ class EddyQuadInputSpec(FSLCommandInputSpec):
         desc="File containing acquisition parameters",
     )
     mask_file = File(
-        exists=True, mandatory=True, argstr="--mask %s", desc="Binary mask file"
+        mandatory=True, argstr="--mask %s", desc="Binary mask file"
     )
     bval_file = File(
         exists=True, mandatory=True, argstr="--bvals %s", desc="b-values file"
@@ -1720,3 +1720,9 @@ class EddyQuad(FSLCommand):
             outputs["clean_volumes"] = clean_volumes
 
         return outputs
+    
+    def _format_arg(self, name, spec, value):
+        if name == "base_name":
+            if os.path.isfile(value):
+                return spec.argstr % value.split(".nii")[0]
+        return super(EddyQuad, self)._format_arg(name, spec, value)
