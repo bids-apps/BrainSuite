@@ -34,6 +34,7 @@ BrainSuite BIDS App's participant-level processing is comprised of three core pi
 
 
 * BrainSuite BIDS App's group-level analysis of fMRI data (functional connectivity) is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), which synchronizes time-series data temporally. Available analyses include:
+
     * Atlas-based method: linear modeling using a reference dataset created from multiple input datasets.
     * Atlas-free method: pairwise testing of all pairs of subjects, which is then used as test statistics for regression or group difference studies.
 
