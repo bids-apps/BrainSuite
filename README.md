@@ -175,12 +175,12 @@ Arguments and options for group-level stage. --modelspec is required for groupmo
                         Group analysis type: structural (T1 or DWI)or
                         functional (fMRI). Options: STRUCT, FUNC, ALL.
   --rmarkdown RMARKDOWN
-                        Optional. Executable Rmarkdown file that uses bssr
-                        forgroup analysis stage. If this argument is
+                        Optional. Executable Rmarkdown file that uses bstr
+                        for group analysis stage. If this argument is
                         specified, BrainSuite BIDS-App will run this Rmarkdown
                         instead of using the content found in
                         modelspec.json.Path to R Markdown file that contains
-                        bssr analysis commands.
+                        bstr analysis commands.
 
 Options for bids-validator:
   --ignoreSubjectConsistency
@@ -202,22 +202,12 @@ Options for bids-validator:
 
 ## Parent Docker images
 
-The BrainSuite BIDS App build process uses a set of pre-compiled parent images ([yeunkim/brainsuitebids:parent](https://hub.docker.com/layers/yeunkim/brainsuitebidsapp/parent/images/sha256-9381fb7e4acd0200ee771360f9bd8de7311409474d5d481dac4794125d9a8443?context=repo)) 
-and [yeunkim/bidsapphead](https://hub.docker.com/layers/yeunkim/bidsapphead/latest/images/sha256-c3b033f926a472565ab61d67567a338dbc796774cb2e1d871dddceb7c7ec68a1?context=repo), which are available on Docker Hub. 
+The BrainSuite BIDS App build process uses a pre-compiled parent image [yeunkim/bidsapphead:2023](https://hub.docker.com/layers/yeunkim/bidsapphead/2023/images/sha256-b2a9d563efee636884e976b4667c7523e9675db960af5ffa95e86a6075e1c059?context=repo), which is available on Docker Hub. The dockerfile for this parent Docker image is available in this repository as ```Dockerfile_head```.
 This enables us to have a faster build process and a more stable BIDS App. 
 BrainSuite BIDS App relies on multiple source software from third-party repositories. 
 Frequent rebuilding of all layers may introduce changes that impact the consistency of the software, possibly introducing instabilities or changes that affect the outcomes of the analysis software. 
 By developing our BrainSuite BIDS App using pre-compiled images, we are able to keep the parent images stable while changing only the top layers of the Docker image. 
 Our pre-compiled parent images act as snapshots of version-controlled dependencies and file systems that our BrainSuite BIDS App needs. 
-The dockerfiles for these parent images are available in separate branches of the BrainSuite BIDS App repository.
-
-### yeunkim/brainsuitebids:parent
-The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/parent/Dockerfile) for this pre-compiled Docker image is located in the ```parent``` branch of this repository. 
-This Dockerfile pulls an image from ```yeunkim/bidsapphead```.
-
-#### yeunkim/bidsapphead
-The [Dockerfile](https://github.com/bids-apps/BrainSuite/blob/head/Dockerfile) for this pre-compiled Docker image, which is used by the ```yeunkim/brainsuitebids:parent``` Docker image,
-is located in the ```head``` branch of this repository. 
 
 ## Support
 Questions about usage can be submitted to http://forums.brainsuite.org/. 

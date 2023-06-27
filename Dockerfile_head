@@ -47,18 +47,20 @@ RUN curl -fsSL -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py
     /usr/local/miniconda/bin/pip install --no-cache-dir duecredit
 RUN conda install -y -c anaconda statsmodels
 
-# MATLAB MCR
+# install MCR 2023a
 RUN mkdir mcr_install && \
     cd mcr_install && \
-    wget -q http://ssd.mathworks.com/supportfiles/downloads/R2019b/Release/1/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2019b_Update_1_glnxa64.zip && \
-    unzip -q MATLAB_Runtime_R2019b_Update_1_glnxa64.zip && \
-    ./install -agreeToLicense yes -mode silent && \
+    wget https://ssd.mathworks.com/supportfiles/downloads/R2023a/Release/2/deployment_files/installer/complete/glnxa64/MATLAB_Runtime_R2023a_Update_2_glnxa64.zip && \
+    unzip MATLAB_Runtime_R2023a_Update_2_glnxa64.zip && \
+    ./install -agreeToLicense yes && \
     cd / && \
     rm -rf mcr_install
+ENV BrainSuiteMCR="/usr/local/MATLAB/MATLAB_Runtime/R2023a/"
 
 ENV PYTHONPATH=""
 
 # Nipype
+RUN pip install importlib-metadata==4.6.3
 RUN git config --global core.compression 0
 RUN git clone https://github.com/nipy/nipype && \
     cd nipype && \
@@ -89,19 +91,35 @@ RUN apt-get update && \
 
 RUN pip uninstall -y pandas && \
     pip install pandas==1.1.5
-RUN conda install -y -c anaconda basemap
+RUN pip install tqdm==4.62.3 nilearn==0.8.1 basemap
 RUN npm install -g bids-validator
 
 RUN apt-get update && apt-get install -y --no-install-recommends gfortran
 RUN apt-get install -y pandoc software-properties-common
-
-# Apache
-#RUN apt-get install -y apache2
 RUN cd / && wget https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64
+RUN chmod -R ugo+rx /jq-linux64
 
-RUN conda install -y -c conda-forge rpy2
-RUN conda install libgcc
-RUN conda install -y -c conda-forge tqdm nilearn
+# Set up R environment for bstr
+RUN apt-get update && add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/" && \
+    apt-get update && \
+    apt-get install dirmngr \
+        libzmq3-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev \
+        libpng-dev libtiff5-dev libjpeg-dev build-essential \ 
+        libcurl4-openssl-dev libxml2-dev libssl-dev libfontconfig1-dev cmake  \
+        r-base -y --assume-yes --allow-unauthenticated
 
-RUN apt install -y r-base
-RUN conda install -y -c r r-stringi r-stringr r-roxygen2 r-systemfonts r-textshaping r-ragg r-pkgdown r-nloptr r-lme4 r-devtools
+RUN Rscript -e "install.packages(c('iterators', 'magrittr', 'gtable', 'htmlwidgets', 'jsonlite', 'pander', 'rmarkdown', 'DT', 'ini', 'RColorBrewer', 'RNifti', 'ggplot2', 'scales', 'doParallel', 'foreach', 'bit', 'Matrix', 'R6', 'shinyjs', 'lme4'), repos='http://cran.us.r-project.org')"
+RUN pip install rpy2==3.4.5 
+
+# Set up fsl eddy and eddyqc
+RUN conda config --set default_threads 6
+RUN conda install -y -c https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public/ fsl-eddy
+RUN conda install -y -c https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public/ fsl-eddy_qc=v1.2.3
+ENV FSLDIR6=/usr/local/miniconda/
+ENV FSLOUTPUTTYPE=NIFTI_GZ 
+RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/fslpython 
+RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/eddy 
+
+# Configure lib gcc and lib mesa for renderdfs
+RUN apt-get install -y xvfb libosmesa6-dev
+RUN cd /usr/lib/x86_64-linux-gnu && rm libstdc++.so.6 && ln -s /usr/local/miniconda/lib/libstdc++.so.6 ./libstdc++.so.6

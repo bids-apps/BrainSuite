@@ -25,7 +25,7 @@ import sys
 import json
 import configparser
 
-class bssrSpec(object):
+class bstrSpec(object):
 
     def __init__(self, modelfile, outputdir):
         self.outputdir = outputdir
@@ -98,7 +98,7 @@ class bssrSpec(object):
         self.group_var = specs['BrainSuite']['Structural']['group_var']
         self.paired = bool(specs['BrainSuite']['Structural']['paired'])
         self.smooth = specs['BrainSuite']['Structural']['smooth']
-        self.roi = specs['BrainSuite']['Structural']['roiid'] # bssr roi read in list
+        self.roi = specs['BrainSuite']['Structural']['roiid'] # bstr roi read in list
         self.hemi = specs['BrainSuite']['Structural']['hemi']
         self.maskfile = specs['BrainSuite']['Structural']['maskfile']
         self.atlas = specs['BrainSuite']['Structural']['atlas']

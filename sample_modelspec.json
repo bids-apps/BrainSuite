@@ -2,7 +2,7 @@
 	"BrainSuite": {
 	  "Structural":{
         "tsv_fname": "/data/participants.tsv",
-        "measure": "cbm",
+        "measure": "sba",
 		"test": "anova",
 		"main_effect": "age",
 		"covariates": [

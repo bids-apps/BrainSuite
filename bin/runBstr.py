@@ -27,18 +27,19 @@ import rpy2.robjects as ro
 import warnings
 from rpy2.rinterface import RRuntimeWarning
 warnings.filterwarnings("ignore", category=RRuntimeWarning)
+rpy2.robjects.r['options'](warn=-1)
 import numpy as np
 import rpy2.robjects.numpy2ri
 rpy2.robjects.numpy2ri.activate()
 
-valid_analysis_types = ['vbm', 'tbm', 'cbm', 'dbm', 'roi', 'croi', 'droi']
+valid_analysis_types = ["sba", "tbm", "roi", "dba"]
 # ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
-bssr = importr('bssr')
+bstr = importr('bstr')
 
 def equal(a, b):
     return abs( a - b ) <= 0
 
-def load_bss_data(specs):
+def load_bstr_data(specs):
 
     # make optional strings
     if not specs.smooth or specs.smooth == '' or equal(float(specs.smooth), 0):
@@ -50,43 +51,43 @@ def load_bss_data(specs):
         sys.stdout.write("Specified measure of interest is not a valid type.\n")
         sys.exit(1)
 
-    elif specs.measure == "cbm":
-        bss_data = bssr.load_bss_data(type='cbm', subjdir= specs.outputdir, csv=specs.tsv, hemi=specs.hemi,
+    elif specs.measure == "sba":
+        bstr_data = bstr.load_bstr_data(type='sba', subjdir= specs.outputdir, csv=specs.tsv, hemi=specs.hemi,
                                       smooth=OPT, exclude_col = specs.exclude_col)
     elif specs.measure == "tbm":
-        bss_data = bssr.load_bss_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=OPT,
+        bstr_data = bstr.load_bstr_data(type = 'tbm', subjdir=specs.outputdir, csv = specs.tsv, smooth=OPT,
                                       maskfile=specs.maskfile, exclude_col=specs.exclude_col)
 
-    elif specs.measure == "dbm":
-        bss_data = bssr.load_bss_data(type= 'dbm', subjdir=specs.outputdir, csv= specs.tsv, smooth=OPT,
-                                      measure=specs.dbmmeas, maskfile=specs.maskfile, exclude_col=specs.exclude_col)
+    elif specs.measure == "dba":
+        bstr_data = bstr.load_bstr_data(type= 'dba', subjdir=specs.outputdir, csv= specs.tsv, smooth=OPT,
+                                      measure=specs.dbameas, maskfile=specs.maskfile, exclude_col=specs.exclude_col)
     elif specs.measure == "roi":
         rois = ro.vectors.IntVector(specs.roi)
-        bss_data = bssr.load_bss_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiids=rois,
+        bstr_data = bstr.load_bstr_data(type='roi', subjdir=specs.outputdir, csv= specs.tsv, roiids=rois,
                                       roimeas=specs.roimeas, exclude_col = specs.exclude_col)
 
     else:
         sys.stdout.write("This imaging measure it not supported yet.")
         sys.exit(1)
 
-    return bss_data
+    return bstr_data
 
-def run_model(specs, bss_data):
+def run_model(specs, bstr_data):
     if specs.measure == "roi":
         if specs.test == 'anova':
             cov = "+".join(specs.covariates)
-            bss_model = bssr.bss_anova(main_effect=specs.main_effect, covariates=cov, bss_data=bss_data,
+            bstr_model = bstr.bstr_anova(main_effect=specs.main_effect, covariates=cov, bstr_data=bstr_data,
                                        mult_comp=specs.mult_comp)
         elif specs.test == 'lm':
             cov = "+".join(specs.covariates)
-            bss_model = bssr.bss_anova(main_effect=specs.main_effect, covariates=cov, bss_data=bss_data,
+            bstr_model = bstr.bstr_anova(main_effect=specs.main_effect, covariates=cov, bstr_data=bstr_data,
                                        mult_comp=specs.mult_comp)
 
         elif specs.test == 'corr':
-            bss_model = bssr.bss_corr(corr_var=specs.corr_var, bss_data=bss_data, mult_comp=specs.mult_comp)
+            bstr_model = bstr.bstr_corr(corr_var=specs.corr_var, bstr_data=bstr_data, mult_comp=specs.mult_comp)
 
         elif specs.test == 'ttest':
-            bss_model = bssr.bss_ttest(group_var=specs.group_var, bss_data=bss_data, paired=specs.paired,
+            bstr_model = bstr.bstr_ttest(group_var=specs.group_var, bstr_data=bstr_data, paired=specs.paired,
                                        mult_comp=specs.mult_comp)
 
         else:
@@ -96,24 +97,24 @@ def run_model(specs, bss_data):
     else:
         if specs.test == 'anova':
             cov = "+".join(specs.covariates)
-            bss_model = bssr.bss_anova(main_effect=specs.main_effect, covariates=cov, bss_data=bss_data,
+            bstr_model = bstr.bstr_anova(main_effect=specs.main_effect, covariates=cov, bstr_data=bstr_data,
                                        mult_comp=specs.mult_comp) #, niter=specs.niter, pvalue=specs.pvalue
         elif specs.test == 'lm':
             cov = "+".join(specs.covariates)
-            bss_model = bssr.bss_anova(main_effect=specs.main_effect, covariates=cov, bss_data=bss_data,
+            bstr_model = bstr.bstr_anova(main_effect=specs.main_effect, covariates=cov, bstr_data=bstr_data,
                                        mult_comp=specs.mult_comp) #, niter=specs.niter, pvalue=specs.pvalue
 
         elif specs.test == 'corr':
-            bss_model = bssr.bss_corr(corr_var=specs.corr_var, bss_data=bss_data, mult_comp=specs.mult_comp)
+            bstr_model = bstr.bstr_corr(corr_var=specs.corr_var, bstr_data=bstr_data, mult_comp=specs.mult_comp)
 
         elif specs.test == 'ttest':
-            bss_model = bssr.bss_ttest(group_var=specs.group_var, bss_data=bss_data, paired=specs.paired,
+            bstr_model = bstr.bstr_ttest(group_var=specs.group_var, bstr_data=bstr_data, paired=specs.paired,
                                        mult_comp=specs.mult_comp)
 
         else:
             sys.stdout.write("Specified test is not a valid type.\n")
             sys.exit(1)
-    return bss_model
+    return bstr_model
 
-def save_bss(bss_data, bss_model, outdir):
-    bssr.save_bss_out(bss_data, bss_model, outdir=outdir, overwrite = True)
+def save_bstr(bstr_data, bstr_model, outdir):
+    bstr.save_bstr_out(bstr_data, bstr_model, outdir=outdir, overwrite = True)

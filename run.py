@@ -24,22 +24,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from __future__ import unicode_literals, print_function
 
-import argparse
 import os
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
 from QC.stageNumDict import stageNumDict
 
+import warnings
+warnings.filterwarnings(action='ignore', category=FutureWarning)
 from bids.grabbids import BIDSLayout
 from builtins import str
 import shutil
 
 from bin.brainsuiteWorkflow import subjLevelProcessing
 from bin.readPreprocSpec import preProcSpec
-from bin.readSpec import bssrSpec
-from bin.runBssr import *
-from run_rmarkdown import run_rmarkdown
 from bin.runWorkflow import runWorkflow
 
 ########################################################################
@@ -170,11 +168,11 @@ def parser():
     group.add_argument('--analysistype', help='Group analysis type: structural (T1 or DWI)'
                                                'or functional (fMRI). Options: STRUCT, FUNC, ALL.',
                         choices=['STRUCT', 'FUNC', 'ALL'], default='ALL')
-    group.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
+    group.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bstr for'
                                             'group analysis stage. If this argument is specified, BrainSuite '
                                             'BIDS-App will run this Rmarkdown instead of using the content '
                                             'found in modelspec.json.'
-                                            'Path to R Markdown file that contains bssr analysis commands.',
+                                            'Path to R Markdown file that contains bstr analysis commands.',
                         required=False)
 
     bidsval = parser.add_argument_group('Options for bids-validator')
@@ -408,7 +406,9 @@ def main():
                                 dwis, funcs, subject_label, args)
 
     if args.analysis_level == "group":
-
+        from bin.readSpec import bstrSpec
+        from bin.runBstr import load_bstr_data, run_model, save_bstr
+        from run_rmarkdown import run_rmarkdown
         analyses = []
 
         if args.analysistype == "ALL":
@@ -421,13 +421,13 @@ def main():
             if args.rmarkdown:
                 run_rmarkdown(args.rmarkdown)
             else:
-                specs = bssrSpec(args.modelspec, args.output_dir)
+                specs = bstrSpec(args.modelspec, args.output_dir)
                 specs.read_modelfile(args.modelspec)
-                bss_data = load_bss_data(specs)
-                bss_model = run_model(specs, bss_data)
-                save_bss(bss_data, bss_model, specs.out_dir)
+                bstr_data = load_bstr_data(specs)
+                bstr_model = run_model(specs, bstr_data)
+                save_bstr(bstr_data, bstr_model, specs.out_dir)
         if 'FUNC' in analyses:
-            specs = bssrSpec(args.modelspec, args.output_dir)
+            specs = bstrSpec(args.modelspec, args.output_dir)
             specs.read_bfp_modelfile(args.modelspec)
             ## convert tsv to csv
             basename = specs.tsv_fname.split(".")[0]
