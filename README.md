@@ -24,12 +24,14 @@ BrainSuite BIDS App's participant-level processing is comprised of three core pi
 </p>
 
 * BrainSuite BIDS App's group-level analysis of structural data uses the BrainSuite Statistics Toolbox in R ([bstr](https://brainsuite.org/bssr/)), which supports:
+
     * Tensor based morphometry (TBM) analysis.
     * Cortical surface analysis of the vertex-wise thickness.
     * Diffusion parameter maps analysis (e.g., FA, MD).
     * ROI-based analysis of average measurements (e.g., gray matter thickness, surface area).
   
   Additionally, bstr offers:
+
     * Pearson correlation, general linear model, ANOVA, t-test, and permutation tests.
     * Automated report generation to visualize statistical results.
 
