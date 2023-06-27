@@ -12,6 +12,7 @@ The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-
 </p>
 
 BrainSuite BIDS App's participant-level processing is comprised of three core pipelines:
+
 * BrainSuite Anatomical Pipeline (BAP): processes T1-weighted (T1w) data by extracting cortical surface models ([CSE](https://brainsuite.org/processing/surfaceextraction/)) from a T1w MRI, computing cortical thickness, and performing surface-constrained volumetric registration ([SVReg](https://brainsuite.org/processing/svreg/)) to align the T1w MRI to a labeled anatomical atlas.
 * The BrainSuite Diffusion Pipeline (BDP): processes diffusion MRI (dMRI) data by correcting for eddy current and motion correction using [FSL's eddy](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/eddy), co-registering the dMRI to the T1w data, correcting for geometric image distortion, and fitting diffusion models. The stand-alone command-line program ([BDP](https://brainsuite.org/processing/diffusion/)) does not include eddy current and motion correction.
 * BrainSuite Functional Pipeline (BFP): processes functional MRI (fMRI) data by coregistering the fMRI data to the T1w data, correcting for motion, detecting outliers, then transforming the data to the anatomical atlas space and to the grayordinate space using tools from BrainSuite ([BFP](https://brainsuite.org/bfp/)), [FSL](fsl.fmrib.ox.ac.uk), and [AFNI](afni.nimh.nih.gov). 
@@ -34,6 +35,7 @@ BrainSuite BIDS App's participant-level processing is comprised of three core pi
 
 
 * BrainSuite BIDS App's group-level analysis of fMRI data (functional connectivity) is performed using [BrainSync](https://github.com/ajoshiusc/bfp/tree/master/src/BrainSync), which synchronizes time-series data temporally. Available analyses include:
+
     * Atlas-based method: linear modeling using a reference dataset created from multiple input datasets.
     * Atlas-free method: pairwise testing of all pairs of subjects, which is then used as test statistics for regression or group difference studies.
 
