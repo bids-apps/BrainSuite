@@ -36,18 +36,16 @@ valid_analysis_types = ["sba", "tbm", "roi", "dba"]
 # ro.r('.libPaths( c( .libPaths(), "/usr/local/lib/R/site-library/") )')
 bstr = importr('bstr')
 
-def equal(a, b):
-    return abs( a - b ) <= 0
-
 def load_bstr_data(specs):
 
     # make optional strings
-    if not specs.smooth or specs.smooth == '' or equal(float(specs.smooth), 0):
+    if not specs.smooth or specs.smooth == '' or (specs.smooth==0):
         OPT = 0
     else:
         OPT = specs.smooth
 
     if specs.measure not in valid_analysis_types:
+        print('************ ERROR!!! ************ \n')
         sys.stdout.write("Specified measure of interest is not a valid type.\n")
         sys.exit(1)
 
@@ -67,6 +65,7 @@ def load_bstr_data(specs):
                                       roimeas=specs.roimeas, exclude_col = specs.exclude_col)
 
     else:
+        print('************ ERROR!!! ************ \n')
         sys.stdout.write("This imaging measure it not supported yet.")
         sys.exit(1)
 
@@ -91,6 +90,7 @@ def run_model(specs, bstr_data):
                                        mult_comp=specs.mult_comp)
 
         else:
+            print('************ ERROR!!! ************ \n')
             sys.stdout.write("Specified test is not a valid type.\n")
             sys.exit(1)
 
@@ -112,6 +112,7 @@ def run_model(specs, bstr_data):
                                        mult_comp=specs.mult_comp)
 
         else:
+            print('************ ERROR!!! ************ \n')
             sys.stdout.write("Specified test is not a valid type.\n")
             sys.exit(1)
     return bstr_model

@@ -2244,11 +2244,6 @@ class RenderDfsInputSpec(CommandLineInputSpec):
         desc='Connect datasink outfile to dataSinkDelay to delay execution of '
              'qcState until dataSink has finished sinking dfsrender outputs.'
     )
-    # start = traits.Str(mandatory=False,
-    #     # argstr='',
-    #     desc='Triggers renderdfs to render QC thumbnail pngs.'
-    # )
-
 
 class RenderDfsOutputSpec(TraitedSpec):
     outFile = File(desc='Output file. Must be a png.')

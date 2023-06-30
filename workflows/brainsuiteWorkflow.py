@@ -35,8 +35,7 @@ from nipype import Node
 from shutil import copyfile
 import os
 import errno
-from QC.stageNumDict import stageNumDict
-import fnmatch
+from QC.stageNumDict import stageNumDict, stageGroups
 
 BRAINSUITE_VERSION= os.environ['BrainSuiteVersion']
 ATLAS_MRI_SUFFIX = 'brainsuite.icbm452.lpi.v08a.img'
@@ -171,6 +170,7 @@ class subjLevelProcessing(object):
         brainsuite_workflow.config['execution']['crashfile_format'] = 'txt'
 
         if 'QC' in self.stages:
+            # create web directory for status codes
             WEBPATH = os.path.join(self.QCdir, SUBJECT_ID)
             if not os.path.exists(WEBPATH):
                 os.makedirs(WEBPATH)
@@ -178,40 +178,30 @@ class subjLevelProcessing(object):
             statesDir = os.path.join(subjstate, 'states')
             if not os.path.exists(statesDir):
                 os.makedirs(statesDir)
-            stagenums = list(stageNumDict.items())
-            for stages in range(0, len(stageNumDict)):
-                cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), queued]
-                subprocess.call(' '.join(cmd), shell=True)
+            # initialize status codes
+            # If previously run status codes don't exist, first initialize as unqueued
+            for _, num in stageNumDict.items():
+                if not os.path.exists(os.path.join(statesDir, 'stage-{0}.state'.format(num))):
+                    cmd = [QCSTATE, statesDir, str(num), unqueued]
+                    subprocess.call(' '.join(cmd), shell=True)
+            # Change status codes to 'queued' based on user settings
+            pipelines = ['CSE', 'SVREG', 'BDP', 'BFP']
+            PROC_STAGES = [ stage for stage in pipelines if stage in STAGES ]
+            for STAGE in PROC_STAGES:
+                for step in stageGroups[STAGE]:
+                    cmd = [QCSTATE, statesDir, str(stageNumDict[step]), queued]
+                    subprocess.call(' '.join(cmd), shell=True)
+            if 'SVREG' in STAGES and 'BDP' in STAGES:
+                for step in stageGroups['SVREG+BDP']:
+                    cmd = [QCSTATE, statesDir, str(stageNumDict[step]), queued]
+                    subprocess.call(' '.join(cmd), shell=True)
+            # Then unqueue based on user selection
             if 'noBSE' in STAGES:
                 cmd = [QCSTATE, statesDir, str(stageNumDict['BSE']), unqueued]
                 subprocess.call(' '.join(cmd), shell=True)
-            if not 'CSE' in STAGES:
-                for stages in range(0, 12):
-                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
-                    subprocess.call(' '.join(cmd), shell=True)
-            if not 'BDP' in STAGES:
-                for stages in range(16,31):
-                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
-                    subprocess.call(' '.join(cmd), shell=True)
-                # cmd = [QCSTATE, statesDir, str(stageNumDict['BDP']), unqueued]
-                # subprocess.call(' '.join(cmd), shell=True)
-            if not 'SVREG' in STAGES:
-                for stages in range(12, 16):
-                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
-                    subprocess.call(' '.join(cmd), shell=True)
-                for stages in range(19, 31):
-                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
-                    subprocess.call(' '.join(cmd), shell=True)
-            # if (not 'BDP' in STAGES) and (not 'SVREG' in STAGES):
-            #     for stages in range(16, 31):
-            #         cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
-            #         subprocess.call(' '.join(cmd), shell=True)
-            if not 'BFP' in STAGES:
-                cmd = [QCSTATE, statesDir, str(stageNumDict['BFP']), unqueued]
-                subprocess.call(' '.join(cmd), shell=True)
             if not self.fsleddy:
-                for stages in range(16,18):
-                    cmd = [QCSTATE, statesDir, str(stagenums[stages][1]), unqueued]
+                for step in stageGroups['FSLEDDY']:
+                    cmd = [QCSTATE, statesDir, str(stageNumDict[step]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
                 
             stagesRun = {}
@@ -884,23 +874,17 @@ class subjLevelProcessing(object):
                                      '*************************** Please run CSE before SVREG.**************************\n'
                                      '**********************************************************************************\n')
                     sys.exit(1)
+            
+            svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
+            svregObj.inputs.subjectFilePrefix = svregInputBase
+            svregObj.inputs.atlasFilePrefix = self.atlas
+            svregObj.inputs.useSingleThreading = self.singleThread
             if 'CSE' in STAGES:
                 ds0_thick = pe.Node(io.DataSink(), name='DATASINK0THICK')
                 brainsuite_workflow.connect(thickPVCObj, 'atlasSurfLeftFile', ds0_thick, '@')
                 brainsuite_workflow.connect(thickPVCObj, 'atlasSurfRightFile', ds0_thick, '@1')
-                svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
-
-                # svreg inputs that will be created. We delay execution of SVReg until all CSE and datasink are done
-                svregObj.inputs.subjectFilePrefix = svregInputBase
-                svregObj.inputs.atlasFilePrefix = self.atlas
-                svregObj.inputs.useSingleThreading = self.singleThread
-
+                # We delay execution of SVReg until all CSE and datasink are done
                 brainsuite_workflow.connect(ds0_thick, 'out_file', svregObj, 'dataSinkDelay')
-            else:
-                svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
-                svregObj.inputs.subjectFilePrefix = svregInputBase
-                svregObj.inputs.atlasFilePrefix = self.atlas
-                svregObj.inputs.useSingleThreading = self.singleThread
 
             thick2atlasObj = pe.Node(interface=bs.Thickness2Atlas(), name='THICK2ATLAS')
             thick2atlasObj.inputs.subjectFilePrefix = svregInputBase

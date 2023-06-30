@@ -59,3 +59,52 @@ stageNumDict = OrderedDict({
 
     'BFP': 32
 })
+
+stageGroups = {
+    'CSE': [
+        'BSE', 
+        'BFC', 
+        'PVC', 
+        'CEREBRO', 
+        'CORTEX', 
+        'SCRUBMASK', 
+        'TCA', 
+        'DEWISP', 
+        'DFS', 
+        'PIALMESH', 
+        'HEMISPLIT', 
+        'THICKPVC'
+            ],
+    'SVREG': [
+        'SVREG', 
+        'SMOOTHSURFLEFT', 
+        'SMOOTHSURFRIGHT', 
+        'SMOOTHVOLJAC'
+    ],
+    'BDP': [
+        'BDPMASK', 
+        'EDDY', 
+        'BDP'
+    ],
+    'FSLEDDY': [
+        'BDPMASK', 
+        'EDDY'
+    ],
+    'SVREG+BDP': [
+        'APPLYMAPFA', 
+        'APPLYMAPMD', 
+        'APPLYMAPAXIAL' , 
+        'APPLYMAPRADIAL', 
+        'APPLYMAPMADC', 
+        'APPLYMAPFRTGFA', 
+        'SMOOTHVOLFA', 
+        'SMOOTHVOLMD', 
+        'SMOOTHVOLAXIAL', 
+        'SMOOTHVOLRADIAL', 
+        'SMOOTHVOLMADC', 
+        'SMOOTHVOLFRTGFA'
+    ],
+    'BFP': [
+        'BFP'
+    ]
+}

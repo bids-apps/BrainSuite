@@ -139,23 +139,36 @@ class preProcSpec(object):
         self.smoothsurf = 2.0
 
     def read_preprocfile(self, preprocfile, subjectID):
-        if not os.path.isfile(preprocfile):
+        
+        try:
+            if not os.path.isfile(preprocfile):
+                sys.stdout.write('##############################################\n'
+                                '##############################################\n'
+                                '##############################################\n'
+                                '************ ERROR!!! ************ \n'
+                                'Preprocecssing specification file {0} not found.\n'
+                                'If running Docker-based BrainSuite BIDS App, \n'
+                                'please make sure that the path follows the filesystem of the container.\n'
+                                '##############################################\n'
+                                '##############################################\n'
+                                '##############################################\n'.format(preprocfile))
+                sys.exit(2)
+        except TypeError as e:
             sys.stdout.write('##############################################\n'
-                             '##############################################\n'
-                             '##############################################\n'
-                             '************ WARNING!!! ************ \n'
-                             'Preprocecssing specification file not found.\n'
-                             'Running with default parameters!!!!'
-                             '##############################################\n'
-                             '##############################################\n'
-                             '##############################################\n')
-            self.read_success = False
-            return
+                                '##############################################\n'
+                                '##############################################\n'
+                                '************ ERROR!!! ************ \n'
+                                'Preprocecssing specification path not defined.\n'
+                                '##############################################\n'
+                                '##############################################\n'
+                                '##############################################\n')
+            print(e, '\n')
+            sys.exit(2)
 
         try:
             specs = json.load(open(preprocfile))
             self.specs = specs
-        except Exception as e:
+        except SyntaxError as e:
             sys.stdout.write('##############################################\n'
                              '##############################################\n'
                              '##############################################\n'
@@ -169,7 +182,7 @@ class preProcSpec(object):
                              'JSON reading error message:\n'
             )
             print(e, '\n')
-            return
+            sys.exit(2)
 
         # svreg
         self.atlas = specs['BrainSuite']['Anatomical']['atlas']
@@ -362,8 +375,14 @@ class preProcSpec(object):
                     'Dataset Name' : dataset_description['Name'],
                     'BIDSVersion': dataset_description['BIDSVersion']
                 })
-            except:
-                print('dataset_description.json file did not read in successfully.\n')
+            except SyntaxError as e:
+                sys.stdout.write('dataset_description.json file did not read in successfully due to syntax error:\n')
+                print(e,'\n')
+                sys.exit(2)
+            except KeyError as e:
+                sys.stdout.write('There is a missing JSON field in the dataset_description.json file:\n')
+                print(e, '\n')
+                sys.exit(2)
 
         params['BrainSuite BIDS App run parameters'] = []
         params['BrainSuite BIDS App run parameters'].append({
