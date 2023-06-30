@@ -20,8 +20,8 @@ COPY nipype/fsl/epi.py /nipype/nipype/interfaces/fsl/
 COPY nipype/fsl/quad_mot.py nipype/fsl/quad.py /usr/local/miniconda/lib/python3.7/site-packages/eddy_qc/QUAD/
 RUN sed -i 's/EpiReg/EpiReg, EddyQuad/' /nipype/nipype/interfaces/fsl/__init__.py
 
-COPY ./bfp_sample_config_preproc.ini /config.ini
-COPY ./bfp_sample_config_stats.ini /bfp_config_stats.ini
+COPY ./templates/bfp_sample_config_preproc.ini /config.ini
+COPY ./templates/bfp_sample_config_stats.ini /bfp_config_stats.ini
 
 COPY . /BrainSuite
 RUN chmod -R ugo+rx /BrainSuite/QC/ /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ /opt/BrainSuite${BrainSuiteVersion}/bin/ /opt/BrainSuite${BrainSuiteVersion}/bdp/ /bfp/
