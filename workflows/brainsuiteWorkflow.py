@@ -616,8 +616,11 @@ class subjLevelProcessing(object):
                 os.makedirs(dwi)
             if self.fsleddy:
                 eddyprepdir = dwi + '/eddy_prep/'
+                eddyoutputdir = dwi + '/eddy_output/'
                 if not os.path.exists(eddyprepdir):
                     os.mkdir(eddyprepdir)
+                if not os.path.exists(eddyoutputdir):
+                    os.mkdir(eddyoutputdir)
 
             INPUT_DWI_BASE = self.bdpfiles
             INPUT_DWI_SUBJECT_ID = INPUT_DWI_BASE.split('/')[-1].split('.')[0]
@@ -676,9 +679,9 @@ class subjLevelProcessing(object):
                 bdpMaskObj.inputs.maskOnly = True
                 bdpMaskObj.inputs.noStructuralRegistration = True
                 bdpMaskObj.inputs.BVecBValPair = self.BVecBValPair
-                brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', ds4, '@')
-                brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', ds4, '@1')
-                brainsuite_workflow.connect(copyDWItoEddyPrep, 'OutFile', ds4, '@2')
+                brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', ds4, 'dataSinkDelay.@')
+                brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', ds4, 'dataSinkDelay.@1')
+                brainsuite_workflow.connect(copyDWItoEddyPrep, 'OutFile', ds4, 'dataSinkDelay.@2')
                 brainsuite_workflow.connect(ds4, 'out_file', bdpMaskObj, 'dataSinkDelay')
                 # brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', bdpMaskObj, 'dataSinkDelay')
                 # brainsuite_workflow.connect(copyBSEMasktoDWI, 'OutFile', bdpMaskObj, 'dataSinkDelay')
@@ -701,9 +704,9 @@ class subjLevelProcessing(object):
                 eddy.inputs.repol = self.repol
                 eddy.inputs.num_threads = self.eddy_num_threads
                 eddy.inputs.is_shelled = self.is_shelled
-                eddy.inputs.out_base = bdpInputBase
+                eddy.inputs.out_base = eddyoutputdir + INPUT_DWI_SUBJECT_ID
                 brainsuite_workflow.connect(bdpMaskObj, 'DWIMask', eddy, 'in_mask')
-                rotbvec = bdpInputBase + '.eddy_rotated_bvecs'
+                rotbvec = eddyoutputdir + INPUT_DWI_SUBJECT_ID + '.eddy_rotated_bvecs'
                 bdpObj.inputs.BVecBValPair = [rotbvec, self.BVecBValPair[1]]
                 brainsuite_workflow.connect(eddy, 'out_corrected', bdpObj, 'inputDiffusionData')
 
@@ -850,8 +853,10 @@ class subjLevelProcessing(object):
                     brainsuite_workflow.connect(bdpObj, 'DcoordMask', volbendPreCorrDWIObj, 'maskFile')
                     brainsuite_workflow.connect(eddy, 'out_corrected', volbendPreCorrDWIsagObj, 'inFile')
                 else:    
+                    brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIObj, 'inFile')
                     brainsuite_workflow.connect(bdpObj, 'DcoordMask', volbendPreCorrDWIObj, 'maskFile')
                     brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIsagObj, 'inFile')
+                    brainsuite_workflow.connect(bdpObj, 'DcoordMask', volbendPreCorrDWIsagObj, 'maskFile')
 
                 ###### Connect QC states with the steps ############
                 qcstateBDP = pe.Node(interface=bs.QCState(), name='qcstateBDP')
@@ -1183,7 +1188,7 @@ class subjLevelProcessing(object):
                 qcapplyMapFRT_GFALaunch.inputs.state = launched
                 
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
-                ds2.inputs.base_directory = anat
+                ds2.inputs.base_directory = dwi
                 
                 brainsuite_workflow.connect(svregObj, 'InvMapFile', ds2, '@0')
                         
@@ -1421,7 +1426,7 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(BFPObjs[-1], BFPoutput, qcstateBFP, 'Run')
 
                 stagesRun.update({
-                    'BFP_{0}'.format(BFP['sess'][-1]): stageNumDict['BFP']
+                    'BFP_{0}'.format(BFP['sess'][task].split('task-')[-1]): stageNumDict['BFP']
                 })
 
         brainsuite_workflow_return = \

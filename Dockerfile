@@ -2,17 +2,17 @@ FROM yeunkim/bidsapphead:2023
 
 ENV BrainSuiteVersion="23a"
 
-RUN wget --no-check-certificate https://brainsuite.org/data/BIDS/BrainSuite23a_BIDS.tgz && tar xzvf BrainSuite23a_BIDS.tgz -C /opt/ && \
-    rm BrainSuite23a_BIDS.tgz 
+# pull brainsuite and install bstr
+RUN wget --no-check-certificate https://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
+    rm BrainSuite${BrainSuiteVersion}_BIDS.tgz 
 RUN Rscript -e 'install.packages("/opt/BrainSuite23a/bstr/bstr_0.4.tar.gz", repos = NULL,  type = "source")'
-
 
 ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
 
-RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/bfp_ver23a1_Matlab2019b_release/bfp_ver23a1_Matlab2019b_release.tar.gz | tar xvz
-RUN mv /bfp_ver23a1_Matlab2019b_release /bfp
-RUN mv /bfp/bfp_source/* /bfp && mv /bfp/bfp_binaries/* /bfp/ && rm -r bfp/bfp_binaries /bfp/bfp_source
-ENV BFP=/bfp
+# RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/bfp_ver23a1_Matlab2019b_release/bfp_ver23a1_Matlab2019b_release.tar.gz | tar xvz
+# RUN mv /bfp_ver23a1_Matlab2019b_release /bfp
+# RUN mv /bfp/bfp_source/* /bfp && mv /bfp/bfp_binaries/* /bfp/ && rm -r bfp/bfp_binaries /bfp/bfp_source
+ENV BFP=/opt/BrainSuite${BrainSuiteVersion}/bfp
 ENV PATH=${BFP}:${PATH}
 
 COPY nipype/brainsuite/brainsuite.py nipype/brainsuite/__init__.py /nipype/nipype/interfaces/brainsuite/
@@ -24,13 +24,13 @@ COPY ./templates/bfp_sample_config_preproc.ini /config.ini
 COPY ./templates/bfp_sample_config_stats.ini /bfp_config_stats.ini
 
 COPY . /BrainSuite
-RUN chmod -R ugo+rx /BrainSuite/QC/ /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ /opt/BrainSuite${BrainSuiteVersion}/bin/ /opt/BrainSuite${BrainSuiteVersion}/bdp/ /bfp/
+RUN chmod -R ugo+rx /BrainSuite/QC/ /opt/BrainSuite${BrainSuiteVersion}/svreg/bin/ /opt/BrainSuite${BrainSuiteVersion}/bin/ /opt/BrainSuite${BrainSuiteVersion}/bdp/ /opt/BrainSuite${BrainSuiteVersion}/bfp/
 RUN chmod ugo+rx /BrainSuite/run.py
 ENV PATH=/BrainSuite/QC/:${PATH}
 
 ENV FSLDIR=/usr/share/fsl/5.0
 ENV FSLOUTPUTTYPE=NIFTI_GZ
-ENV PATH=/usr/lib/fsl/5.0:${PATH}
+ENV PATH=/usr/share/fsl/5.0/bin:${PATH}
 ENV LD_LIBRARY_PATH=/usr/lib/fsl/5.0${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 RUN echo "set enable-bracketed-paste off" >> ~/.inputrc
