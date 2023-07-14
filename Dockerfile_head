@@ -123,3 +123,6 @@ RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/eddy
 # Configure lib gcc and lib mesa for renderdfs
 RUN apt-get install -y xvfb libosmesa6-dev
 RUN cd /usr/lib/x86_64-linux-gnu && rm libstdc++.so.6 && ln -s /usr/local/miniconda/lib/libstdc++.so.6 ./libstdc++.so.6
+
+# downgrade scipy to 1.2 for statsmodels
+RUN pip install scipy==1.2 --upgrade

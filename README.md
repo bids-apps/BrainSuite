@@ -20,7 +20,7 @@ BrainSuite BIDS App's participant-level processing is comprised of three core pi
 ### Group-level analysis
 
 <p align="center">
- <img src="./docs/pngs/group_analysis.png" width="900"/>
+ <img src="./docs/pngs/group_analysis_VG.png" width="900"/>
 </p>
 
 * BrainSuite BIDS App's group-level analysis of structural data uses the BrainSuite Statistics Toolbox in R ([bstr](https://brainsuite.org/bssr/)), which supports:
@@ -44,7 +44,7 @@ BrainSuite BIDS App's participant-level processing is comprised of three core pi
 ### BrainSuite Dashboard and QC system
 
 <p align="center">
- <img src="./docs/pngs/4_BrainSuiteDashboard_14Feb2023.png" width="800"/>
+ <img src="./docs/pngs/4_BrainSuiteDashboard_23a_13July2023.png" width="800"/>
 </p>
 
 The BrainSuite BIDS App's BrainSuite Dashboard is a browser-based system that provides interactive visualization of the intermediate participant-level workflow outputs as they are generated, enabling users to track the state of processing and identify errors as they occur. The QC component generates snapshots of key stages in the participant-level workflows for quick visualization and assessment.

@@ -29,6 +29,7 @@ import sys
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
+import traceback
 
 import warnings
 warnings.filterwarnings(action='ignore', category=FutureWarning)
@@ -422,6 +423,9 @@ def main():
         from readSpecs.readModelSpec import bstrSpec
         from workflows.runBstr import load_bstr_data, run_model, save_bstr
         from run_rmarkdown import run_rmarkdown
+        from datetime import datetime
+        import json
+        
         analyses = []
 
         if args.analysistype == "ALL":
@@ -438,27 +442,68 @@ def main():
         specs = bstrSpec(args.modelspec, args.output_dir)
         
         if 'STRUCT' in analyses:
-            if args.rmarkdown:
-                run_rmarkdown(args.rmarkdown)
-            else:
-                # read structural analysis model specs
-                specs.read_struct_modelfile()
-                # load in appropriate output data
-                bstr_data = load_bstr_data(specs)
-                # run statistical model
-                bstr_model = run_model(specs, bstr_data)
-                # save out results
-                save_bstr(bstr_data, bstr_model, specs.out_dir)
+            CT = datetime.now()
+            CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
+            structStatsDir = specs.specs['BrainSuite']['Structural']['out_dir']
+            if not os.path.exists(structStatsDir):
+                os.mkdir(structStatsDir)
+            specs_out = os.path.join(structStatsDir, 'modelspec_struct_analysis_{0}.json'.format(CTstring))
+            try:
+                if args.rmarkdown:
+                    run_rmarkdown(args.rmarkdown)
+                else:
+                    # read structural analysis model specs
+                    specs.read_struct_modelfile()
+                    # load in appropriate output data
+                    bstr_data = load_bstr_data(specs)
+                    # run statistical model
+                    bstr_model = run_model(specs, bstr_data)
+                    # save out results
+                    save_bstr(bstr_data, bstr_model, specs.out_dir)
+                specs.specs['BrainSuite']['Structural']['run_success']='True'
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Structural'], f)
+            except Exception as e:
+                specs.specs['BrainSuite']['Structural']['run_success']='False'
+                exceptionType, exception, tb = sys.exc_info()
+                tb_msg = ' '.join(traceback.format_tb(tb))
+                specs.specs['BrainSuite']['Structural']['ErrorInfo']= {'ErrorType': str(exceptionType),
+                                                                 'ErrorMsg': str(exception),
+                                                                 'TraceBack': tb_msg}
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Structural'], f)
+                raise e
+                
         if 'FUNC' in analyses:
-            # read functional analysis model specs
-            specs.read_func_modelfile()
-            ## convert tsv to csv for fc analyses
-            basename = specs.tsv_fname.split(".")[0]
-            cmd = "sed 's/\t/,/g' {0}.tsv > {0}.csv".format(basename)
-            subprocess.call(cmd, shell=True)
-            # run fc statistical models
-            exec(open("{BFPpath}/src/stats/bfp_run_stat.py".format(
-                BFPpath=os.environ['BFP'])).read())
+            CT = datetime.now()
+            CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
+            funcStatsDir = specs.specs['BrainSuite']['Functional']['out_dir']
+            if not os.path.exists(funcStatsDir):
+                os.mkdir(funcStatsDir)
+            specs_out = os.path.join(funcStatsDir, 'modelspec_func_analysis_{0}.json'.format(CTstring))
+            try:
+                # read functional analysis model specs
+                specs.read_func_modelfile()
+                ## convert tsv to csv for fc analyses
+                basename = specs.tsv_fname.split(".")[0]
+                cmd = "sed 's/\t/,/g' {0}.tsv > {0}.csv".format(basename)
+                subprocess.call(cmd, shell=True)
+                # run fc statistical models
+                exec(open("{BFPpath}/src/stats/bfp_run_stat.py".format(
+                    BFPpath=os.environ['BFP'])).read())
+                specs.specs['BrainSuite']['Functional']['run_success']='True'
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Functional'], f)
+            except Exception as e:
+                specs.specs['BrainSuite']['Functional']['run_success']='False'
+                exceptionType, exception, tb = sys.exc_info()
+                tb_msg = ' '.join(traceback.format_tb(tb))
+                specs.specs['BrainSuite']['Functional']['ErrorInfo']= {'ErrorType': str(exceptionType),
+                                                                 'ErrorMsg': str(exception),
+                                                                 'TraceBack': tb_msg}
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Functional'], f)
+                raise e
 
 if __name__ == '__main__':
     main()

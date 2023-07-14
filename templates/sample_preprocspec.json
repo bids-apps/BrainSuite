@@ -18,7 +18,7 @@
 			"warpConvergence": 100,
 			"warpLevel": 5,
 			"tissueFractionThreshold": 50.0,
-			"atlas": "BCI",
+			"atlas": "BCI-DNI",
 			"singleThread": 0
 		},
 		"Diffusion": {
@@ -73,7 +73,7 @@
 			"RunNSR": 1,
 			"SimRef": 1,
 			"uscrigid_similarity": "inversion",
-			"scbPath": "/output/SCB.mat",
+			"scbPath": "",
 			"T1mask": 1
 		}
 	}

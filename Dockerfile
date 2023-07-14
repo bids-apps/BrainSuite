@@ -3,15 +3,18 @@ FROM yeunkim/bidsapphead:2023
 ENV BrainSuiteVersion="23a"
 
 # pull brainsuite and install bstr
-RUN wget --no-check-certificate https://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
+RUN wget --no-check-certificate http://shattuck.bmap.ucla.edu/BrainSuite23_13Jul2pm/BrainSuite23a_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
     rm BrainSuite${BrainSuiteVersion}_BIDS.tgz 
+# RUN wget --no-check-certificate https://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
+#     rm BrainSuite${BrainSuiteVersion}_BIDS.tgz 
 RUN Rscript -e 'install.packages("/opt/BrainSuite23a/bstr/bstr_0.4.tar.gz", repos = NULL,  type = "source")'
 
 ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}
 
-# RUN cd / && wget -qO- https://github.com/ajoshiusc/bfp/releases/download/bfp_ver23a1_Matlab2019b_release/bfp_ver23a1_Matlab2019b_release.tar.gz | tar xvz
-# RUN mv /bfp_ver23a1_Matlab2019b_release /bfp
-# RUN mv /bfp/bfp_source/* /bfp && mv /bfp/bfp_binaries/* /bfp/ && rm -r bfp/bfp_binaries /bfp/bfp_source
+# copy libtiff files and edit LD_LIBRARY_PATH
+RUN mkdir /usr/libtiff && cp /usr/lib/x86_64-linux-gnu/libtiff.so* /usr/libtiff/
+ENV TIFF_LD_PATH=/usr/libtiff/
+
 ENV BFP=/opt/BrainSuite${BrainSuiteVersion}/bfp
 ENV PATH=${BFP}:${PATH}
 

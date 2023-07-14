@@ -1,8 +1,8 @@
 {
 	"BrainSuite": {
 	  "Structural":{
-        "tsv_fname": "/data/participants.tsv",
-        "measure": "sba",
+		"tsv_fname": "/data/participants.tsv",
+		"measure": "sba",
 		"test": "anova",
 		"main_effect": "age",
 		"covariates": [
@@ -14,19 +14,19 @@
 		"paired": 0,
 		"smooth": 2.0,
 		"mult_comp": "fdr",
-		  "pvalue": "parametric",
-		  "niter": 5000,
+		"pvalue": "parametric",
+		"niter": 5000,
 		"roiid": [102],
 		"hemi": "left",
 		"maskfile": "",
 		"atlas": "",
 		"roimeas": "",
 		"dbameas": "" ,
-		  "exclude_col": "",
+		"exclude_col": "",
 	  	"out_dir": "/output/stats"},
 
 	"Functional":{
-        "tsv_fname": "/data/participants.tsv",
+		"tsv_fname": "/data/participants.tsv",
 		"file_ext": "_task-rest_bold.32k.GOrd.filt.mat",
 		"lentime": 240,
 		"matchT": 0,
@@ -35,7 +35,7 @@
 		"pw_fdr": 0,
 		"pw_perm": 2000,
 		"outname": "BFPtest",
-        "sig_alpha" : 0.05,
+		"sig_alpha" : 0.05,
 		"smooth_iter": 100,
 		"save_surfaces": 1,
 		"save_figures": 0,
@@ -46,8 +46,8 @@
 		"colvar_reg1": "Age",
 		"colvar_reg2": "Sex",
 		"colvar_exclude": "Exclude",
-        "colvar_atlas": "Atlas",
-        "out_dir": "/output/stats"
-      }
+		"colvar_atlas": "Atlas",
+		"out_dir": "/output/stats"
+	  }
 	}
 }

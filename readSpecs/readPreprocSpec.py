@@ -183,6 +183,13 @@ class preProcSpec(object):
             )
             print(e, '\n')
             sys.exit(2)
+        
+        # write a copy of the preproc.json file 
+        CT = datetime.now()
+        CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
+        preprocArchived = os.path.join(self.outputdir, subjectID, 'preprocspecs_{0}.json'.format(CTstring))
+        with open(preprocArchived, 'w') as f:
+            json.dump(self.specs, f)
 
         # svreg
         self.atlas = specs['BrainSuite']['Anatomical']['atlas']
@@ -302,6 +309,8 @@ class preProcSpec(object):
         self.rundetrend = specs['BrainSuite']['Functional']['RunDetrend']
         self.runnsr = specs['BrainSuite']['Functional']['RunNSR']
         self.scbpath = specs['BrainSuite']['Functional']['scbPath']
+        if not self.scbpath:
+            self.scbpath = os.path.join(self.outputdir, subjectID, 'func', 'scb.mat')
         self.T1mask = specs['BrainSuite']['Functional']['T1mask']
         # self.epit1corr = specs['BrainSuite']['Functional']['epit1corr']
         # self.epit1corr_mask = specs['BrainSuite']['Functional']['epit1corr_mask']
