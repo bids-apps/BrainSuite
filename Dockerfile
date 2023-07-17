@@ -3,10 +3,8 @@ FROM yeunkim/bidsapphead:2023
 ENV BrainSuiteVersion="23a"
 
 # pull brainsuite and install bstr
-RUN wget --no-check-certificate http://shattuck.bmap.ucla.edu/BrainSuite23_13Jul2pm/BrainSuite23a_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
+RUN wget --no-check-certificate https://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
     rm BrainSuite${BrainSuiteVersion}_BIDS.tgz 
-# RUN wget --no-check-certificate https://brainsuite.org/data/BIDS/BrainSuite${BrainSuiteVersion}_BIDS.tgz && tar xzvf BrainSuite${BrainSuiteVersion}_BIDS.tgz -C /opt/ && \
-#     rm BrainSuite${BrainSuiteVersion}_BIDS.tgz 
 RUN Rscript -e 'install.packages("/opt/BrainSuite23a/bstr/bstr_0.4.tar.gz", repos = NULL,  type = "source")'
 
 ENV PATH=/opt/BrainSuite${BrainSuiteVersion}/bin/:/opt/BrainSuite${BrainSuiteVersion}/svreg/bin/:/opt/BrainSuite${BrainSuiteVersion}/bdp/:${PATH}

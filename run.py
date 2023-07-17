@@ -154,7 +154,7 @@ def parser():
     qc.add_argument('--port', help='Port number for QC local webserver. This defines the port number '
                                 'inside the BrainSuite BIDS App container.'
                                 ' If using Singularity version of BrainSuite BIDS App, this argument also defines the port number '
-                                'of the local host.', default=63522)
+                                'of the local host.', default=9095)
     qc.add_argument('--bindLocalHostOnly', help='When running local web server through this app, '
                                                     'the server binds to all of the IPs on the machine. '
                                                     'If you would like to only bind to the local host, '
