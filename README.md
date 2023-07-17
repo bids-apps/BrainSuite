@@ -1,6 +1,6 @@
 # BrainSuite BIDS App 
 This readme provides an outline of the functionality of the BrainSuite BIDS App.
-For more detailed instructions on installation and use, please visit [our BrainSuite BIDS documentation page](https://brainsuite.org/BIDS/).
+For more detailed instructions on installation and use, please visit [our BrainSuite BIDS App documentation page](https://brainsuite.org/BIDS/).
 We have made a small set of [sample data available](https://github.com/BrainSuite/BrainSuiteBIDSAppSampleData).
 A demo of the BrainSuite Dashboard interface, showing the processing of the sample data, is available [on our Github site](https://brainsuite.github.io/DashboardDemo/).	
 
