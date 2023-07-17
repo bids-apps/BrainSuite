@@ -216,10 +216,10 @@ Our pre-compiled parent images act as snapshots of version-controlled dependenci
 ## Support
 Questions about usage can be submitted to http://forums.brainsuite.org/. 
 Issues or suggestions can be directly submitted as an issue to this Github Repository.
-Again, for full documentation on the BrainSuite BIDS App, please visit https://brainsuite.org/BIDS/. 
+For full documentation on the BrainSuite BIDS App, please visit https://brainsuite.org/BIDS/. 
 
 ## Acknowledgments 
-This project is supported by NIH Grant R01-NS074980.
+This project was supported by NIH grants R01-NS074980, R01-NS121761, and R01-EB026299
 
 ## Licenses 
 The primary BrainSuite BIDS App source code is licensed under the [GNU Public License v2.0 only 
