@@ -223,7 +223,6 @@ For full documentation on the BrainSuite BIDS App, please visit https://brainsui
 For full documentation on the BrainSuite BIDS App, please visit https://brainsuite.org/BIDS/. 
 
 ## Acknowledgments 
-This project was supported by NIH grants R01-NS074980, R01-NS121761, and R01-EB026299
 This project is supported by National Institutes of Health grants R01-NS074980, R01-NS121761, and R01-EB026299.
 
 ## Licenses 
