@@ -11,7 +11,7 @@ The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-
 ### Participant-level processing
 
 <p align="center">
- <img src="./docs/pngs/3_brainsuite_bids_subject_level_comprehensive.low.whitebg.v19.png" width="400"/>
+ <img src="./docs/pngs/3_brainsuite_bids_subject_level_comprehensive.low.whitebg.v19.png" width="600"/>
 </p>
 
 BrainSuite BIDS App's participant-level processing comprises three core pipelines:
