@@ -43,3 +43,29 @@ Statsmodels is a public Python package that is developed by Jonathan E. Taylor, 
 Tqdm is a public Python package developed by Noam Yorav-Raphael (original author) and a team of people. Most work is released under the MIT license. Exceptions and other details can be found in "tqdm_license.txt".
 
 bootstrap_multiselect is developed by David Stutz and released under an Apache License, Version 2.0 and also under a BSD 3-Clause License.
+
+Dirmngr is a server released under the GNU General Public License (GPL), version 2. Details can be found in the "dirmngr_license.txt" file.
+
+FreeType is a publicly available software library and is released under the terms of GNU General Public License (GPL), version 2. Details can be found in "freetype_license.txt".
+
+FriBidi is free software developed by Dov Grobgeld and Behdad Esfahbod. It is distributed under the terms of the GNU Lesser General Public License (LGPL v2). Details and exceptions are described in "fribidi_license.txt".
+
+Harfbuzz is a public package released under the Old MIT license. Specific details can be found in "harfbuzz_license.txt".
+
+Libcurl is developed by Daniel Stenberg and released under the MIT license. Details are outlined in "libcurl_license.txt".
+
+Libfontconfig1 is a package developed by Keith Packard and distributed under the libfontconfig license, an MIT license (Old Style with legal disclaimer). The complete license information is in "libfontconfig1_license.txt".
+
+Libjpeg is developed by Thomas G. Lane and Guido Vollbeding and distributed under the libjpeg license, which is a custom BSD-like license. More details and exceptions can be found in the "libjpeg_license.txt".
+
+PNG Reference Library (libpng) is free software distributed under the terms of libpng license, a permissive free software license. Details and exceptions are described in "libpng_license.txt".
+
+Libtiff is a library released under the Hylafax license. Details can be found in the "libtiff5_license.txt" file.
+
+Libxml2 is the XML C parser and toolkit developed for the Gnome project, and is free software available under the MIT License. Details and exceptions are described in "libxml2_license.txt".
+
+Libssl is developed by The OpenSSL Project. It is dual-licensed under OpenSSL and SSLeay licenses. Details are described in "openssl-ssleay_license.txt" file. 
+
+Libzmq is Free Software and is distributed under the terms of Mozilla Public License Version 2.0. Details can be found in the "libzmq_license.txt" file.
+
+Xvfb is developed by David P. Wiggins, The Open Group, Inc., and is released under the MIT license. Its license details are found in "xvfb_license.txt" file. 

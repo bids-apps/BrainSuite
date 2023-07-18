@@ -153,7 +153,10 @@ function showCheckboxes() {
 }
 
 var groupNames = ["CSE", "Thickness", "SVReg", "BDP", "BFP"];
-var stagenames = ["bse", "bfc", "pvc", "cerebro", "cortex", "scrub mask", "tca", "dewisp", "inner cortical surface", "pial surface", "hemisplit", "thickness", "svreg", "bdp", "bfp"];
+var stagenames = ["bse", "bfc", "pvc", "cerebro", "cortex", "scrub mask", "tca", "dewisp", "inner cortical surface", "pial surface", "hemisplit", "thickness",  "svreg",
+"smooth left hemi thickness","smooth right hemi thickness","smooth jac det volume","bdpmask","eddy","bdp","apply deformation map to FA","apply deformation map to MD","apply deformation map to Ax",
+"apply deformation map to RD", "apply deformation map to mADC", "apply deformation map to FRTGFA","smooth FA volume","smooth MD volume","smooth Ax volume",
+"smooth RD volume","smooth mADC volume","smooth FRTGFA volume", "bfp"];
 var contents = [
 	{ img: "bse.png", stage: 1, desc: "Orig + BSE Mask", group: 0, surface: false, show: true, width: 0, height: 0 },
 	{ img: "bfc.png", stage: 2, desc: "BFC", group: 0, surface: false, show: true, width: 0, height: 0 },
@@ -180,21 +183,21 @@ var contents = [
 	{ img: "svregLabel.png", stage: 13, desc: "BFC + SVReg Label (axial)", group: 2, surface: false, show: true, width: 0, height: 0 },
 	{ img: "svregLabelCor.png", stage: 13, desc: "BFC + SVReg Label (coronal)", group: 2, surface: false, show: true, width: 0, height: 0 },
 	{ img: "svregLabelSag.png", stage: 13, desc: "BFC + SVReg Label (sagittal)", group: 2, surface: false, show: true, width: 0, height: 0 },
-	{ img: "PreCorrDWI.png", stage: 14, desc: "PRECORRECT", group: 3, surface: false, show: true, width: 256, height: 0 },
-	{ img: "PreCorrDWIsag.png", stage: 14, desc: "PRECORRECT", group: 3, surface: false, show: true, width: 256, height: 0 },
-	{ img: "PostCorrDWI.png", stage: 14, desc: "POSTCORRECT", group: 3, surface: false, show: true, width: 256, height: 0 },
-	{ img: "PostCorrDWIsag.png", stage: 14, desc: "POSTCORRECT", group: 3, surface: false, show: true, width: 256, height: 0 },
-	{ img: "FApvc.png", stage: 14, desc: "FA PVC", surface: false, group: 3, show: true, width: 0, height: 0 },
-	{ img: "FA.png", stage: 14, desc: "FA", group: 3, surface: false, show: true, width: 0, height: 0 },
-	{ img: "colorFA.png", stage: 14, desc: "COLOR FA", group: 3, surface: false, show: true, width: 0, height: 0 },
-	{ img: "mADC.png", stage: 14, desc: "mADC", group: 3, surface: false, show: true, width: 0, height: 0 },
-	{ img: "ssim.png", stage: 15, desc: "SSIM", group: 4, surface: false, show: true, width: 256, height: 0 },
-	{ img: "mco.png", stage: 15, desc: "MCO", group: 4, surface: false, show: true, width: 256, height: 0 },
-	{ img: "Func2T1.png", stage: 15, group: 4, desc: "FUNC2T1 T1 MASK", surface: false, show: true, width: 0, height: 0 },
-	{ img: "PreCorrFunc.png", stage: 15, group: 4, desc: "PRECORRECT", surface: false, show: true, width: 0, height: 0 },
-	{ img: "PreCorrFuncSag.png", stage: 15, group: 4, desc: "PRECORRECT", surface: false, show: true, width: 0, height: 0 },
-	{ img: "PostCorrFunc.png", stage: 15, group: 4, desc: "POSTCORRECT", surface: false, show: true, width: 0, height: 0 },
-	{ img: "PostCorrFuncSag.png", stage: 15, group: 4, desc: "POSTCORRECT", surface: false, show: true, width: 0, height: 0 },
+	{ img: "dmriMask.png", stage: 17, desc: "dMRI mask", group: 3, surface: false, show: true, width: 256, height: 0 },
+    { img: "eddyqc/translations.png", stage: 18, desc: "Eddy estimated translations (mm)", group: 3, surface: false, show: false, width: 256, height: 0 },
+    { img: "eddyqc/rotations.png", stage: 18, desc: "Eddy estimated rotations (deg)", group: 3, surface: false, show: false, width: 256, height: 0 },
+    { img: "eddyqc/displacement.png", stage: 18, desc: "Estimated mean displacement (mm)", group: 3, surface: false, show: true, width: 256, height: 0 },
+	{ img: "PreCorrDWI.png", stage: 19, desc: "BDP Pre-Correct (axial)", group: 3, surface: false, show: true, width: 256, height: 0 },
+	{ img: "PreCorrDWIsag.png", stage: 19, desc: "BDP Pre-Correct (sagittal)", group: 3, surface: false, show: true, width: 256, height: 0 },
+	{ img: "PostCorrDWI.png", stage: 19, desc: "BDP Post-Correct (axial)", group: 3, surface: false, show: true, width: 256, height: 0 },
+	{ img: "PostCorrDWIsag.png", stage: 19, desc: "BDP Post-Correct (sagittal)", group: 3, surface: false, show: true, width: 256, height: 0 },
+	{ img: "FApvc.png", stage: 19, desc: "FA PVC", surface: false, group: 3, show: true, width: 0, height: 0 },
+	{ img: "FA.png", stage: 19, desc: "FA", group: 3, surface: false, show: true, width: 0, height: 0 },
+	{ img: "colorFA.png", stage: 19, desc: "COLOR FA", group: 3, surface: false, show: true, width: 0, height: 0 },
+	{ img: "mADC.png", stage: 19, desc: "mADC", group: 3, surface: false, show: true, width: 0, height: 0 },
+	{ img: "ssim0.png", stage: 32, desc: "SSIM", group: 4, surface: false, show: true, width: 256, height: 0 },
+	{ img: "mco0.png", stage: 32, desc: "MCO", group: 4, surface: false, show: true, width: 256, height: 0 },
+	{ img: "Func2T10.png", stage: 32, group: 4, desc: "FUNC2T1 T1 MASK", surface: false, show: true, width: 0, height: 0 }
 ];
 
 function progressBar(stagecodes, showAll = false) {

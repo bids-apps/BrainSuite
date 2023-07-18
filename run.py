@@ -24,22 +24,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 from __future__ import unicode_literals, print_function
 
-import argparse
 import os
+import sys
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
+import traceback
 
+import warnings
+warnings.filterwarnings(action='ignore', category=FutureWarning)
 from bids.grabbids import BIDSLayout
 from builtins import str
 import shutil
 
-from bin.brainsuiteWorkflow import subjLevelProcessing
-from bin.readPreprocSpec import preProcSpec
-from bin.readSpec import bssrSpec
-from bin.runBssr import *
-from run_rmarkdown import run_rmarkdown
-from bin.runWorkflow import runWorkflow
+from readSpecs.readPreprocSpec import preProcSpec
+from workflows.runWorkflow import runWorkflow
+from QC.stageNumDict import stageNumDict
 
 ########################################################################
 ### Adapted from https://github.com/BIDS-Apps/HCPPipelines/blob/master/run.py
@@ -71,7 +71,7 @@ BrainsuiteVersion = os.environ['BrainSuiteVersion']
 def parser():
     import argparse
 
-    BrainsuiteVersion = '21a'
+    BrainsuiteVersion = '23a'
 
     parser = argparse.ArgumentParser(description='BrainSuite{0} BIDS-App (T1w, dMRI, rs-fMRI). '
                                                  'Copyright (C) 2022 The Regents of the University of California '
@@ -90,13 +90,14 @@ def parser():
 
     parser.add_argument('--stages',
                         help='Participant-level processing stage to be run. Space delimited list. Default is ALL '
-                             'which does not include DASHBOARD. CSE runs Cortical Surface Extractor. SVREG runs'
-                             ' Surface-constrained Volumetric registration. BDP runs BrainSuite Diffusion Pipeline.'
-                             ' BFP runs BrainSuite Functional Pipeline. QC runs BrainSuite QC and generates status codes'
-                             ' and snapshots. DASHBOARD runs the real-time monitoring that is required for BrainSuite '
-                             'Dashboard to update real-time.',
+                             'which does not include DASHBOARD. CSE runs Cortical Surface Extractor and cortical thickness computation, '
+                             'which are the initial portions of the BrainSuite Anatomical Pipeline (BAP). SVREG runs Surface-constrained '
+                             'Volumetric registration, which is the latter portion of BAP. BDP runs BrainSuite Diffusion Pipeline.'
+                             ' BFP runs BrainSuite Functional Pipeline. DASHBOARD runs the real-time monitoring that is required for BrainSuite '
+                             'Dashboard to update real-time. However, DASHBOARD can still be run after the participant-level processing has ended to '
+                             'generate the browser-based BrainSuite Dashboard.',
                         nargs="+",
-                        choices=['CSE', 'SVREG', 'BDP', 'BFP', 'QC', 'DASHBOARD', 'ALL'], default='ALL')
+                        choices=['CSE', 'SVREG', 'BDP', 'BFP', 'DASHBOARD', 'ALL'], default='ALL')
     parser.add_argument('--preprocspec', help='Optional. BrainSuite preprocessing parameters.'
                                               'Path to JSON file that contains preprocessing '
                                               'specifications.',
@@ -106,9 +107,13 @@ def parser():
     dataselect.add_argument('--participant_label', help='The label of the participant that should be analyzed. The label '
                        'corresponds to sub-<participant_label> from the BIDS spec '
                        '(so it does not include "sub-"). If this parameter is not '
-                       'provided all subjects should be analyzed. Multiple '
+                       'provided, all subjects will be analyzed. Multiple '
                        'participants can be specified with a space separated list.',
                        nargs="+")
+    dataselect.add_argument('--session', help='The session label of the participant that should be analyzed. The label '
+                            'corresponds to ses-<session label> from the BIDS spec (so it does not include "ses-"). If this '
+                            'parameter is not provided, all sessions will be analyzed. Multiple sessions can be specified '
+                            'with a space separated list.', nargs="+")
 
     bap = parser.add_argument_group('Command line arguments for BrainSuite Anatomical Pipeline (BAP). For more parameter '
                                     'options, please edit the preprocspecs.json file')
@@ -146,7 +151,10 @@ def parser():
                              'compute nodes.', required=False,
                         default=None)
     qc.add_argument('--localWebserver', help='Launch local webserver for QC.', action='store_true')
-    qc.add_argument('--port', help='Port number for QC webserver.', default=8080)
+    qc.add_argument('--port', help='Port number for QC local webserver. This defines the port number '
+                                'inside the BrainSuite BIDS App container.'
+                                ' If using Singularity version of BrainSuite BIDS App, this argument also defines the port number '
+                                'of the local host.', default=9095)
     qc.add_argument('--bindLocalHostOnly', help='When running local web server through this app, '
                                                     'the server binds to all of the IPs on the machine. '
                                                     'If you would like to only bind to the local host, '
@@ -161,20 +169,23 @@ def parser():
     group.add_argument('--analysistype', help='Group analysis type: structural (T1 or DWI)'
                                                'or functional (fMRI). Options: STRUCT, FUNC, ALL.',
                         choices=['STRUCT', 'FUNC', 'ALL'], default='ALL')
-    group.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bssr for'
+    group.add_argument('--rmarkdown', help='Optional. Executable Rmarkdown file that uses bstr for'
                                             'group analysis stage. If this argument is specified, BrainSuite '
                                             'BIDS-App will run this Rmarkdown instead of using the content '
                                             'found in modelspec.json.'
-                                            'Path to R Markdown file that contains bssr analysis commands.',
+                                            'Path to R Markdown file that contains bstr analysis commands.',
                         required=False)
 
     bidsval = parser.add_argument_group('Options for bids-validator')
     bidsval.add_argument('--ignoreSubjectConsistency', help='Reduces down the BIDS validator log and '
                                                            'the associated memory needs. This is often helpful for'
                                                            'large datasets.', action='store_true', required=False)
-    bidsval.add_argument('--bidsconfig', help='Configuration of the severity of errors for BIDS validator. '
-                                             'If no path is specified, a default path of .bids-validator-config.json'
-                                             '(relative to the input bids directory) file is used.', nargs='?',
+    bidsval.add_argument('--bidsconfig', help='Configuration of the severity of errors for BIDS validator. If this argument is used with no path specification, '
+                                             ' the bids-validator checks for a .bids-validator-config.json file at the top level of '
+                                             ' the input BIDS directory.  However, if you would like to define the path of your '
+                                             '.bids-validator-config.json file, then you can specify the path after this flag (i.e. --bidsconfig /path/to/file). '  
+                                             'For more information '
+                                             'on how to create this JSON file, please visit https://github.com/bids-standard/bids-validator#configuration.', nargs='?',
                         const='',
                         required=False)
 
@@ -193,23 +204,22 @@ def parser():
 
 def main():
     args = parser().parse_args()
-    if args.ignoreSubjectConsistency == True:
+    
+    # Configure bids validator args then run bids-validator
+    ignoreSubjectConsistency = ''
+    bidsconfig = ''
+    if args.ignoreSubjectConsistency:
         ignoreSubjectConsistency = ' --ignoreSubjectConsistency '
-    else:
-        ignoreSubjectConsistency = ''
     if args.bidsconfig:
-        bidsconfig = ' --config {0} '.format(args.bidsconfig)
-    else:
-        bidsconfig = ''
+        bidsconfig = ' --config {0} '.format(args.bidsconfig) 
+    if not os.path.exists(args.output_dir):
+        os.mkdir(args.output_dir)
     run("bids-validator " + args.bids_dir + ignoreSubjectConsistency + bidsconfig, cwd=args.output_dir)
 
     layout = BIDSLayout(args.bids_dir)
     subjects_to_analyze = []
 
-    if not os.path.exists(args.output_dir):
-        os.mkdir(args.output_dir)
-
-    # only for a subset of subjects
+    # Determine which subjects to run or QC
     if args.participant_label:
         subjects_to_analyze = args.participant_label
     elif args.QCsubjList:
@@ -220,33 +230,41 @@ def main():
         subject_dirs = glob(os.path.join(args.bids_dir, "sub-*"))
         subjects_to_analyze = [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
 
+    # Check to make sure there are valid subjects
     assert len(subjects_to_analyze) > 0
 
+    # Grab single thread option for svreg (cli flags overwrites preprocspec file params)
+    thread=False
     if args.singleThread:
-        thread= True
-    else:
-        thread=False
+        thread= True        
 
+    # set variables for nipype multiproc plugin resources and total num for stages
     os.environ['NCPUS'] = str(args.ncpus)
     os.environ['MAXMEM'] = str(args.maxmem)
+    os.environ["numstages"] = str(len(stageNumDict))
     stages = args.stages
 
     if ('ALL' in args.stages):
         stages = ['CSE', 'SVREG', 'BDP', 'BFP','QC']
     if args.skipBSE:
         stages.append('noBSE')
+    if 'DASHBOARD' in stages and len(stages) > 1:
+        sys.stdout.write('************ ERROR!!! ************\n'
+                         'Dashboard must be run alone separately (i.e. --stages DASHBOARD).\n'
+                         'Please start another BrainSuite BIDS App to run participant-level processing (i.e. --stages CSE BDP SVREG BFP).\n')
+        sys.exit(2)
 
     if ('DASHBOARD' in stages) and (not args.localWebserver):
         if args.QCdir is None:
             sys.stdout.write('If you would like not to launch a local webserver, please provide the directory where'
                                 'you would like to store the QC data using --QCdir. E.g. --QCdir /home/yeun/public_html')
+            sys.exit(2)
 
-    runProcessing = True
     if 'DASHBOARD' in stages:
+        bind = ''
         if args.bindLocalHostOnly:
             bind = '--bind 127.0.0.1'
-        else:
-            bind = ''
+        # create web and qc directories
         if args.QCdir:
             parentWEBDIR =args.QCdir
             WEBDIR = os.path.join(args.QCdir, 'QC')
@@ -256,11 +274,11 @@ def main():
         print('QC thumbnails will be generated in: ', WEBDIR)
         if not os.path.exists(WEBDIR):
             os.makedirs(WEBDIR)
+        # copy web essentials files over to the web directory
         cmd = 'cp -r /BrainSuite/QC/web_essentials/* {0}'.format(parentWEBDIR)
         subprocess.call(cmd, shell=True)
-        cmd = 'watch.sh {0} {1} & '.format(WEBDIR, args.output_dir)
-        subprocess.call(cmd, shell=True)
 
+    # set atlas for svreg. if bfp is selected to run, atlas cannot be bsa
     atlases = { 'BCI-DNI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
                 'BCI' : '/opt/BrainSuite{0}/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain'.format(BrainsuiteVersion),
                 'BSA' : '/opt/BrainSuite{0}/svreg/BrainSuiteAtlas1/mri'.format(BrainsuiteVersion),
@@ -270,17 +288,24 @@ def main():
     if 'BFP' in stages:
         assert args.atlas != 'BSA'
 
+    if args.session:
+        print("Running only session: ", args.session)
+
     if (args.analysis_level == "participant"):
 
         cacheset =False
+        # initialize preprocessing parameters
         preprocspecs = preProcSpec(args.bids_dir, args.output_dir)
-
+        # pre-grab subject IDs and write necessary sidecar files
         allt1ws = []
         for subject_label in subjects_to_analyze:
 
-            t1ws = [f.filename for f in layout.get(subject=subject_label,
+            if args.session:
+                t1ws = [f.filename for f in layout.get(subject=subject_label, session=args.session,
                                                    type='T1w', extensions=["nii.gz", "nii"])]
-
+            else:
+                t1ws = [f.filename for f in layout.get(subject=subject_label,
+                                                   type='T1w', extensions=["nii.gz", "nii"])]
 
             for t1w in t1ws:
                 subjectID = t1w.split('/')[-1].split('_T1w')[0]
@@ -298,17 +323,29 @@ def main():
         if os.path.exists(args.bids_dir + '/dataset_description.json'):
             dataset_description = args.bids_dir + '/dataset_description.json'
         if 'DASHBOARD' in stages:
+            # write subjectIDs json file which will be read by watch.sh to monitor these subjects
             preprocspecs.write_subjectIDsJSON(allt1ws, args, WEBDIR)
             preprocspecs.write_preproc_params(WEBDIR, stages, dataset_description)
             if not os.path.exists(WEBDIR + '/brainsuite_dashboard_config.json'):
-                shutil.copyfile('/BrainSuite/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
+                shutil.copyfile('/BrainSuite/templates/sample_brainsuite_dashboard_config.json', '{0}/brainsuite_dashboard_config.json'.format(WEBDIR))
+            # now launch monitoring
             if args.localWebserver:
-                print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}'\n".format(args.port))
+                # if web server is selected to launch, then run watch.sh in the background with pid echoed
+                cmd = 'watch.sh {0} {1} & echo $!'.format(WEBDIR, args.output_dir)
+                subprocess.call(cmd, shell=True)
+                # run python's web server
+                print("\nOpen web browser and navigate to 'http://127.0.0.1:{0}' . If you have changed the port number while "
+                     "calling the docker images, please make sure that port number you have defined matches this web address.\n".format(args.port))
                 cmd = "cd {0} && python3 -m http.server {1} {2}".format(parentWEBDIR, args.port, bind)
                 subprocess.call(cmd, shell=True)
+            else:
+                cmd = 'watch.sh {0} {1} '.format(WEBDIR, args.output_dir)
+                subprocess.call(cmd, shell=True)
+            
 
 
-        if not 'DASHBOARD' in stages:
+        elif not 'DASHBOARD' in stages:
+            # qc is automatically added into the stages for now
             if 'QC' not in stages:
                 stages.append('QC')
             for subject_label in subjects_to_analyze:
@@ -319,8 +356,10 @@ def main():
 
                 sessions = layout.get(target='session', return_type='id',
                                       subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
-
-                if len(sessions) > 0:
+                if args.session:
+                    sessions = args.session
+                # determine which files to run the runWorkflow
+                if len(sessions) > 0:                    
                     for ses in range(0, len(sessions)):
                         runs = layout.get(target='run', return_type='id', session=sessions[ses],
                                       subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
@@ -381,7 +420,12 @@ def main():
                                 dwis, funcs, subject_label, args)
 
     if args.analysis_level == "group":
-
+        from readSpecs.readModelSpec import bstrSpec
+        from workflows.runBstr import load_bstr_data, run_model, save_bstr
+        from run_rmarkdown import run_rmarkdown
+        from datetime import datetime
+        import json
+        
         analyses = []
 
         if args.analysistype == "ALL":
@@ -389,26 +433,77 @@ def main():
             analyses.append('FUNC')
         else:
             analyses.append(args.analysistype)
-
+        # read model spec file
+        if not args.modelspec:
+            sys.stdout.write('************ ERROR!!! ************ \n'
+                            'A model specification JSON file is required to run group analyses.\n'
+                             'For information on how to create this file, please visit brainsuite.org/BIDS/modgroup.html.\n')
+            sys.exit(2)
+        specs = bstrSpec(args.modelspec, args.output_dir)
+        
         if 'STRUCT' in analyses:
-            if args.rmarkdown:
-                run_rmarkdown(args.rmarkdown)
-            else:
-                specs = bssrSpec(args.modelspec, args.output_dir)
-                specs.read_modelfile(args.modelspec)
-                bss_data = load_bss_data(specs)
-                bss_model = run_model(specs, bss_data)
-                save_bss(bss_data, bss_model, specs.out_dir)
+            CT = datetime.now()
+            CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
+            structStatsDir = specs.specs['BrainSuite']['Structural']['out_dir']
+            if not os.path.exists(structStatsDir):
+                os.mkdir(structStatsDir)
+            specs_out = os.path.join(structStatsDir, 'modelspec_struct_analysis_{0}.json'.format(CTstring))
+            try:
+                if args.rmarkdown:
+                    run_rmarkdown(args.rmarkdown)
+                else:
+                    # read structural analysis model specs
+                    specs.read_struct_modelfile()
+                    # load in appropriate output data
+                    bstr_data = load_bstr_data(specs)
+                    # run statistical model
+                    bstr_model = run_model(specs, bstr_data)
+                    # save out results
+                    save_bstr(bstr_data, bstr_model, specs.out_dir)
+                specs.specs['BrainSuite']['Structural']['run_success']='True'
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Structural'], f)
+            except Exception as e:
+                specs.specs['BrainSuite']['Structural']['run_success']='False'
+                exceptionType, exception, tb = sys.exc_info()
+                tb_msg = ' '.join(traceback.format_tb(tb))
+                specs.specs['BrainSuite']['Structural']['ErrorInfo']= {'ErrorType': str(exceptionType),
+                                                                 'ErrorMsg': str(exception),
+                                                                 'TraceBack': tb_msg}
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Structural'], f)
+                raise e
+                
         if 'FUNC' in analyses:
-            specs = bssrSpec(args.modelspec, args.output_dir)
-            specs.read_bfp_modelfile(args.modelspec)
-            ## convert tsv to csv
-            basename = specs.tsv_fname.split(".")[0]
-            cmd = "sed 's/\t/,/g' {0}.tsv > {0}.csv".format(basename)
-            # print(cmd)
-            subprocess.call(cmd, shell=True)
-            exec(open("{BFPpath}/src/stats/bfp_run_stat.py".format(
-                BFPpath=os.environ['BFP'])).read())
+            CT = datetime.now()
+            CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
+            funcStatsDir = specs.specs['BrainSuite']['Functional']['out_dir']
+            if not os.path.exists(funcStatsDir):
+                os.mkdir(funcStatsDir)
+            specs_out = os.path.join(funcStatsDir, 'modelspec_func_analysis_{0}.json'.format(CTstring))
+            try:
+                # read functional analysis model specs
+                specs.read_func_modelfile()
+                ## convert tsv to csv for fc analyses
+                basename = specs.tsv_fname.split(".")[0]
+                cmd = "sed 's/\t/,/g' {0}.tsv > {0}.csv".format(basename)
+                subprocess.call(cmd, shell=True)
+                # run fc statistical models
+                exec(open("{BFPpath}/src/stats/bfp_run_stat.py".format(
+                    BFPpath=os.environ['BFP'])).read())
+                specs.specs['BrainSuite']['Functional']['run_success']='True'
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Functional'], f)
+            except Exception as e:
+                specs.specs['BrainSuite']['Functional']['run_success']='False'
+                exceptionType, exception, tb = sys.exc_info()
+                tb_msg = ' '.join(traceback.format_tb(tb))
+                specs.specs['BrainSuite']['Functional']['ErrorInfo']= {'ErrorType': str(exceptionType),
+                                                                 'ErrorMsg': str(exception),
+                                                                 'TraceBack': tb_msg}
+                with open(specs_out, 'w') as f:
+                    json.dump(specs.specs['BrainSuite']['Functional'], f)
+                raise e
 
 if __name__ == '__main__':
     main()

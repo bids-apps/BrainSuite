@@ -40,20 +40,71 @@ stageNumDict = OrderedDict({
     'SMOOTHSURFRIGHT': 15,
     'SMOOTHVOLJAC': 16,
 
-    'BDP': 17,
-    'APPLYMAPFA' : 18,
-    'APPLYMAPMD' : 19,
-    'APPLYMAPAXIAL' : 20,
-    'APPLYMAPRADIAL': 21,
-    'APPLYMAPMADC': 22,
-    'APPLYMAPFRTGFA': 23,
+    'BDPMASK': 17,
+    'EDDY': 18,
+    'BDP': 19,
+    'APPLYMAPFA' : 20,
+    'APPLYMAPMD' : 21,
+    'APPLYMAPAXIAL' : 22,
+    'APPLYMAPRADIAL': 23,
+    'APPLYMAPMADC': 24,
+    'APPLYMAPFRTGFA': 25,
 
-    'SMOOTHVOLFA' : 24,
-    'SMOOTHVOLMD' : 25,
-    'SMOOTHVOLAXIAL' : 26,
-    'SMOOTHVOLRADIAL': 27,
-    'SMOOTHVOLMADC': 28,
-    'SMOOTHVOLFRTGFA': 29,
+    'SMOOTHVOLFA' : 26,
+    'SMOOTHVOLMD' : 27,
+    'SMOOTHVOLAXIAL' : 28,
+    'SMOOTHVOLRADIAL': 29,
+    'SMOOTHVOLMADC': 30,
+    'SMOOTHVOLFRTGFA': 31,
 
-    'BFP': 30
+    'BFP': 32
 })
+
+stageGroups = {
+    'CSE': [
+        'BSE', 
+        'BFC', 
+        'PVC', 
+        'CEREBRO', 
+        'CORTEX', 
+        'SCRUBMASK', 
+        'TCA', 
+        'DEWISP', 
+        'DFS', 
+        'PIALMESH', 
+        'HEMISPLIT', 
+        'THICKPVC'
+            ],
+    'SVREG': [
+        'SVREG', 
+        'SMOOTHSURFLEFT', 
+        'SMOOTHSURFRIGHT', 
+        'SMOOTHVOLJAC'
+    ],
+    'BDP': [
+        'BDPMASK', 
+        'EDDY', 
+        'BDP'
+    ],
+    'FSLEDDY': [
+        'BDPMASK', 
+        'EDDY'
+    ],
+    'SVREG+BDP': [
+        'APPLYMAPFA', 
+        'APPLYMAPMD', 
+        'APPLYMAPAXIAL' , 
+        'APPLYMAPRADIAL', 
+        'APPLYMAPMADC', 
+        'APPLYMAPFRTGFA', 
+        'SMOOTHVOLFA', 
+        'SMOOTHVOLMD', 
+        'SMOOTHVOLAXIAL', 
+        'SMOOTHVOLRADIAL', 
+        'SMOOTHVOLMADC', 
+        'SMOOTHVOLFRTGFA'
+    ],
+    'BFP': [
+        'BFP'
+    ]
+}

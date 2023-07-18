@@ -1,0 +1,80 @@
+{
+	"BrainSuite": {
+		"Global Settings": {
+			"cacheFolder": ""
+		},
+		"Anatomical": {
+			"autoParameters": 1,
+			"prescale": 0,
+			"diffusionIterations": 3,
+			"diffusionConstant": 25,
+			"edgeDetectionConstant": 0.64,
+			"skipBSE": 0,
+			"iterativeMode": 0,
+			"spatialPrior": 0.1,
+			"costFunction": 2,
+			"useCentroids": 0,
+			"linearConvergence": 0.1,
+			"warpConvergence": 100,
+			"warpLevel": 5,
+			"tissueFractionThreshold": 50.0,
+			"atlas": "BCI-DNI",
+			"singleThread": 0
+		},
+		"Diffusion": {
+			"fsleddy": 0,
+			"indexFile": "",
+			"acqpFile": "",
+			"flm": "quadratic",
+			"slm": "none",
+			"fep": 0,
+			"interp": "spline",
+			"nvoxhp": 1000,
+			"fudge_factor": 10,
+			"dont_sep_offs_move": 0,
+			"dont_peas": 0,
+			"niter": 5,
+			"eddy_final_resamp": "jac",
+			"repol": 0,
+			"eddy_num_threads": 1,
+			"is_shelled": 0,
+			"useDerivatives": 0,
+			"correctedOutputDir": "",
+			"correctedOutputSuffix": "",
+			"skipDistortionCorr": 0,
+			"phaseEncodingDirection": "y",
+			"echoSpacing": "",
+			"fieldmapCorrection": "",
+			"estimateODF_3DShore": 0,
+			"diffusion_time_ms": "",
+			"estimateODF_GQI": 0,
+			"sigma_GQI": "",
+			"estimateODF_ERFO": 0,
+			"ERFO_SNR": ""
+		},
+		"PostProc": {
+			"smoothSurf": 2.0,
+			"smoothVol": 3.0
+		},
+		"Functional": {
+			"task-name": ["rest"],
+			"TR": 2,
+			"EnabletNLMPdfFiltering": 1,
+			"fpr": 0.001,
+			"FSLOUTPUTTYPE": "NIFTI_GZ",
+			"FWHM": 6,
+			"HIGHPASS":0.005,
+			"LOWPASS": 0.1,
+			"MultiThreading": 1,
+			"memory": 16,
+			"FSLRigid": 0,
+			"BPoption": 1,
+			"RunDetrend": 1,
+			"RunNSR": 1,
+			"SimRef": 1,
+			"uscrigid_similarity": "inversion",
+			"scbPath": "",
+			"T1mask": 1
+		}
+	}
+}
