@@ -55,7 +55,7 @@ The BrainSuite Dashboard is a browser-based system that provides interactive vis
 
 
 ### Command line arguments
-```bash
+```text
 usage: run.py [-h]
               [--stages {CSE,SVREG,BDP,BFP,DASHBOARD,ALL} [{CSE,SVREG,BDP,BFP,DASHBOARD,ALL} ...]]
               [--preprocspec PREPROCSPEC]
