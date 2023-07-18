@@ -11,7 +11,7 @@ The BrainSuite BIDS-App implements three major BrainSuite pipelines for subject-
 ### Participant-level processing
 
 <p align="center">
- <img src="./docs/pngs/3_brainsuite_bids_subject_level_comprehensive.v19.png" width="400"/>
+ <img src="./docs/pngs/3_brainsuite_bids_subject_level_comprehensive.low.whitebg.v19.png" width="400"/>
 </p>
 
 BrainSuite BIDS App's participant-level processing comprises three core pipelines:
@@ -23,7 +23,7 @@ BrainSuite BIDS App's participant-level processing comprises three core pipeline
 ### Group-level analysis
 
 <p align="center">
- <img src="./docs/pngs/group_analysis_VG.png" width="900"/>
+ <img src="./docs/pngs/group_analysis_VG.low.png" width="900"/>
 </p>
 
 * BrainSuite BIDS App's group-level analysis of structural data uses the BrainSuite Statistics Toolbox in R ([bstr](https://brainsuite.org/bssr/)), which supports:
