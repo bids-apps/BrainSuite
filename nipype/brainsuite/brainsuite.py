@@ -615,7 +615,7 @@ class Tca(BrainSuiteCommandLine):
 class DewispInputSpec(CommandLineInputSpec):
     inputMaskFile = File(mandatory=True, desc='input file', argstr='-i %s')
     outputMaskFile = File(
-        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s', 
+        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s',
         genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity', argstr='-v %d')
     sizeThreshold = traits.Int(desc='size threshold', argstr='-t %d')
@@ -756,7 +756,7 @@ class Dfs(BrainSuiteCommandLine):
 class PialmeshInputSpec(CommandLineInputSpec):
     inputSurfaceFile = File(mandatory=True, desc='input file', argstr='-i %s')
     outputSurfaceFile = File(
-        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s', 
+        desc='output file. If unspecified, output file name will be auto generated.', argstr='-o %s',
         genfile=True, hash_files=True)
     verbosity = traits.Int(desc='verbosity', argstr='-v %d')
     inputTissueFractionFile = File(
@@ -1123,19 +1123,19 @@ class SVReg(BrainSuiteCommandLine):
     input_spec = SVRegInputSpec
     output_spec = SVRegOutputSpec
     _cmd = 'svreg.sh'
-    
+
     def _gen_filename(self, name):
         fileToSuffixMap = {
             'outputLabelFile': '.svreg.label.nii.gz',
             'JacDetFile': '.svreg.inv.jacobian.nii.gz',
             'InvMapFile' : '.svreg.inv.map.nii.gz'
         }
-        
+
         if name in fileToSuffixMap:
             return self.inputs.subjectFilePrefix + fileToSuffixMap[name]
 
         return None
-    
+
     def _list_outputs(self):
         return l_outputs(self)
 
@@ -1666,7 +1666,7 @@ class BDPOutputSpec(TraitedSpec):
     corrRadial = File(desc='path/name of distortion corrected Radial map file', hash_files=True)
     corrMD = File(desc='path/name of distortion corrected MD map file', hash_files=True)
     corrFRTGFA = File(desc='path/name of distortion corrected FRT_GFA map file', hash_files=True)
-    
+
     FA = File(desc='path/name of non-distortion corrected FA map file', hash_files=True)
     ColorFA = File(desc='path/name of non-distortion corrected color FA map file', hash_files=True)
     MADC = File(desc='path/name of non-distortion corrected mADC map file', hash_files=True)
@@ -1674,7 +1674,7 @@ class BDPOutputSpec(TraitedSpec):
     Radial = File(desc='path/name of non-distortion corrected Radial map file', hash_files=True)
     MD = File(desc='path/name of non-distortion corrected MD map file', hash_files=True)
     FRTGFA = File(desc='path/name of non-distortion corrected FRT_GFA map file', hash_files=True)
-    
+
     DcoordMask = File(desc='path/name of T1 brain mask file transformed into diffusion space', hash_files=True)
     PreCorrDWI = File(desc='path/name of non-distortion corrected DWI file', hash_files=True)
     PostCorrDWI = File(desc='path/name of distortion corrected DWI file', hash_files=True)
@@ -1713,7 +1713,7 @@ class BDP(BrainSuiteCommandLine):
     _cmd = 'bdp.sh'
 
     def _gen_filename(self, name):
-        
+
         fileToSuffixMap = {
             'corrFA': '.dwi.RAS.correct.FA.T1_coord.nii.gz',
             'corrColorFA': '.dwi.RAS.correct.FA.color.T1_coord.nii.gz',
@@ -1735,7 +1735,7 @@ class BDP(BrainSuiteCommandLine):
             'tensor_coord': '.tensor.T1_coord.bst',
             'DWIMask': '.RAS.mask.nii.gz'
         }
-        
+
         if name == 'DWIMask':
             return getFileName(self.inputs.inputDiffusionData, fileToSuffixMap[name])
         elif name in fileToSuffixMap:
@@ -1743,7 +1743,7 @@ class BDP(BrainSuiteCommandLine):
                 return getFileName(self.inputs.bfcFile, fileToSuffixMap[name])
             except TypeError:
                 return getFileName(self.inputs.inputDiffusionData, fileToSuffixMap[name])
-        
+
         # if name == 'tensor_coord':
         #     return getFileName(self.inputs.inputDiffusionData, '.tensor.T1_coord.bst')
         if name == 'dummy':
@@ -1901,7 +1901,7 @@ class SVRegSmoothSurfInputSpec(CommandLineInputSpec):
     inputSurface = File(mandatory=True, argstr='%s', position=0, desc='input surface file')
     funcFile = File(mandatory=True, argstr='%s', position=1,
                     desc='surface file with function to be smoothed in .attributes field')
-    outSurface = File(mandatory=True, argstr='%s', position=2, desc='output surface file', genfile=True, 
+    outSurface = File(mandatory=True, argstr='%s', position=2, desc='output surface file', genfile=True,
                       hash_files=True)
     param = traits.Float(mandatory=False, argstr='%f', position=3, desc='smoothing parameter (std dev in mm)')
     dataSinkDelay = traits.List(
@@ -2013,7 +2013,7 @@ class SVRegSmoothVolInputSpec(CommandLineInputSpec):
                         desc='smoothing parameter (std dev in mm) in y direction')
     stdz = traits.Float(mandatory=True, argstr='%f', position=3,
                         desc='smoothing parameter (std dev in mm) in z direction')
-    outFile = File(mandatory=True, argstr='%s', position=4, desc='output smoothed vol filei', 
+    outFile = File(mandatory=True, argstr='%s', position=4, desc='output smoothed vol filei',
                    genfile=True, hash_files=True)
     dataSinkDelay = traits.List(
         str,
@@ -2264,7 +2264,7 @@ class RenderDfs(BrainSuiteCommandLine):
         if (name=='bilteral') or (name == 'Surfaces') or (name == 'SolidSurfaces') or (name == 'TransSurfaces') or (name == 'WireSurfaces'):
             return spec.argstr % os.path.expanduser(value)
         elif name == 'dataSinkDelay':
-            return 
+            return
 
         return super(RenderDfs, self)._format_arg(name, spec, value)
 
@@ -2289,7 +2289,7 @@ class QCState(BrainSuiteCommandLine):
         if name == 'OutStateFile':
             return self.inputs.prefix + os.sep + 'stage-{0}.state'.format(self.inputs.stagenum)
         # return getFileName(self.inputs.filename, '.state')
-    
+
     def _list_outputs(self):
         return l_outputs(self)
 
@@ -2379,20 +2379,20 @@ class BFP(BrainSuiteCommandLine):
     _cmd = 'bfp.sh'
 
     def _gen_filename(self, name):
-        
+
         fileToSuffixMap = {
             'SSIMpng': '.mc.ssim.png',
             'MCOpng': '.mco.png',
             'Func2T1': '.example.func2t1.nii.gz',
             'GOrdmat': '.32k.GOrd.mat',
-            'GOrdFiltmat': '.32k.GOrd.filt.mat'            
+            'GOrdFiltmat': '.32k.GOrd.filt.mat'
         }
-        
+
         if name in fileToSuffixMap:
-            return os.path.join(self.inputs.studydir, self.inputs.subjID, 'func', 
+            return os.path.join(self.inputs.studydir, self.inputs.subjID, 'func',
                                 self.inputs.subjID+'_'+self.inputs.session+'_bold'+
                                 fileToSuffixMap[name])
-        
+
         if name == 'dummy':
             return ''
         return None

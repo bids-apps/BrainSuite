@@ -183,7 +183,7 @@ def parser():
     bidsval.add_argument('--bidsconfig', help='Configuration of the severity of errors for BIDS validator. If this argument is used with no path specification, '
                                              ' the bids-validator checks for a .bids-validator-config.json file at the top level of '
                                              ' the input BIDS directory.  However, if you would like to define the path of your '
-                                             '.bids-validator-config.json file, then you can specify the path after this flag (i.e. --bidsconfig /path/to/file). '  
+                                             '.bids-validator-config.json file, then you can specify the path after this flag (i.e. --bidsconfig /path/to/file). '
                                              'For more information '
                                              'on how to create this JSON file, please visit https://github.com/bids-standard/bids-validator#configuration.', nargs='?',
                         const='',
@@ -204,14 +204,14 @@ def parser():
 
 def main():
     args = parser().parse_args()
-    
+
     # Configure bids validator args then run bids-validator
     ignoreSubjectConsistency = ''
     bidsconfig = ''
     if args.ignoreSubjectConsistency:
         ignoreSubjectConsistency = ' --ignoreSubjectConsistency '
     if args.bidsconfig:
-        bidsconfig = ' --config {0} '.format(args.bidsconfig) 
+        bidsconfig = ' --config {0} '.format(args.bidsconfig)
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
     run("bids-validator " + args.bids_dir + ignoreSubjectConsistency + bidsconfig, cwd=args.output_dir)
@@ -236,7 +236,7 @@ def main():
     # Grab single thread option for svreg (cli flags overwrites preprocspec file params)
     thread=False
     if args.singleThread:
-        thread= True        
+        thread= True
 
     # set variables for nipype multiproc plugin resources and total num for stages
     os.environ['NCPUS'] = str(args.ncpus)
@@ -341,7 +341,7 @@ def main():
             else:
                 cmd = 'watch.sh {0} {1} '.format(WEBDIR, args.output_dir)
                 subprocess.call(cmd, shell=True)
-            
+
 
 
         elif not 'DASHBOARD' in stages:
@@ -359,7 +359,7 @@ def main():
                 if args.session:
                     sessions = args.session
                 # determine which files to run the runWorkflow
-                if len(sessions) > 0:                    
+                if len(sessions) > 0:
                     for ses in range(0, len(sessions)):
                         runs = layout.get(target='run', return_type='id', session=sessions[ses],
                                       subject=subject_label, type='T1w', extensions=["nii.gz","nii"])
@@ -425,7 +425,7 @@ def main():
         from run_rmarkdown import run_rmarkdown
         from datetime import datetime
         import json
-        
+
         analyses = []
 
         if args.analysistype == "ALL":
@@ -440,7 +440,7 @@ def main():
                              'For information on how to create this file, please visit brainsuite.org/BIDS/modgroup.html.\n')
             sys.exit(2)
         specs = bstrSpec(args.modelspec, args.output_dir)
-        
+
         if 'STRUCT' in analyses:
             CT = datetime.now()
             CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
@@ -473,7 +473,7 @@ def main():
                 with open(specs_out, 'w') as f:
                     json.dump(specs.specs['BrainSuite']['Structural'], f)
                 raise e
-                
+
         if 'FUNC' in analyses:
             CT = datetime.now()
             CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)

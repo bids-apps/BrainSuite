@@ -29,7 +29,7 @@ class bstrSpec(object):
 
     def __init__(self, modelfile, outputdir):
         self.outputdir = outputdir
-        
+
         if not os.path.isfile(modelfile):
             sys.stdout.write('##############################################\n'
                             '************ ERROR!!! ************ \n'
@@ -61,7 +61,7 @@ class bstrSpec(object):
         self.group_var = self.specs['BrainSuite']['Structural']['group_var']
         self.paired = bool(self.specs['BrainSuite']['Structural']['paired'])
         self.smooth = self.specs['BrainSuite']['Structural']['smooth']
-        self.roi = self.specs['BrainSuite']['Structural']['roiid'] 
+        self.roi = self.specs['BrainSuite']['Structural']['roiid']
         self.hemi = self.specs['BrainSuite']['Structural']['hemi']
         self.maskfile = self.specs['BrainSuite']['Structural']['maskfile']
         self.atlas = self.specs['BrainSuite']['Structural']['atlas']
@@ -128,6 +128,3 @@ class bstrSpec(object):
         os.environ['CONFIG_FILE'] = '{0}/bfp_config_stats.ini'.format(self.outputdir)
         with open('{0}/bfp_config_stats.ini'.format(self.outputdir), 'w') as configfile:
             config.write(configfile)
-
-
-
