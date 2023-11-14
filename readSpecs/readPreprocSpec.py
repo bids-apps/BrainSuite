@@ -139,7 +139,7 @@ class preProcSpec(object):
         self.smoothsurf = 2.0
 
     def read_preprocfile(self, preprocfile, subjectID):
-        
+
         try:
             if not os.path.isfile(preprocfile):
                 sys.stdout.write('##############################################\n'
@@ -183,8 +183,8 @@ class preProcSpec(object):
             )
             print(e, '\n')
             sys.exit(2)
-        
-        # write a copy of the preproc.json file 
+
+        # write a copy of the preproc.json file
         CT = datetime.now()
         CTstring = 'Y{0}M{1}D{2}H{3}M{4}S{5}ms{6}'.format(CT.year,CT.month,CT.day,CT.hour, CT.minute,CT.second,CT.microsecond)
         preprocArchived = os.path.join(self.outputdir, subjectID, 'preprocspecs_{0}.json'.format(CTstring))
@@ -258,7 +258,7 @@ class preProcSpec(object):
             else specs['BrainSuite']['Diffusion']['sigma_GQI']
         self.ERFO_SNR = undefined if (specs['BrainSuite']['Diffusion']['ERFO_SNR'] == '') \
             else specs['BrainSuite']['Diffusion']['ERFO_SNR']
-        
+
         self.flm = specs['BrainSuite']['Diffusion']['flm']
         self.slm = specs['BrainSuite']['Diffusion']['slm']
         self.fep = bool(specs['BrainSuite']['Diffusion']['fep'])
@@ -274,7 +274,7 @@ class preProcSpec(object):
         self.is_shelled = bool(specs['BrainSuite']['Diffusion']['is_shelled'])
         # self.cnr_maps = bool(specs['BrainSuite']['Diffusion']['cnr_maps'])
         # self.residuals = bool(specs['BrainSuite']['Diffusion']['residuals'])
-        
+
         self.useDerivatives = bool(specs['BrainSuite']['Diffusion']['useDerivatives'])
         self.correctedOutputDir = specs['BrainSuite']['Diffusion']['correctedOutputDir']
         self.correctedOutputSuffix = specs['BrainSuite']['Diffusion']['correctedOutputSuffix']

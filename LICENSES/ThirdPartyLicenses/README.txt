@@ -64,8 +64,8 @@ Libtiff is a library released under the Hylafax license. Details can be found in
 
 Libxml2 is the XML C parser and toolkit developed for the Gnome project, and is free software available under the MIT License. Details and exceptions are described in "libxml2_license.txt".
 
-Libssl is developed by The OpenSSL Project. It is dual-licensed under OpenSSL and SSLeay licenses. Details are described in "openssl-ssleay_license.txt" file. 
+Libssl is developed by The OpenSSL Project. It is dual-licensed under OpenSSL and SSLeay licenses. Details are described in "openssl-ssleay_license.txt" file.
 
 Libzmq is Free Software and is distributed under the terms of Mozilla Public License Version 2.0. Details can be found in the "libzmq_license.txt" file.
 
-Xvfb is developed by David P. Wiggins, The Open Group, Inc., and is released under the MIT license. Its license details are found in "xvfb_license.txt" file. 
+Xvfb is developed by David P. Wiggins, The Open Group, Inc., and is released under the MIT license. Its license details are found in "xvfb_license.txt" file.

@@ -104,21 +104,21 @@ RUN apt-get update && add-apt-repository "deb https://cloud.r-project.org/bin/li
     apt-get update && \
     apt-get install dirmngr \
         libzmq3-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev \
-        libpng-dev libtiff5-dev libjpeg-dev build-essential \ 
+        libpng-dev libtiff5-dev libjpeg-dev build-essential \
         libcurl4-openssl-dev libxml2-dev libssl-dev libfontconfig1-dev cmake  \
         r-base -y --assume-yes --allow-unauthenticated
 
 RUN Rscript -e "install.packages(c('iterators', 'magrittr', 'gtable', 'htmlwidgets', 'jsonlite', 'pander', 'rmarkdown', 'DT', 'ini', 'RColorBrewer', 'RNifti', 'ggplot2', 'scales', 'doParallel', 'foreach', 'bit', 'Matrix', 'R6', 'shinyjs', 'lme4'), repos='http://cran.us.r-project.org')"
-RUN pip install rpy2==3.4.5 
+RUN pip install rpy2==3.4.5
 
 # Set up fsl eddy and eddyqc
 RUN conda config --set default_threads 6
 RUN conda install -y -c https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public/ fsl-eddy
 RUN conda install -y -c https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public/ fsl-eddy_qc=v1.2.3
 ENV FSLDIR6=/usr/local/miniconda/
-ENV FSLOUTPUTTYPE=NIFTI_GZ 
-RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/fslpython 
-RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/eddy 
+ENV FSLOUTPUTTYPE=NIFTI_GZ
+RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/fslpython
+RUN sed -i 's/FSLDIR/FSLDIR6/' ${FSLDIR6}/bin/eddy
 
 # Configure lib gcc and lib mesa for renderdfs
 RUN apt-get install -y xvfb libosmesa6-dev

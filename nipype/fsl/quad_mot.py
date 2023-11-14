@@ -19,10 +19,10 @@ seaborn.set()
 
 def main(pdf, data, eddy):
     """
-    Generate page of the single subject report pdf that contains plots of the estimated 
+    Generate page of the single subject report pdf that contains plots of the estimated
     motion parameters.
     Absolute and relative displacement plots are also shown.
-    
+
     Arguments:
         - pdf: qc pdf file
         - data: data dictionary containg information about the dataset
@@ -55,7 +55,7 @@ def main(pdf, data, eddy):
     ax2.set_title("Eddy estimated rotations (deg)")
     ax2.legend(loc='best', frameon=True, framealpha=0.5)
 
-    # Plot estimated absolute and relative displacement 
+    # Plot estimated absolute and relative displacement
     ax3 = plt.subplot2grid((3,1), (2,0))
     ax3.plot(eddy['motion'][:,0], 'r', linewidth=2, label="Absolute")
     ax3.plot(eddy['motion'][:,1], 'b', linewidth=2, label="Relative")
@@ -70,12 +70,12 @@ def main(pdf, data, eddy):
     plt.tight_layout(h_pad=1, pad=4)
     plt.savefig(pdf, format='pdf')
     plt.close()
-    
+
     #================================================
     # Generate individual plots separately
-    
+
     # Prepare figure
-    plt.figure(figsize=(8.27,4)) 
+    plt.figure(figsize=(8.27,4))
 
     # Plot estimated translations along the 3 axes
     ax1 = plt.subplot(111)
@@ -87,12 +87,12 @@ def main(pdf, data, eddy):
     ax1.set_ylabel("Translation [mm]")
     ax1.set_title("Eddy estimated translations (mm)")
     ax1.legend(loc='best', frameon=True, framealpha=0.5)
-    
+
     plt.tight_layout()
     plt.savefig(data['qc_path']+'translations.png', format='png')
     plt.close()
-    
-    plt.figure(figsize=(8.27,4))  
+
+    plt.figure(figsize=(8.27,4))
 
     # Plot estimated rotations around the 3 axes
     ax2 = plt.subplot(111)
@@ -104,14 +104,14 @@ def main(pdf, data, eddy):
     ax2.set_ylabel("Rotation [deg]")
     ax2.set_title("Eddy estimated rotations (deg)")
     ax2.legend(loc='best', frameon=True, framealpha=0.5)
-    
+
     plt.tight_layout()
     plt.savefig(data['qc_path']+'rotations.png', format='png')
     plt.close()
 
     plt.figure(figsize=(8.27,4))
 
-    # Plot estimated absolute and relative displacement 
+    # Plot estimated absolute and relative displacement
     ax3 = plt.subplot(111)
     ax3.plot(eddy['motion'][:,0], 'r', linewidth=2, label="Absolute")
     ax3.plot(eddy['motion'][:,1], 'b', linewidth=2, label="Relative")

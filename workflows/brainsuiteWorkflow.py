@@ -130,7 +130,7 @@ class subjLevelProcessing(object):
         self.smoothsurf = specs.smoothsurf
 
         self.cachedir = specs.cache
-        
+
         # bfp
         self.runNSR = specs.runnsr
         self.EnabletNLMPdfFiltering = specs.tnlmpdf
@@ -203,7 +203,7 @@ class subjLevelProcessing(object):
                 for step in stageGroups['FSLEDDY']:
                     cmd = [QCSTATE, statesDir, str(stageNumDict[step]), unqueued]
                     subprocess.call(' '.join(cmd), shell=True)
-                
+
             stagesRun = {}
 
             qcstateInitObj = pe.Node(interface=bs.QCState(), name='qcstateInitObj')
@@ -267,7 +267,7 @@ class subjLevelProcessing(object):
                 brainsuite_workflow.connect(bseObj, 'outputMRIVolume', bfcObj, 'inputMRIFile')
             elif 'noBSE' in STAGES:
                 bfcObj.inputs.inputMRIFile = os.path.join(anat, SUBJECT_ID + '_T1w.bse.nii.gz')
-                
+
             brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', pvcObj, 'inputMRIFile')
             brainsuite_workflow.connect(pvcObj, 'outputTissueFractionFile', cortexObj, 'inputTissueFractionFile')
 
@@ -414,7 +414,7 @@ class subjLevelProcessing(object):
                 dfsrenderThickInfObj.inputs.Inf = True
                 dfsrenderThickInfObj.inputs.Zoom = 0.6
                 dfsrenderThickInfObj.inputs.CenterVol = bfc
-                
+
                 qcpvcLaunch = pe.Node(interface=bs.QCState(), name='qcpvcLaunch')
                 qcpvcLaunch.inputs.prefix = statesDir
                 qcpvcLaunch.inputs.stagenum = stageNumDict['PVC']
@@ -600,9 +600,9 @@ class subjLevelProcessing(object):
                     'THICKPVC': stageNumDict['THICKPVC']
                 })
 
-        if 'BDP' in STAGES:              
+        if 'BDP' in STAGES:
             bdpInputBase = dwi + SUBJECT_ID + '_dwi'
-            
+
             # If only bdp is set to run, check the bfc file exists
             if not 'CSE' in STAGES:
                 if not os.path.exists(anat + os.sep + SUBJECT_ID + '_T1w' + '.bfc.nii.gz'):
@@ -651,7 +651,7 @@ class subjLevelProcessing(object):
             copyBSEMasktoDWI = pe.Node(interface=bs.copyFile(), name='copyBSEMasktoDWI')
             copyBSEMasktoDWI.inputs.inFile = anat + os.sep + SUBJECT_ID + '_T1w.mask.nii.gz'
             copyBSEMasktoDWI.inputs.outFile = bdpInputBase + '.mask.nii.gz'
-            
+
             if 'CSE' in STAGES:
                 brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', copyBFCtoDWI, 'inFile')
                 brainsuite_workflow.connect(bseObj, 'outputMaskFile', copyBSEMasktoDWI, 'inFile')
@@ -725,12 +725,12 @@ class subjLevelProcessing(object):
                         brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', qcBDPMaskLaunch, 'Run')
                     else:
                         brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcBDPMaskLaunch, 'Run')
-                    
+
                     qcBDPMaskComplete = pe.Node(interface=bs.QCState(), name='qcBDPMaskComplete')
                     qcBDPMaskComplete.inputs.prefix = statesDir
                     qcBDPMaskComplete.inputs.stagenum = stageNumDict['BDPMASK']
                     qcBDPMaskComplete.inputs.state = completed
-                    brainsuite_workflow.connect(bdpMaskObj, 'DWIMask', qcBDPMaskComplete, 'Run')                    
+                    brainsuite_workflow.connect(bdpMaskObj, 'DWIMask', qcBDPMaskComplete, 'Run')
 
                     qceddyLaunch = pe.Node(interface=bs.QCState(), name='qceddyLaunch')
                     qceddyLaunch.inputs.prefix = statesDir
@@ -753,7 +753,7 @@ class subjLevelProcessing(object):
                     volbendPostEddyObj = pe.Node(interface=bs.Volslice(), name='volbendPostEddyObj')
                     volbendPostEddyObj.inputs.outFile = '{0}/PostEddy.png'.format(WEBPATH)
                     volbendPostEddyObj.inputs.view = 3 # sagittal
-                    
+
                     eddyqc = pe.Node(interface=EddyQuad(), name='eddyqc')
                     eddyqc.inputs.idx_file = self.indexFile
                     eddyqc.inputs.param_file = self.acqpFile
@@ -771,14 +771,14 @@ class subjLevelProcessing(object):
                     # brainsuite_workflow.connect(eddy, 'out_corrected', volbendPostEddyObj, 'inFile')
                     # brainsuite_workflow.connect(eddy, 'in_file', volbendPreEddyObj, 'inFile')
                     brainsuite_workflow.connect(eddy, 'out_corrected', qcbdpLaunch, 'Run')
-                    
-                    
+
+
                 else:
                     if not 'CSE' in STAGES:
                         brainsuite_workflow.connect(copyBFCtoDWI, 'OutFile', qcbdpLaunch, 'Run')
                     else:
                         brainsuite_workflow.connect(bfcObj, 'outputMRIVolume', qcbdpLaunch, 'Run')
-                    
+
 
                 distcorr = "correct."
                 if self.skipDistortionCorr:
@@ -847,12 +847,12 @@ class subjLevelProcessing(object):
 
                     brainsuite_workflow.connect(bdpObj, 'PostCorrDWI', volbendPostCorrDWIObj, 'inFile')
                     brainsuite_workflow.connect(bdpObj, 'PostCorrDWI', volbendPostCorrDWIsagObj, 'inFile')
-                
+
                 if self.fsleddy:
                     brainsuite_workflow.connect(eddy, 'out_corrected', volbendPreCorrDWIObj, 'inFile')
                     brainsuite_workflow.connect(bdpObj, 'DcoordMask', volbendPreCorrDWIObj, 'maskFile')
                     brainsuite_workflow.connect(eddy, 'out_corrected', volbendPreCorrDWIsagObj, 'inFile')
-                else:    
+                else:
                     brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIObj, 'inFile')
                     brainsuite_workflow.connect(bdpObj, 'DcoordMask', volbendPreCorrDWIObj, 'maskFile')
                     brainsuite_workflow.connect(bdpObj, 'PreCorrDWI', volbendPreCorrDWIsagObj, 'inFile')
@@ -872,14 +872,14 @@ class subjLevelProcessing(object):
 
         if 'SVREG' in STAGES:
             svregInputBase = anat + os.sep + SUBJECT_ID + '_T1w'
-            
+
             if not 'CSE' in STAGES:
                 if not os.path.exists(svregInputBase + '.bfc.nii.gz'):
                     sys.stdout.write('**********************************************************************************\n'
                                      '*************************** Please run CSE before SVREG.**************************\n'
                                      '**********************************************************************************\n')
                     sys.exit(1)
-            
+
             svregObj = pe.Node(interface=bs.SVReg(), name='SVREG')
             svregObj.inputs.subjectFilePrefix = svregInputBase
             svregObj.inputs.atlasFilePrefix = self.atlas
@@ -905,7 +905,7 @@ class subjLevelProcessing(object):
             generateXls = pe.Node(interface=bs.GenerateXls(), name='GenXls')
             generateXls.inputs.subjectFilePrefix = svregInputBase
             brainsuite_workflow.connect(ds3, 'out_file', generateXls, 'dataSinkDelay')
-            
+
             #### smooth surface files
             smoothSurfInputBase = anat + os.sep + 'atlas.pvc-thickness_0-6mm'
 
@@ -1074,7 +1074,7 @@ class subjLevelProcessing(object):
             applyMapInputBaseSVReg = anat + os.sep + SUBJECT_ID + '_T1w'
             applyMapMapFile = applyMapInputBaseSVReg + '.svreg.inv.map.nii.gz'
             applyMapTargetFile = atlasFilePrefix + '.bfc.nii.gz'
-            
+
             distcorr = "correct."
             distcorrOutput = "corr"
             if self.skipDistortionCorr:
@@ -1107,14 +1107,14 @@ class subjLevelProcessing(object):
 
             ds5 = pe.Node(io.DataSink(), name='DATASINK5')
             ds5.inputs.base_directory = anat
-            
+
             brainsuite_workflow.connect(svregObj, 'InvMapFile', applyMapFAObj, 'mapFile')
             brainsuite_workflow.connect(svregObj, 'InvMapFile', applyMapMDObj, 'mapFile')
             brainsuite_workflow.connect(svregObj, 'InvMapFile', applyMapAxialObj, 'mapFile')
             brainsuite_workflow.connect(svregObj, 'InvMapFile', applyMapRadialObj, 'mapFile')
             brainsuite_workflow.connect(svregObj, 'InvMapFile', applyMapmADCObj, 'mapFile')
             brainsuite_workflow.connect(svregObj, 'InvMapFile', applyMapFRT_GFAObj, 'mapFile')
-                        
+
             brainsuite_workflow.connect(bdpObj, '%sFA' % distcorrOutput, applyMapFAObj, 'dataFile')
             brainsuite_workflow.connect(bdpObj, '%sMD' % distcorrOutput, applyMapMDObj, 'dataFile')
             brainsuite_workflow.connect(bdpObj, '%sAxial' % distcorrOutput, applyMapAxialObj, 'dataFile')
@@ -1148,7 +1148,7 @@ class subjLevelProcessing(object):
             smoothVolFRT_GFAObj = pe.Node(interface=bs.GSmooth(), name='SMOOTHVOLFRTGFA')
             smoothVolFRT_GFAObj.inputs.sigma = smoothVolStd
             smoothVolFRT_GFAObj.inputs.outFile = smoothVolInputBase + 'FRT_GFA.smooth{0}mm.nii.gz'.format(str(self.smoothvol))
-            
+
             brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', smoothVolFAObj, 'inFile')
             brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', smoothVolMDObj, 'inFile')
             brainsuite_workflow.connect(applyMapAxialObj, 'mappedFile', smoothVolAxialObj, 'inFile')
@@ -1161,81 +1161,81 @@ class subjLevelProcessing(object):
                 qcapplyMapFALaunch.inputs.prefix = statesDir
                 qcapplyMapFALaunch.inputs.stagenum = stageNumDict['APPLYMAPFA']
                 qcapplyMapFALaunch.inputs.state = launched
-                
+
                 qcapplyMapMDLaunch = pe.Node(interface=bs.QCState(), name='qcapplyMapMDLaunch')
                 qcapplyMapMDLaunch.inputs.prefix = statesDir
                 qcapplyMapMDLaunch.inputs.stagenum = stageNumDict['APPLYMAPMD']
                 qcapplyMapMDLaunch.inputs.state = launched
-                
+
                 qcapplyMapAxialLaunch = pe.Node(interface=bs.QCState(), name='qcapplyMapAxialLaunch')
                 qcapplyMapAxialLaunch.inputs.prefix = statesDir
                 qcapplyMapAxialLaunch.inputs.stagenum = stageNumDict['APPLYMAPAXIAL']
                 qcapplyMapAxialLaunch.inputs.state = launched
-                
+
                 qcapplyMapRadialLaunch = pe.Node(interface=bs.QCState(), name='qcapplyMapRadialLaunch')
                 qcapplyMapRadialLaunch.inputs.prefix = statesDir
                 qcapplyMapRadialLaunch.inputs.stagenum = stageNumDict['APPLYMAPRADIAL']
                 qcapplyMapRadialLaunch.inputs.state = launched
-                
+
                 qcapplyMapmADCLaunch = pe.Node(interface=bs.QCState(), name='qcapplyMapmADCLaunch')
                 qcapplyMapmADCLaunch.inputs.prefix = statesDir
                 qcapplyMapmADCLaunch.inputs.stagenum = stageNumDict['APPLYMAPMADC']
                 qcapplyMapmADCLaunch.inputs.state = launched
-                
+
                 qcapplyMapFRT_GFALaunch = pe.Node(interface=bs.QCState(), name='qcapplyMapFRT_GFALaunch')
                 qcapplyMapFRT_GFALaunch.inputs.prefix = statesDir
                 qcapplyMapFRT_GFALaunch.inputs.stagenum = stageNumDict['APPLYMAPFRTGFA']
                 qcapplyMapFRT_GFALaunch.inputs.state = launched
-                
+
                 ds2 = pe.Node(io.DataSink(), name='DATASINK2')
                 ds2.inputs.base_directory = dwi
-                
+
                 brainsuite_workflow.connect(svregObj, 'InvMapFile', ds2, '@0')
-                        
+
                 brainsuite_workflow.connect(bdpObj, '%sFA' % distcorrOutput, ds2, '@')
                 brainsuite_workflow.connect(bdpObj, '%sMD' % distcorrOutput, ds2, '@1')
                 brainsuite_workflow.connect(bdpObj, '%sAxial' % distcorrOutput, ds2, '@2')
                 brainsuite_workflow.connect(bdpObj, '%sRadial' % distcorrOutput, ds2, '@3')
                 brainsuite_workflow.connect(bdpObj, '%sMADC' % distcorrOutput, ds2, '@4')
                 brainsuite_workflow.connect(bdpObj, '%sFRTGFA' % distcorrOutput, ds2, '@5')
-                
+
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapFALaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapMDLaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapAxialLaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapRadialLaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapmADCLaunch, 'Run')
                 brainsuite_workflow.connect(ds2, 'out_file', qcapplyMapFRT_GFALaunch, 'Run')
-                
+
                 qcapplyMapFA = pe.Node(interface=bs.QCState(), name='qcapplyMapFA')
                 qcapplyMapFA.inputs.prefix = statesDir
                 qcapplyMapFA.inputs.stagenum = stageNumDict['APPLYMAPFA']
                 qcapplyMapFA.inputs.state = completed
-                
+
                 qcapplyMapMD = pe.Node(interface=bs.QCState(), name='qcapplyMapMD')
                 qcapplyMapMD.inputs.prefix = statesDir
                 qcapplyMapMD.inputs.stagenum = stageNumDict['APPLYMAPMD']
                 qcapplyMapMD.inputs.state = completed
-                
+
                 qcapplyMapAxial = pe.Node(interface=bs.QCState(), name='qcapplyMapAxial')
                 qcapplyMapAxial.inputs.prefix = statesDir
                 qcapplyMapAxial.inputs.stagenum = stageNumDict['APPLYMAPAXIAL']
                 qcapplyMapAxial.inputs.state = completed
-                
+
                 qcapplyMapRadial = pe.Node(interface=bs.QCState(), name='qcapplyMapRadial')
                 qcapplyMapRadial.inputs.prefix = statesDir
                 qcapplyMapRadial.inputs.stagenum = stageNumDict['APPLYMAPRADIAL']
                 qcapplyMapRadial.inputs.state = completed
-                
+
                 qcapplyMapmADC = pe.Node(interface=bs.QCState(), name='qcapplyMapmADC')
                 qcapplyMapmADC.inputs.prefix = statesDir
                 qcapplyMapmADC.inputs.stagenum = stageNumDict['APPLYMAPMADC']
                 qcapplyMapmADC.inputs.state = completed
-                
+
                 qcapplyMapFRT_GFA = pe.Node(interface=bs.QCState(), name='qcapplyMapFRT_GFA')
                 qcapplyMapFRT_GFA.inputs.prefix = statesDir
                 qcapplyMapFRT_GFA.inputs.stagenum = stageNumDict['APPLYMAPFRTGFA']
                 qcapplyMapFRT_GFA.inputs.state = completed
-                
+
                 brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', qcapplyMapFA, 'Run')
                 brainsuite_workflow.connect(qcapplyMapFALaunch, 'OutStateFile', qcapplyMapFA, 'LaunchInput')
                 brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', qcapplyMapMD, 'Run')
@@ -1253,32 +1253,32 @@ class subjLevelProcessing(object):
                 qcsmoothVolFALaunch.inputs.prefix = statesDir
                 qcsmoothVolFALaunch.inputs.stagenum = stageNumDict['SMOOTHVOLFA']
                 qcsmoothVolFALaunch.inputs.state = launched
-                
+
                 qcsmoothVolMDLaunch = pe.Node(interface=bs.QCState(), name='qcsmoothVolMDLaunch')
                 qcsmoothVolMDLaunch.inputs.prefix = statesDir
                 qcsmoothVolMDLaunch.inputs.stagenum = stageNumDict['SMOOTHVOLMD']
                 qcsmoothVolMDLaunch.inputs.state = launched
-                
+
                 qcsmoothVolAxialLaunch = pe.Node(interface=bs.QCState(), name='qcsmoothVolAxialLaunch')
                 qcsmoothVolAxialLaunch.inputs.prefix = statesDir
                 qcsmoothVolAxialLaunch.inputs.stagenum = stageNumDict['SMOOTHVOLAXIAL']
                 qcsmoothVolAxialLaunch.inputs.state = launched
-                
+
                 qcsmoothVolRadialLaunch = pe.Node(interface=bs.QCState(), name='qcsmoothVolRadialLaunch')
                 qcsmoothVolRadialLaunch.inputs.prefix = statesDir
                 qcsmoothVolRadialLaunch.inputs.stagenum = stageNumDict['SMOOTHVOLRADIAL']
                 qcsmoothVolRadialLaunch.inputs.state = launched
-                
+
                 qcsmoothVolmADCLaunch = pe.Node(interface=bs.QCState(), name='qcsmoothVolmADCLaunch')
                 qcsmoothVolmADCLaunch.inputs.prefix = statesDir
                 qcsmoothVolmADCLaunch.inputs.stagenum = stageNumDict['SMOOTHVOLMADC']
                 qcsmoothVolmADCLaunch.inputs.state = launched
-                
+
                 qcsmoothVolFRT_GFALaunch = pe.Node(interface=bs.QCState(), name='qcsmoothVolFRT_GFALaunch')
                 qcsmoothVolFRT_GFALaunch.inputs.prefix = statesDir
                 qcsmoothVolFRT_GFALaunch.inputs.stagenum = stageNumDict['SMOOTHVOLFRTGFA']
                 qcsmoothVolFRT_GFALaunch.inputs.state = launched
-                
+
                 brainsuite_workflow.connect(applyMapFAObj, 'mappedFile', qcsmoothVolFALaunch, 'Run')
                 brainsuite_workflow.connect(applyMapMDObj, 'mappedFile', qcsmoothVolMDLaunch, 'Run')
                 brainsuite_workflow.connect(applyMapAxialObj, 'mappedFile', qcsmoothVolAxialLaunch, 'Run')
@@ -1290,32 +1290,32 @@ class subjLevelProcessing(object):
                 qcsmoothVolFA.inputs.prefix = statesDir
                 qcsmoothVolFA.inputs.stagenum = stageNumDict['SMOOTHVOLFA']
                 qcsmoothVolFA.inputs.state = completed
-                
+
                 qcsmoothVolMD = pe.Node(interface=bs.QCState(), name='qcsmoothVolMD')
                 qcsmoothVolMD.inputs.prefix = statesDir
                 qcsmoothVolMD.inputs.stagenum = stageNumDict['SMOOTHVOLMD']
                 qcsmoothVolMD.inputs.state = completed
-                
+
                 qcsmoothVolAxial = pe.Node(interface=bs.QCState(), name='qcsmoothVolAxial')
                 qcsmoothVolAxial.inputs.prefix = statesDir
                 qcsmoothVolAxial.inputs.stagenum = stageNumDict['SMOOTHVOLAXIAL']
                 qcsmoothVolAxial.inputs.state = completed
-                
+
                 qcsmoothVolRadial = pe.Node(interface=bs.QCState(), name='qcsmoothVolRadial')
                 qcsmoothVolRadial.inputs.prefix = statesDir
                 qcsmoothVolRadial.inputs.stagenum = stageNumDict['SMOOTHVOLRADIAL']
                 qcsmoothVolRadial.inputs.state = completed
-                
+
                 qcsmoothVolmADC = pe.Node(interface=bs.QCState(), name='qcsmoothVolmADC')
                 qcsmoothVolmADC.inputs.prefix = statesDir
                 qcsmoothVolmADC.inputs.stagenum = stageNumDict['SMOOTHVOLMADC']
                 qcsmoothVolmADC.inputs.state = completed
-                
+
                 qcsmoothVolFRT_GFA = pe.Node(interface=bs.QCState(), name='qcsmoothVolFRT_GFA')
                 qcsmoothVolFRT_GFA.inputs.prefix = statesDir
                 qcsmoothVolFRT_GFA.inputs.stagenum = stageNumDict['SMOOTHVOLFRTGFA']
                 qcsmoothVolFRT_GFA.inputs.state = completed
-                
+
                 brainsuite_workflow.connect(smoothVolFAObj, 'smoothFile', qcsmoothVolFA, 'Run')
                 brainsuite_workflow.connect(smoothVolMDObj, 'smoothFile', qcsmoothVolMD, 'Run')
                 brainsuite_workflow.connect(smoothVolAxialObj, 'smoothFile', qcsmoothVolAxial, 'Run')
@@ -1343,7 +1343,7 @@ class subjLevelProcessing(object):
             BFPoutput = 'GOrdFiltmat'
             if not self.EnabletNLMPdfFiltering:
                 BFPoutput = 'GOrdmat'
-            
+
             if not 'CSE' in STAGES or not 'SVREG' in STAGES:
                 if not os.path.exists(bfpInputBase + '.bfc.nii.gz') or not os.path.exists(bfpInputBase + '.svreg.label.nii.gz'):
                     sys.stdout.write(
@@ -1374,7 +1374,7 @@ class subjLevelProcessing(object):
                 pvcLabel = anat + SUBJECT_ID + '_T1w.pvc.label.nii.gz'
                 makeMaskBFPpvcObj = pe.Node(bs.makeMask(), name='makeMaskBFPpvc')
                 makeMaskBFPpvcObj.inputs.fileNameAndROIs = ' '.join([pvcLabel, "1", "2", "4", "5", "6"])
-                
+
                 if 'SVREG' in STAGES:
                     qcBFPLaunch = pe.Node(interface=bs.QCState(), name='qcBFPLaunch')
                     qcBFPLaunch.inputs.prefix = statesDir
@@ -1393,7 +1393,7 @@ class subjLevelProcessing(object):
                 copySSIMObjs = []
                 copyMCOObjs = []
                 volbendFunc2T1Objs = []
-                
+
                 for task in range(len(BFP['sess'])):
                     taskname = BFP['sess'][task].split('task-')[-1]
                     BFPQCPrefix = func + BFP['subjID'] + '_' + BFP['sess'][task] + "_bold"
@@ -1412,7 +1412,7 @@ class subjLevelProcessing(object):
                     volbendFunc2T1Objs.append(pe.Node(interface=bs.Volslice(), name='volblendFunc2T1_{0}'.format(taskname)))
                     volbendFunc2T1Objs[task].inputs.outFile = '{0}/Func2T1{1}.png'.format(WEBPATH, task)
                     volbendFunc2T1Objs[task].inputs.view = 1  # axial
-                    
+
                     ### Connect rendering to BFP ####
                     brainsuite_workflow.connect(makeMaskBFPpvcObj, 'OutFile', volbendFunc2T1Objs[task], 'maskFile')
                     brainsuite_workflow.connect(BFPObjs[task], 'Func2T1', volbendFunc2T1Objs[task], 'inFile')
@@ -1451,5 +1451,3 @@ class subjLevelProcessing(object):
             else:
                 print('Processing for subject %s has completed successfully. Nipype workflow is located at: %s' % (
                 SUBJECT_ID, WORKFLOW_BASE_DIRECTORY))
-
-

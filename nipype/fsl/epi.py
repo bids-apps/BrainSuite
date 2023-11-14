@@ -1720,7 +1720,7 @@ class EddyQuad(FSLCommand):
             outputs["clean_volumes"] = clean_volumes
 
         return outputs
-    
+
     def _format_arg(self, name, spec, value):
         if name == "base_name":
             if os.path.isfile(value):

@@ -1,8 +1,8 @@
-# BrainSuite BIDS App 
+# BrainSuite BIDS App
 This readme provides an outline of the functionality of the BrainSuite BIDS App.
 For more detailed instructions on installation and use, please visit [our BrainSuite BIDS App documentation page](https://brainsuite.org/BIDS/).
 We have made a small set of [sample data available](https://github.com/BrainSuite/BrainSuiteBIDSAppSampleData).
-A demo of the BrainSuite Dashboard interface, showing the processing of the sample data, is available [on our Github site](https://brainsuite.github.io/DashboardDemo/).	
+A demo of the BrainSuite Dashboard interface, showing the processing of the sample data, is available [on our Github site](https://brainsuite.github.io/DashboardDemo/).
 
 ## Overview
 The BrainSuite BIDS App provides a portable, streamlined method for applying [BrainSuite](https://brainsuite.org) workflows to process and analyze anatomical, diffusion, and functional MRI data. This release of the BrainSuite BIDS-App is based on [version 23a of BrainSuite](https://brainsuite.org/brainsuite23a).
@@ -18,7 +18,7 @@ BrainSuite BIDS App's participant-level processing comprises three core pipeline
 
 * `The BrainSuite Anatomical Pipeline (BAP)` processes T1-weighted (T1w) data by extracting cortical surface models ([CSE](https://brainsuite.org/processing/surfaceextraction/)) from a T1w MRI, computing cortical thickness, and performing surface-constrained volumetric registration ([SVReg](https://brainsuite.org/processing/svreg/)) to align the T1w MRI to a labeled anatomical atlas.
 * `The BrainSuite Diffusion Pipeline (BDP)` processes diffusion MRI (dMRI) data by correcting for eddy current and motion artifacts using [FSL's eddy](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/eddy), co-registering the dMRI to the T1w data, correcting for geometric image distortion, and fitting diffusion models ([BDP](https://brainsuite.org/processing/diffusion/)).
-* `The BrainSuite Functional Pipeline (BFP)` processes functional MRI (fMRI) data by coregistering the fMRI data to the T1w data, correcting for motion, detecting outliers, and then transforming the data to the anatomical atlas space and to the grayordinate space using tools from [BrainSuite](https://brainsuite.org/bfp/), [FSL](fsl.fmrib.ox.ac.uk), and [AFNI](afni.nimh.nih.gov). 
+* `The BrainSuite Functional Pipeline (BFP)` processes functional MRI (fMRI) data by coregistering the fMRI data to the T1w data, correcting for motion, detecting outliers, and then transforming the data to the anatomical atlas space and to the grayordinate space using tools from [BrainSuite](https://brainsuite.org/bfp/), [FSL](fsl.fmrib.ox.ac.uk), and [AFNI](afni.nimh.nih.gov).
 
 ### Group-level analysis
 
@@ -32,7 +32,7 @@ BrainSuite BIDS App's participant-level processing comprises three core pipeline
     * Cortical surface analysis of the vertex-wise thickness.
     * Diffusion parameter maps analysis (e.g., FA, MD).
     * ROI-based analysis of average measurements (e.g., gray matter thickness, surface area).
-  
+
   Additionally, bstr offers:
 
     * Pearson correlation, general linear model, ANOVA, t-test, and permutation tests.
@@ -210,18 +210,18 @@ Options for bids-validator:
 ## Docker Implementation
 
 The BrainSuite BIDS App build process uses a pre-compiled parent image [yeunkim/bidsapphead:2023](https://hub.docker.com/layers/yeunkim/bidsapphead/2023/images/sha256-b2a9d563efee636884e976b4667c7523e9675db960af5ffa95e86a6075e1c059?context=repo), which is available on Docker Hub. The dockerfile for this parent Docker image is available in this repository as ```Dockerfile_head```.
-This enables us to have a faster build process and a more stable BIDS App. 
-BrainSuite BIDS App relies on multiple source software from third-party repositories. 
-Frequent rebuilding of all layers may introduce changes that impact the consistency of the software, possibly introducing instabilities or changes that affect the outcomes of the analysis software. 
-By developing our BrainSuite BIDS App using pre-compiled images, we are able to keep the parent images stable while changing only the top layers of the Docker image. 
-Our pre-compiled parent images act as snapshots of version-controlled dependencies and file systems that our BrainSuite BIDS App needs. 
+This enables us to have a faster build process and a more stable BIDS App.
+BrainSuite BIDS App relies on multiple source software from third-party repositories.
+Frequent rebuilding of all layers may introduce changes that impact the consistency of the software, possibly introducing instabilities or changes that affect the outcomes of the analysis software.
+By developing our BrainSuite BIDS App using pre-compiled images, we are able to keep the parent images stable while changing only the top layers of the Docker image.
+Our pre-compiled parent images act as snapshots of version-controlled dependencies and file systems that our BrainSuite BIDS App needs.
 
 ## Support
 Questions about usage can be submitted to http://forums.brainsuite.org/.
 Issues or suggestions can be directly submitted as an issue to this Github Repository.
-For full documentation on the BrainSuite BIDS App, please visit https://brainsuite.org/BIDS/. 
+For full documentation on the BrainSuite BIDS App, please visit https://brainsuite.org/BIDS/.
 
-## Acknowledgments 
+## Acknowledgments
 This project is supported by National Institutes of Health grants R01-NS074980, R01-NS121761, and R01-EB026299.
 
 ## Licenses
